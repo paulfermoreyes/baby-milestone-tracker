@@ -1,65 +1,117 @@
-import Image from "next/image";
+import KickCounter from "../components/KickCounter";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans relative overflow-hidden selection:bg-cyan-500 selection:text-slate-900">
+      {/* Decorative background glow elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-900/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/20 blur-[120px] pointer-events-none" />
+
+      {/* Header */}
+      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between border-b border-slate-800/60 backdrop-blur-sm z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <span className="text-xl font-bold text-slate-950">✨</span>
+          </div>
+          <div>
+            <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+              Lumina
+            </h1>
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
+              Prenatal Suite
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs font-medium text-slate-300">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            Caregiver Sync Active
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 z-10">
+        {/* Welcome Section */}
+        <div className="mb-10 text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+            Welcome to Your Dashboard
+          </h2>
+          <p className="text-slate-400 max-w-2xl">
+            Track daily progress, log vital signs, and stay connected with other caregivers in real-time. Keep a close eye on key prenatal metrics.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Main Focus: Kick Counter */}
+          <div className="lg:col-span-2">
+            <KickCounter />
+          </div>
+
+          {/* Side Panels - Visual Previews / Actions */}
+          <div className="flex flex-col gap-6">
+            {/* Future Metric 1: Symptoms Card */}
+            <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Symptoms</span>
+                  <span className="text-xl">🤒</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                  Symptom Diary
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Log symptoms like fatigue, nausea, or mood shifts to share with your healthcare provider.
+                </p>
+              </div>
+              <button className="mt-6 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700/50 hover:border-slate-600 transition-all duration-300 cursor-not-allowed opacity-50">
+                Log New Symptom
+              </button>
+            </div>
+
+            {/* Future Metric 2: Weight Tracker */}
+            <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Weight & Health</span>
+                  <span className="text-xl">⚖️</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
+                  Weight Logger
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Record weekly weight progress and monitor healthy target trends during pregnancy.
+                </p>
+              </div>
+              <button className="mt-6 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700/50 hover:border-slate-600 transition-all duration-300 cursor-not-allowed opacity-50">
+                Log Weight Entry
+              </button>
+            </div>
+
+            {/* Caregivers panel */}
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-800 flex flex-col gap-4">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                Active Caregivers
+              </h4>
+              <div className="flex -space-x-2 overflow-hidden">
+                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">Y</div>
+                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">P</div>
+              </div>
+              <p className="text-xs text-slate-400 leading-normal">
+                Caregivers automatically receive real-time notifications on logging events.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-slate-800/40 text-center text-xs text-slate-500 z-10">
+        <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
