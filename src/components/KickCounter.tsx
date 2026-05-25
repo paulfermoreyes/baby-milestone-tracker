@@ -1,39 +1,62 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
-import { db, auth } from "../lib/firebase";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { collection, addDoc, deleteDoc, doc, serverTimestamp, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "@/context/AuthContext";
 
 export default function KickCounter() {
-  // Auth state
-  const [user, setUser] = useState<User | null>(null);
-  // Store added kick doc IDs and dates to enable local interactive list & undo
+  const { user } = useAuth();
+  // Store kick records
   const [sessionKicks, setSessionKicks] = useState<{ id: string; timestamp: Date }[]>([]);
 
+  // Synchronize with Firestore real-time snapshots if authenticated
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    if (!user) {
+      // Clear cloud kicks when logged out
+      setSessionKicks([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, "kicks"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const kicks: { id: string; timestamp: Date }[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const timestamp = data.createdAt ? data.createdAt.toDate() : new Date();
+        kicks.push({ id: doc.id, timestamp });
+      });
+      // Store in oldest-to-newest order in state so slice().reverse() yields newest-to-oldest in list
+      setSessionKicks(kicks.reverse());
+    }, (err) => {
+      console.error("Error reading kicks from Firestore:", err);
+    });
+
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   const handleKick = async () => {
-    // If not logged in, simulate/allow for preview or alert
     if (!user) {
-      alert("Please configure your .env.local and sign in to save. Simulating local save for preview!");
+      // Simulate locally in preview mode
       const simulatedId = Math.random().toString(36).substring(7);
       setSessionKicks((prev) => [...prev, { id: simulatedId, timestamp: new Date() }]);
       return;
     }
 
     try {
-      const docRef = await addDoc(collection(db, "kicks"), {
+      await addDoc(collection(db, "kicks"), {
         userId: user.uid,
         createdAt: serverTimestamp(),
       });
-      setSessionKicks((prev) => [...prev, { id: docRef.id, timestamp: new Date() }]);
     } catch (err) {
       console.error(err);
-      alert("Failed to save kick.");
+      alert("Failed to save kick to the cloud.");
     }
   };
 
@@ -42,17 +65,24 @@ export default function KickCounter() {
     const lastKick = sessionKicks[sessionKicks.length - 1];
 
     if (!user) {
-      // Simulating local undo
+      // Simulating local undo in preview mode
       setSessionKicks((prev) => prev.slice(0, -1));
       return;
     }
 
     try {
       await deleteDoc(doc(db, "kicks", lastKick.id));
-      setSessionKicks((prev) => prev.slice(0, -1));
+      // State will be automatically updated by onSnapshot
     } catch (err) {
       console.error(err);
-      alert("Failed to undo kick.");
+      alert("Failed to delete kick record.");
+    }
+  };
+
+  const triggerAuthModal = () => {
+    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    if (dialog) {
+      dialog.showModal();
     }
   };
 
@@ -61,9 +91,27 @@ export default function KickCounter() {
       {/* Decorative inner light beam */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
 
+      {/* Guest Preview Warning Banner */}
+      {!user && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/20 text-xs font-semibold text-amber-400 flex flex-col sm:flex-row items-center sm:justify-between gap-3 animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⚠️</span>
+            <span>Guest Mode: Kicks are simulated and will reset.</span>
+          </div>
+          <button
+            onClick={triggerAuthModal}
+            className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition-all cursor-pointer text-center"
+          >
+            Sign In to Sync
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-800/60">
         <div>
-          <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Active Session</span>
+          <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
+            {user ? "Cloud Synced Session" : "Guest Preview Session"}
+          </span>
           <h2 className="text-2xl font-black text-white mt-1">Fetal Kick Counter</h2>
         </div>
         <div className="flex items-baseline gap-2">
@@ -126,3 +174,4 @@ export default function KickCounter() {
     </div>
   );
 }
+

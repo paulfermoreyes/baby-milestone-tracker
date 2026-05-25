@@ -1,6 +1,18 @@
+"use client";
+
+import { useRef } from "react";
 import KickCounter from "../components/KickCounter";
+import AuthModal from "../components/AuthModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+  const { user, logout, loading } = useAuth();
+  const authModalRef = useRef<HTMLDialogElement | null>(null);
+
+  const openAuthModal = () => {
+    authModalRef.current?.showModal();
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans relative overflow-hidden selection:bg-cyan-500 selection:text-slate-900">
       {/* Decorative background glow elements */}
@@ -23,11 +35,51 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Auth Control Block */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs font-medium text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            Caregiver Sync Active
-          </div>
+          {loading ? (
+            <div className="w-6 h-6 rounded-full border-2 border-slate-700 border-t-cyan-500 animate-spin" />
+          ) : user ? (
+            <div className="flex items-center gap-3">
+              {/* Caregiver Sync status */}
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-800/30 text-xs font-semibold text-cyan-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+                Cloud Synced
+              </div>
+              {/* User profile details */}
+              <div className="flex items-center gap-2 bg-slate-800/60 pl-2.5 pr-3 py-1.5 rounded-2xl border border-slate-700/40">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || "Caregiver"} className="w-6 h-6 rounded-full" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center text-slate-950 text-[10px] font-extrabold">
+                    {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-xs font-bold text-slate-200 hidden sm:inline">
+                  {user.displayName || user.email?.split("@")[0] || "Caregiver"}
+                </span>
+                <button
+                  onClick={logout}
+                  className="ml-1 text-slate-400 hover:text-red-400 text-xs font-bold py-0.5 px-1.5 rounded-md hover:bg-slate-700/50 transition-colors cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs font-medium text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                Offline Preview Mode
+              </div>
+              <button
+                onClick={openAuthModal}
+                className="py-2 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-extrabold text-xs shadow-md shadow-cyan-500/10 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                Sign In / Join
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -96,9 +148,30 @@ export default function Home() {
                 <span className="w-2 h-2 rounded-full bg-cyan-400" />
                 Active Caregivers
               </h4>
-              <div className="flex -space-x-2 overflow-hidden">
-                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">Y</div>
-                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">P</div>
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2 overflow-hidden">
+                  {user ? (
+                    user.photoURL ? (
+                      <img src={user.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
+                    ) : (
+                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">
+                        {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
+                      </div>
+                    )
+                  ) : (
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-400">G</div>
+                  )}
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">P</div>
+                </div>
+                {user ? (
+                  <span className="text-xs font-semibold text-slate-300">
+                    {user.displayName || "You"} & Partner
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold text-slate-400">
+                    Guest Mode
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-400 leading-normal">
                 Caregivers automatically receive real-time notifications on logging events.
@@ -112,6 +185,10 @@ export default function Home() {
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-slate-800/40 text-center text-xs text-slate-500 z-10">
         <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
       </footer>
+
+      {/* Auth Modal Container */}
+      <AuthModal dialogRef={authModalRef} />
     </div>
   );
 }
+
