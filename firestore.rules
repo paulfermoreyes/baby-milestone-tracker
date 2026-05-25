@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profile documents
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Fetal Kick Counter log entries
+    match /kicks/{kickId} {
+      // Allow user to create entries they own
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Allow user to read or delete entries they own
+      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Block general updates to historical entries to ensure audit integrity
+      allow update: if false;
+    }
+  }
+}
