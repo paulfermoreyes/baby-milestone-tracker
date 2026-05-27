@@ -9,11 +9,12 @@ import WeightTracker from "../components/WeightTracker";
 import ContractionTimer from "../components/ContractionTimer";
 import PrenatalChatbot from "../components/PrenatalChatbot";
 import AuthModal from "../components/AuthModal";
+import LinkPartnerPanel from "../components/LinkPartnerPanel";
 import { useAuth } from "@/context/AuthContext";
 import { Sparkle, Footprints, Timer, Drop, ThermometerHot, Scales } from "@phosphor-icons/react";
 
 export default function Home() {
-  const { user, logout, loading } = useAuth();
+  const { user, userProfile, logout, loading } = useAuth();
   const authModalRef = useRef<HTMLDialogElement | null>(null);
 
   const openAuthModal = () => {
@@ -27,6 +28,10 @@ export default function Home() {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
+
+  const roleBadge = userProfile?.role === "husband"
+    ? { emoji: "👨", label: "Husband", classes: "bg-indigo-500/15 border-indigo-500/30 text-indigo-300" }
+    : { emoji: "👩", label: "Wife", classes: "bg-pink-500/15 border-pink-500/30 text-pink-300" };
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans relative overflow-hidden selection:bg-cyan-500 selection:text-slate-900 pb-20 md:pb-0">
@@ -56,12 +61,21 @@ export default function Home() {
             <div className="w-6 h-6 rounded-full border-2 border-slate-700 border-t-cyan-500 animate-spin" />
           ) : user ? (
             <div className="flex items-center gap-3">
-              {/* Caregiver Sync status */}
+              {/* Cloud sync status */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-800/30 text-xs font-semibold text-cyan-400">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
                 Cloud Synced
               </div>
-              {/* User profile details */}
+
+              {/* Role badge */}
+              {userProfile?.role && (
+                <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${roleBadge.classes}`}>
+                  <span>{roleBadge.emoji}</span>
+                  <span>{roleBadge.label}</span>
+                </div>
+              )}
+
+              {/* User profile */}
               <div className="flex items-center gap-2 bg-slate-800/60 pl-2.5 pr-3 py-1.5 rounded-2xl border border-slate-700/40">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt={user.displayName || "Caregiver"} className="w-6 h-6 rounded-full" />
@@ -144,41 +158,28 @@ export default function Home() {
               <WeightTracker />
             </div>
 
-            {/* Caregivers panel */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-800 flex flex-col gap-4">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                Active Caregivers
-              </h4>
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2 overflow-hidden">
-                  {user ? (
-                    user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
-                    ) : (
-                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">
-                        {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
-                      </div>
-                    )
-                  ) : (
+            {/* Partner Linking Panel */}
+            {user && <LinkPartnerPanel />}
+
+            {/* Guest caregiver placeholder */}
+            {!user && (
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-800 flex flex-col gap-4">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                  Active Caregivers
+                </h4>
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2 overflow-hidden">
                     <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-400">G</div>
-                  )}
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">P</div>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">P</div>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-400">Guest Mode</span>
                 </div>
-                {user ? (
-                  <span className="text-xs font-semibold text-slate-300">
-                    {user.displayName || "You"} & Partner
-                  </span>
-                ) : (
-                  <span className="text-xs font-semibold text-slate-400">
-                    Guest Mode
-                  </span>
-                )}
+                <p className="text-xs text-slate-400 leading-normal">
+                  Sign in to link with your partner and share the same dashboard.
+                </p>
               </div>
-              <p className="text-xs text-slate-400 leading-normal">
-                Caregivers automatically receive real-time notifications on logging events.
-              </p>
-            </div>
+            )}
           </div>
         </div>
 

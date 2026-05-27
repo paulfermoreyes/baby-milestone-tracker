@@ -1,46 +1,66 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc, deleteDoc, doc, serverTimestamp, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  where,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { Warning, Footprints, ArrowCounterClockwise } from "@phosphor-icons/react";
 
 export default function KickCounter() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   // Store kick records
   const [sessionKicks, setSessionKicks] = useState<{ id: string; timestamp: Date }[]>([]);
 
-  // Synchronize with Firestore real-time snapshots if authenticated
+  // Synchronize with Firestore real-time snapshots
   useEffect(() => {
     if (!user) {
-      // Clear cloud kicks when logged out
       setSessionKicks([]);
       return;
     }
 
-    const q = query(
-      collection(db, "kicks"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
+    let q;
+    if (familyId) {
+      // Shared family collection
+      q = query(
+        collection(db, "families", familyId, "kicks"),
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+    } else {
+      // Fallback: personal collection while not yet linked
+      q = query(
+        collection(db, "kicks"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const kicks: { id: string; timestamp: Date }[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((d) => {
+        const data = d.data();
         const timestamp = data.createdAt ? data.createdAt.toDate() : new Date();
-        kicks.push({ id: doc.id, timestamp });
+        kicks.push({ id: d.id, timestamp });
       });
-      // Store in oldest-to-newest order in state so slice().reverse() yields newest-to-oldest in list
       setSessionKicks(kicks.reverse());
     }, (err) => {
       console.error("Error reading kicks from Firestore:", err);
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, familyId]);
 
   const handleKick = async () => {
     if (!user) {
@@ -51,10 +71,17 @@ export default function KickCounter() {
     }
 
     try {
-      await addDoc(collection(db, "kicks"), {
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-      });
+      if (familyId) {
+        await addDoc(collection(db, "families", familyId, "kicks"), {
+          loggedBy: user.uid,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        await addDoc(collection(db, "kicks"), {
+          userId: user.uid,
+          createdAt: serverTimestamp(),
+        });
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to save kick to the cloud.");
@@ -66,14 +93,16 @@ export default function KickCounter() {
     const lastKick = sessionKicks[sessionKicks.length - 1];
 
     if (!user) {
-      // Simulating local undo in preview mode
       setSessionKicks((prev) => prev.slice(0, -1));
       return;
     }
 
     try {
-      await deleteDoc(doc(db, "kicks", lastKick.id));
-      // State will be automatically updated by onSnapshot
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "kicks", lastKick.id));
+      } else {
+        await deleteDoc(doc(db, "kicks", lastKick.id));
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to delete kick record.");
@@ -82,9 +111,7 @@ export default function KickCounter() {
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
+    if (dialog) dialog.showModal();
   };
 
   return (
@@ -111,7 +138,7 @@ export default function KickCounter() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-800/60">
         <div>
           <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
-            {user ? "Cloud Synced Session" : "Guest Preview Session"}
+            {user ? (familyId ? "Couple Shared Session" : "Cloud Synced Session") : "Guest Preview Session"}
           </span>
           <h2 className="text-2xl font-black text-white mt-1">Fetal Kick Counter</h2>
         </div>
@@ -151,7 +178,7 @@ export default function KickCounter() {
 
         {sessionKicks.length === 0 ? (
           <div className="text-center py-8 rounded-2xl bg-slate-900/40 border border-slate-850 text-slate-500 text-sm">
-            No kicks recorded in this session yet. Press "Record a Kick" to begin.
+            No kicks recorded in this session yet. Press &quot;Record a Kick&quot; to begin.
           </div>
         ) : (
           <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
@@ -177,4 +204,3 @@ export default function KickCounter() {
     </div>
   );
 }
-

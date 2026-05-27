@@ -6,7 +6,6 @@ import {
   addDoc,
   deleteDoc,
   doc,
-  serverTimestamp,
   query,
   where,
   orderBy,
@@ -26,7 +25,7 @@ interface ContractionLog {
 }
 
 export default function ContractionTimer() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [timerVal, setTimerVal] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -73,28 +72,36 @@ export default function ContractionTimer() {
       return;
     }
 
-    const q = query(
-      collection(db, "contractions"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc"),
-      limit(20)
-    );
+    let q;
+    if (familyId) {
+      q = query(
+        collection(db, "families", familyId, "contractions"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+    } else {
+      q = query(
+        collection(db, "contractions"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(20)
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const tempLogs: ContractionLog[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((d) => {
+          const data = d.data();
           const startTime = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
           tempLogs.push({
-            id: doc.id,
+            id: d.id,
             startTime,
             duration: Number(data.duration),
             interval: data.interval ? Number(data.interval) : undefined,
           });
         });
-        // Sort oldest to newest for interval calculations in lists
         setLogs(tempLogs.reverse());
       },
       (err) => {
@@ -103,7 +110,7 @@ export default function ContractionTimer() {
     );
 
     return () => unsubscribe();
-  }, [user, isClient]);
+  }, [user, familyId, isClient]);
 
   // Active timer runner
   useEffect(() => {
@@ -121,17 +128,14 @@ export default function ContractionTimer() {
 
   const handleStartStop = async () => {
     if (!isActive) {
-      // Start Timing
       setStartTime(new Date());
       setTimerVal(0);
       setIsActive(true);
     } else {
-      // Stop Timing & Save
       setIsActive(false);
       const finishedStartTime = startTime || new Date();
       const finishedDuration = timerVal;
 
-      // Calculate Interval (duration from the start of previous contraction to the start of this one)
       let intervalSec: number | undefined = undefined;
       if (logs.length > 0) {
         const lastStartTime = logs[logs.length - 1].startTime;
@@ -139,7 +143,6 @@ export default function ContractionTimer() {
       }
 
       if (!user) {
-        // Simulate locally
         const simulatedId = Math.random().toString(36).substring(7);
         const newLog: ContractionLog = {
           id: simulatedId,
@@ -166,12 +169,17 @@ export default function ContractionTimer() {
       }
 
       try {
-        await addDoc(collection(db, "contractions"), {
-          userId: user.uid,
+        const payload = {
           duration: finishedDuration,
           interval: intervalSec || null,
-          createdAt: finishedStartTime, // store start time as primary index
-        });
+          createdAt: finishedStartTime,
+          loggedBy: user.uid,
+        };
+        if (familyId) {
+          await addDoc(collection(db, "families", familyId, "contractions"), payload);
+        } else {
+          await addDoc(collection(db, "contractions"), { ...payload, userId: user.uid });
+        }
       } catch (err) {
         console.error("Failed to save contraction log:", err);
         alert("Failed to sync contraction log to the cloud.");
@@ -201,7 +209,11 @@ export default function ContractionTimer() {
     }
 
     try {
-      await deleteDoc(doc(db, "contractions", id));
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "contractions", id));
+      } else {
+        await deleteDoc(doc(db, "contractions", id));
+      }
     } catch (err) {
       console.error("Failed to delete contraction:", err);
       alert("Failed to delete contraction record.");
@@ -221,39 +233,26 @@ export default function ContractionTimer() {
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
-  // Check 5-1-1 Rule matching parameters:
-  // - Average interval between contractions is <= 5 mins (300 seconds) in the last hour.
-  // - Average duration of contractions is >= 1 min (60 seconds).
-  // - At least 3 contractions recorded to avoid single spike anomalies.
   const checkLaborAlert = () => {
     if (logs.length < 3) return false;
     const lastHour = 60 * 60 * 1000;
     const now = new Date().getTime();
-
-    // Filter logs in the last hour
     const recentLogs = logs.filter((l) => now - l.startTime.getTime() < lastHour);
     if (recentLogs.length < 3) return false;
-
     const avgDuration = recentLogs.reduce((acc, l) => acc + l.duration, 0) / recentLogs.length;
-    // Calculate intervals (excluding those that are undefined)
     const validIntervals = recentLogs.map((l) => l.interval).filter((v): v is number => v !== undefined);
-
     if (validIntervals.length === 0) return false;
     const avgInterval = validIntervals.reduce((acc, v) => acc + v, 0) / validIntervals.length;
-
     return avgInterval <= 300 && avgDuration >= 60;
   };
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
+    if (dialog) dialog.showModal();
   };
 
   return (
     <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group relative overflow-hidden">
-      {/* Glow effect */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl pointer-events-none" />
 
       <div>
@@ -267,10 +266,11 @@ export default function ContractionTimer() {
         </h3>
 
         <p className="text-xs text-slate-400 mb-6 leading-normal">
-          Log contraction cycles to identify true labor trends.
+          {user && familyId
+            ? "Shared with partner — either of you can log."
+            : "Log contraction cycles to identify true labor trends."}
         </p>
 
-        {/* Dynamic Labor Alert Message */}
         {checkLaborAlert() && (
           <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400 animate-pulse flex items-start gap-2.5">
             <BellRinging size={18} weight="bold" className="text-rose-400 shrink-0 mt-0.5" />
@@ -283,7 +283,6 @@ export default function ContractionTimer() {
           </div>
         )}
 
-        {/* Live Timer / Counter Button */}
         <div className="flex flex-col items-center gap-4 mb-8">
           {isActive ? (
             <div className="flex flex-col items-center">
@@ -321,7 +320,6 @@ export default function ContractionTimer() {
           </button>
         </div>
 
-        {/* History table log */}
         <div>
           <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Recent Timing Logs</span>
           {logs.length === 0 ? (
@@ -364,7 +362,6 @@ export default function ContractionTimer() {
         </div>
       </div>
 
-      {/* Guest Mode Indicator */}
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
           <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />

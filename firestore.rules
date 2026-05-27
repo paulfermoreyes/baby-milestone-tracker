@@ -2,35 +2,123 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // User profile documents
+
+    // ── Helper functions ─────────────────────────────────────────────────────
+
+    // Returns true if the requesting user is authenticated
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Returns true if the requesting user owns the resource (legacy root collections)
+    function ownsResource() {
+      return isAuthed() && resource.data.userId == request.auth.uid;
+    }
+
+    // Returns true if the requesting user is a member of the given family document
+    function isFamilyMember(familyId) {
+      return isAuthed() &&
+        request.auth.uid in get(/databases/$(database)/documents/families/$(familyId)).data.members;
+    }
+
+    // ── User profile documents ───────────────────────────────────────────────
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Users can only read and write their own profile
+      allow read, write: if isAuthed() && request.auth.uid == userId;
     }
-    
-    // Fetal Kick Counter log entries
+
+    // ── Family documents ─────────────────────────────────────────────────────
+    match /families/{familyId} {
+      // Any authenticated user can create a family document (they become the first member)
+      allow create: if isAuthed() && request.auth.uid in request.resource.data.members;
+
+      // Only existing members can read or update the family document
+      allow read, update: if isFamilyMember(familyId);
+
+      // Nobody can delete a family document from the client
+      allow delete: if false;
+
+      // ── Shared tracker subcollections ──────────────────────────────────────
+
+      // Kicks
+      match /kicks/{kickId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+
+      // Contractions
+      match /contractions/{contractionId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+
+      // Blood sugar
+      match /bloodsugar/{bsId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+
+      // Milk counter
+      match /milk/{milkId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+
+      // Symptoms
+      match /symptoms/{symptomId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+
+      // Weight
+      match /weight/{weightId} {
+        allow read, delete: if isFamilyMember(familyId);
+        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    // ── Legacy root collections (personal, pre-link) ─────────────────────────
+    // These remain for users who haven't linked with a partner yet.
+
     match /kicks/{kickId} {
-      // Allow user to create entries they own
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // Allow user to read or delete entries they own
-      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      
-      // Block general updates to historical entries to ensure audit integrity
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
       allow update: if false;
     }
 
-    // Milk Counter log entries
     match /milk/{milkId} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
       allow update: if false;
     }
 
-    // Blood Sugar tracker entries
     match /bloodsugar/{bsId} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
+      allow update: if false;
+    }
+
+    match /contractions/{contractionId} {
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
+      allow update: if false;
+    }
+
+    match /symptoms/{symptomId} {
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
+      allow update: if false;
+    }
+
+    match /weight/{weightId} {
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if ownsResource();
       allow update: if false;
     }
   }
