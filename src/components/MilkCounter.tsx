@@ -11,7 +11,7 @@ import {
   where,
   orderBy,
   onSnapshot,
-  Timestamp
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -23,11 +23,10 @@ interface MilkLog {
 }
 
 export default function MilkCounter() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [milkLogs, setMilkLogs] = useState<MilkLog[]>([]);
   const [isClient, setIsClient] = useState(false);
 
-  // Mark client side hydration complete
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -37,7 +36,6 @@ export default function MilkCounter() {
     if (!isClient) return;
 
     if (!user) {
-      // Guest local storage preview
       const localData = localStorage.getItem("lumina_guest_milk");
       if (localData) {
         try {
@@ -53,27 +51,34 @@ export default function MilkCounter() {
       return;
     }
 
-    // Query milk logs for the current local calendar day
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    const q = query(
-      collection(db, "milk"),
-      where("userId", "==", user.uid),
-      where("createdAt", ">=", startOfDay),
-      orderBy("createdAt", "desc")
-    );
+    let q;
+    if (familyId) {
+      q = query(
+        collection(db, "families", familyId, "milk"),
+        where("createdAt", ">=", startOfDay),
+        orderBy("createdAt", "desc")
+      );
+    } else {
+      q = query(
+        collection(db, "milk"),
+        where("userId", "==", user.uid),
+        where("createdAt", ">=", startOfDay),
+        orderBy("createdAt", "desc")
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const logs: MilkLog[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((d) => {
+          const data = d.data();
           const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
-          logs.push({ id: doc.id, timestamp });
+          logs.push({ id: d.id, timestamp });
         });
-        // Sort oldest to newest for incremental indexing
         setMilkLogs(logs.reverse());
       },
       (err) => {
@@ -82,11 +87,10 @@ export default function MilkCounter() {
     );
 
     return () => unsubscribe();
-  }, [user, isClient]);
+  }, [user, familyId, isClient]);
 
   const handleRecordMilk = async () => {
     if (!user) {
-      // Simulate locally
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: MilkLog = { id: simulatedId, timestamp: new Date() };
       const updated = [...milkLogs, newLog];
@@ -99,10 +103,17 @@ export default function MilkCounter() {
     }
 
     try {
-      await addDoc(collection(db, "milk"), {
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-      });
+      if (familyId) {
+        await addDoc(collection(db, "families", familyId, "milk"), {
+          loggedBy: user.uid,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        await addDoc(collection(db, "milk"), {
+          userId: user.uid,
+          createdAt: serverTimestamp(),
+        });
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to save milk log to the cloud.");
@@ -124,7 +135,11 @@ export default function MilkCounter() {
     }
 
     try {
-      await deleteDoc(doc(db, "milk", lastLog.id));
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "milk", lastLog.id));
+      } else {
+        await deleteDoc(doc(db, "milk", lastLog.id));
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to delete last milk log.");
@@ -133,9 +148,7 @@ export default function MilkCounter() {
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
+    if (dialog) dialog.showModal();
   };
 
   const targetGoal = 2;
@@ -143,17 +156,12 @@ export default function MilkCounter() {
   const progressPercent = Math.min((count / targetGoal) * 100, 100);
   const isGoalMet = count >= targetGoal;
 
-  // Status message selector
   let statusMessage = "Take at least 2x milk servings a day for fetal bone health.";
-  if (count === 1) {
-    statusMessage = "1 serving down, 1 more to complete your daily goal!";
-  } else if (count >= 2) {
-    statusMessage = "Daily calcium target met! Amazing job!";
-  }
+  if (count === 1) statusMessage = "1 serving down, 1 more to complete your daily goal!";
+  else if (count >= 2) statusMessage = "Daily calcium target met! Amazing job!";
 
   return (
     <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group relative overflow-hidden">
-      {/* Decorative inner light beam */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl pointer-events-none" />
 
       <div>
@@ -171,6 +179,10 @@ export default function MilkCounter() {
             <span className="text-xs text-slate-500 font-bold">/ {targetGoal} cups</span>
           </div>
         </div>
+
+        {user && familyId && (
+          <p className="text-[10px] text-indigo-400 font-semibold mb-1">Shared with partner</p>
+        )}
 
         <p className="text-xs text-slate-400 mb-5 leading-normal">
           {statusMessage}
@@ -223,7 +235,6 @@ export default function MilkCounter() {
         )}
       </div>
 
-      {/* Guest Mode Indicator */}
       {!user && isClient && (
         <div className="mt-3 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
           <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />

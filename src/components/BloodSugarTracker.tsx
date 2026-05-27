@@ -27,7 +27,7 @@ interface BloodSugarLog {
 }
 
 export default function BloodSugarTracker() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [logs, setLogs] = useState<BloodSugarLog[]>([]);
   const [isClient, setIsClient] = useState(false);
 
@@ -101,12 +101,21 @@ export default function BloodSugarTracker() {
     }
 
     // Query historical blood sugar logs (limit to 150 for rich history analysis)
-    const q = query(
-      collection(db, "bloodsugar"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc"),
-      limit(150)
-    );
+    let q;
+    if (familyId) {
+      q = query(
+        collection(db, "families", familyId, "bloodsugar"),
+        orderBy("createdAt", "desc"),
+        limit(150)
+      );
+    } else {
+      q = query(
+        collection(db, "bloodsugar"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(150)
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
@@ -132,7 +141,7 @@ export default function BloodSugarTracker() {
     );
 
     return () => unsubscribe();
-  }, [user, isClient]);
+  }, [user, familyId, isClient]);
 
   // Handle logging a reading
   const handleLogReading = async (e: React.FormEvent) => {
@@ -186,16 +195,25 @@ export default function BloodSugarTracker() {
       // Clean up previous entry for this slot today to keep entries unique per slot/day
       const duplicate = logs.find((l) => l.date === todayStr && l.slot === activeSlot);
       if (duplicate) {
-        await deleteDoc(doc(db, "bloodsugar", duplicate.id));
+        if (familyId) {
+          await deleteDoc(doc(db, "families", familyId, "bloodsugar", duplicate.id));
+        } else {
+          await deleteDoc(doc(db, "bloodsugar", duplicate.id));
+        }
       }
 
-      await addDoc(collection(db, "bloodsugar"), {
-        userId: user.uid,
+      const payload = {
         value,
         slot: activeSlot,
         date: todayStr,
+        loggedBy: user.uid,
         createdAt: serverTimestamp(),
-      });
+      };
+      if (familyId) {
+        await addDoc(collection(db, "families", familyId, "bloodsugar"), payload);
+      } else {
+        await addDoc(collection(db, "bloodsugar"), { ...payload, userId: user.uid });
+      }
 
       setActiveSlot(null);
       setInputValue("");
@@ -228,7 +246,11 @@ export default function BloodSugarTracker() {
     }
 
     try {
-      await deleteDoc(doc(db, "bloodsugar", id));
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "bloodsugar", id));
+      } else {
+        await deleteDoc(doc(db, "bloodsugar", id));
+      }
     } catch (err) {
       console.error("Error deleting entry:", err);
       alert("Failed to delete reading.");

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import React, { useState, useEffect } from "react";
+import { useAuth, UserRole } from "@/context/AuthContext";
 
 interface AuthModalProps {
   dialogRef: React.RefObject<HTMLDialogElement | null>;
@@ -14,6 +14,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<UserRole>("wife");
   const [showPassword, setShowPassword] = useState(false);
   
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +31,24 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       setDisplayName("");
       setShowPassword(false);
       setError(null);
+      setRole("wife");
     };
 
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
   }, [dialogRef]);
+
+  const handleCloseWithAnimation = () => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    dialog.classList.add("closing");
+    // Wait for the scale-out & fade-out animation to complete (250ms in CSS)
+    setTimeout(() => {
+      dialog.close();
+      dialog.classList.remove("closing");
+    }, 240);
+  };
 
   // Fallback for light-dismiss on browsers that don't support `closedby="any"` natively yet (e.g. Safari)
   useEffect(() => {
@@ -61,18 +75,6 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
     return () => dialog.removeEventListener("click", handleLightDismiss);
   }, [dialogRef]);
 
-  const handleCloseWithAnimation = () => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    dialog.classList.add("closing");
-    // Wait for the scale-out & fade-out animation to complete (250ms in CSS)
-    setTimeout(() => {
-      dialog.close();
-      dialog.classList.remove("closing");
-    }, 240);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -83,21 +85,22 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         if (!displayName.trim()) {
           throw new Error("Please enter your full name.");
         }
-        await signUpWithEmail(email, password, displayName);
+        await signUpWithEmail(email, password, displayName, role);
       } else {
         await signInWithEmail(email, password);
       }
       handleCloseWithAnimation();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      let friendlyMessage = err.message || "An authentication error occurred.";
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+      let friendlyMessage = err instanceof Error ? err.message : "An authentication error occurred.";
+      const code = (err as { code?: string }).code;
+      if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
         friendlyMessage = "Invalid email or password. Please try again.";
-      } else if (err.code === "auth/email-already-in-use") {
+      } else if (code === "auth/email-already-in-use") {
         friendlyMessage = "This email is already in use. Try signing in instead.";
-      } else if (err.code === "auth/weak-password") {
+      } else if (code === "auth/weak-password") {
         friendlyMessage = "Password must be at least 6 characters long.";
-      } else if (err.code === "auth/invalid-email") {
+      } else if (code === "auth/invalid-email") {
         friendlyMessage = "Please enter a valid email address.";
       }
       setError(friendlyMessage);
@@ -112,10 +115,11 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
     try {
       await signInWithGoogle();
       handleCloseWithAnimation();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError(err.message || "Failed to sign in with Google.");
+      const code = (err as { code?: string }).code;
+      if (code !== "auth/popup-closed-by-user") {
+        setError(err instanceof Error ? err.message : "Failed to sign in with Google.");
       }
     } finally {
       setLoading(false);
@@ -200,6 +204,41 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
                 required
                 disabled={loading}
               />
+            </div>
+          )}
+
+          {/* Role Selector — shown only on Sign Up */}
+          {isSignUp && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300">I am the…</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole("husband")}
+                  disabled={loading}
+                  className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
+                    role === "husband"
+                      ? "bg-indigo-500/15 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/10"
+                      : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                  }`}
+                >
+                  <span className="text-xl">👨</span>
+                  <span>Husband</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("wife")}
+                  disabled={loading}
+                  className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
+                    role === "wife"
+                      ? "bg-pink-500/15 border-pink-500/50 text-pink-300 shadow-sm shadow-pink-500/10"
+                      : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                  }`}
+                >
+                  <span className="text-xl">👩</span>
+                  <span>Wife</span>
+                </button>
+              </div>
             </div>
           )}
 

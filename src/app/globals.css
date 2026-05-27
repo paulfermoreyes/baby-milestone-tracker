@@ -67,6 +67,12 @@ dialog.auth-dialog {
   border-radius: 1.5rem;
   overflow: visible;
   color: #fff;
+  /* Ensure true viewport centering across all browsers */
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
 }
 
 dialog.auth-dialog::backdrop {

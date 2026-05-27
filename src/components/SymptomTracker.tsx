@@ -35,7 +35,7 @@ const SYMPTOM_OPTIONS = [
 ];
 
 export default function SymptomTracker() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [symptomLogs, setSymptomLogs] = useState<SymptomLog[]>([]);
   const [symptom, setSymptom] = useState(SYMPTOM_OPTIONS[0].value);
   const [severity, setSeverity] = useState<"Mild" | "Moderate" | "Severe">("Mild");
@@ -81,22 +81,31 @@ export default function SymptomTracker() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    const q = query(
-      collection(db, "symptoms"),
-      where("userId", "==", user.uid),
-      where("createdAt", ">=", startOfDay),
-      orderBy("createdAt", "desc")
-    );
+    let q;
+    if (familyId) {
+      q = query(
+        collection(db, "families", familyId, "symptoms"),
+        where("createdAt", ">=", startOfDay),
+        orderBy("createdAt", "desc")
+      );
+    } else {
+      q = query(
+        collection(db, "symptoms"),
+        where("userId", "==", user.uid),
+        where("createdAt", ">=", startOfDay),
+        orderBy("createdAt", "desc")
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const logs: SymptomLog[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((d) => {
+          const data = d.data();
           const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
           logs.push({
-            id: doc.id,
+            id: d.id,
             symptom: data.symptom,
             severity: data.severity,
             notes: data.notes || "",
@@ -111,14 +120,13 @@ export default function SymptomTracker() {
     );
 
     return () => unsubscribe();
-  }, [user, isClient]);
+  }, [user, familyId, isClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     if (!user) {
-      // Simulate locally
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: SymptomLog = {
         id: simulatedId,
@@ -144,13 +152,18 @@ export default function SymptomTracker() {
     }
 
     try {
-      await addDoc(collection(db, "symptoms"), {
-        userId: user.uid,
+      const payload = {
         symptom,
         severity,
         notes,
+        loggedBy: user.uid,
         createdAt: serverTimestamp(),
-      });
+      };
+      if (familyId) {
+        await addDoc(collection(db, "families", familyId, "symptoms"), payload);
+      } else {
+        await addDoc(collection(db, "symptoms"), { ...payload, userId: user.uid });
+      }
       setNotes("");
     } catch (err) {
       console.error("Failed to save symptom log:", err);
@@ -177,7 +190,11 @@ export default function SymptomTracker() {
     }
 
     try {
-      await deleteDoc(doc(db, "symptoms", id));
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "symptoms", id));
+      } else {
+        await deleteDoc(doc(db, "symptoms", id));
+      }
     } catch (err) {
       console.error("Failed to delete symptom log:", err);
       alert("Failed to delete symptom record.");
@@ -186,25 +203,19 @@ export default function SymptomTracker() {
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
+    if (dialog) dialog.showModal();
   };
 
   const getSeverityBadgeColor = (sev: "Mild" | "Moderate" | "Severe") => {
     switch (sev) {
-      case "Mild":
-        return "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
-      case "Moderate":
-        return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-      case "Severe":
-        return "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+      case "Mild": return "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
+      case "Moderate": return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+      case "Severe": return "bg-rose-500/10 text-rose-400 border border-rose-500/20";
     }
   };
 
   return (
     <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group relative overflow-hidden">
-      {/* Glow effect */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
 
       <div>
@@ -216,6 +227,10 @@ export default function SymptomTracker() {
         <h3 className="text-lg font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
           Symptom Diary
         </h3>
+
+        {user && familyId && (
+          <p className="text-[10px] text-indigo-400 font-semibold mb-3">Shared with partner</p>
+        )}
 
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -318,7 +333,6 @@ export default function SymptomTracker() {
         </div>
       </div>
 
-      {/* Guest Mode Indicator */}
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
           <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />

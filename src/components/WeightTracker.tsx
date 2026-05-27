@@ -26,7 +26,7 @@ interface WeightLog {
 }
 
 export default function WeightTracker() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [weightInput, setWeightInput] = useState("");
   const [isClient, setIsClient] = useState(false);
@@ -66,29 +66,37 @@ export default function WeightTracker() {
       return;
     }
 
-    const q = query(
-      collection(db, "weight"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc"),
-      limit(10)
-    );
+    let q;
+    if (familyId) {
+      q = query(
+        collection(db, "families", familyId, "weight"),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+    } else {
+      q = query(
+        collection(db, "weight"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+    }
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const logs: WeightLog[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
+        snapshot.forEach((d) => {
+          const data = d.data();
           const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
           const dateStr = data.date || timestamp.toLocaleDateString(undefined, { month: "short", day: "numeric" });
           logs.push({
-            id: doc.id,
+            id: d.id,
             weight: Number(data.weight),
             date: dateStr,
             timestamp,
           });
         });
-        // Sort oldest to newest for trendline graphs
         setWeightLogs(logs.reverse());
       },
       (err) => {
@@ -97,7 +105,7 @@ export default function WeightTracker() {
     );
 
     return () => unsubscribe();
-  }, [user, isClient]);
+  }, [user, familyId, isClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +118,6 @@ export default function WeightTracker() {
     const dateStr = now.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
     if (!user) {
-      // Simulate locally
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: WeightLog = {
         id: simulatedId,
@@ -135,12 +142,17 @@ export default function WeightTracker() {
     }
 
     try {
-      await addDoc(collection(db, "weight"), {
-        userId: user.uid,
+      const payload = {
         weight: weightVal,
         date: dateStr,
+        loggedBy: user.uid,
         createdAt: serverTimestamp(),
-      });
+      };
+      if (familyId) {
+        await addDoc(collection(db, "families", familyId, "weight"), payload);
+      } else {
+        await addDoc(collection(db, "weight"), { ...payload, userId: user.uid });
+      }
       setWeightInput("");
     } catch (err) {
       console.error("Failed to save weight log:", err);
@@ -167,7 +179,11 @@ export default function WeightTracker() {
     }
 
     try {
-      await deleteDoc(doc(db, "weight", id));
+      if (familyId) {
+        await deleteDoc(doc(db, "families", familyId, "weight", id));
+      } else {
+        await deleteDoc(doc(db, "weight", id));
+      }
     } catch (err) {
       console.error("Failed to delete weight log:", err);
       alert("Failed to delete weight record.");
@@ -176,12 +192,9 @@ export default function WeightTracker() {
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
-    if (dialog) {
-      dialog.showModal();
-    }
+    if (dialog) dialog.showModal();
   };
 
-  // Sparkline Chart Calculations
   const renderSparkline = () => {
     if (weightLogs.length < 2) return null;
 
@@ -206,21 +219,16 @@ export default function WeightTracker() {
       <div className="w-full bg-slate-900/40 border border-slate-850/50 rounded-xl p-3 flex flex-col items-center">
         <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2 self-start">Weight Trendline</span>
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
-          {/* Defs for neon drop-shadow & linear-gradients */}
           <defs>
             <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#818cf8" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#818cf8" stopOpacity="0.0" />
             </linearGradient>
           </defs>
-
-          {/* Area under curve */}
           <polygon
             points={`${padding},${height - padding} ${points} ${width - padding},${height - padding}`}
             fill="url(#weightGrad)"
           />
-
-          {/* Core trend line */}
           <polyline
             fill="none"
             stroke="#818cf8"
@@ -229,19 +237,12 @@ export default function WeightTracker() {
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-
-          {/* Nodes */}
           {weightLogs.map((log, index) => {
             const x = padding + (index / (weightLogs.length - 1)) * (width - padding * 2);
             const y = height - padding - ((log.weight - minWeight) / weightRange) * (height - padding * 2);
             return (
               <g key={log.id} className="group/node">
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="3.5"
-                  className="fill-indigo-500 stroke-slate-900 stroke-2 hover:r-5 transition-all"
-                />
+                <circle cx={x} cy={y} r="3.5" className="fill-indigo-500 stroke-slate-900 stroke-2 hover:r-5 transition-all" />
               </g>
             );
           })}
@@ -259,7 +260,6 @@ export default function WeightTracker() {
 
   return (
     <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group relative overflow-hidden">
-      {/* Glow effect */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
 
       <div>
@@ -286,6 +286,10 @@ export default function WeightTracker() {
           )}
         </div>
 
+        {user && familyId && (
+          <p className="text-[10px] text-indigo-400 font-semibold mb-3">Shared with partner</p>
+        )}
+
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
           <input
@@ -308,10 +312,8 @@ export default function WeightTracker() {
           </button>
         </form>
 
-        {/* Dynamic Sparkline graph if logs exist */}
         {weightLogs.length >= 2 && <div className="mb-6">{renderSparkline()}</div>}
 
-        {/* History List */}
         <div>
           <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Historical Progress</span>
           {weightLogs.length === 0 ? (
@@ -343,7 +345,6 @@ export default function WeightTracker() {
         </div>
       </div>
 
-      {/* Guest Mode Indicator */}
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
           <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
