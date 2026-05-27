@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { Warning, Trash, ChartLine, BookOpen, SunHorizon, Sun, Moon } from "@phosphor-icons/react";
 
 interface BloodSugarLog {
   id: string;
@@ -49,6 +50,19 @@ export default function BloodSugarTracker() {
   };
 
   const todayStr = getLocalDateString();
+
+  const renderSlotIcon = (slot: "fasting" | "post-lunch" | "post-dinner" | string, size = 14, className = "") => {
+    switch (slot) {
+      case "fasting":
+        return <SunHorizon size={size} weight="bold" className={className || "text-cyan-400"} />;
+      case "post-lunch":
+        return <Sun size={size} weight="bold" className={className || "text-emerald-400"} />;
+      case "post-dinner":
+        return <Moon size={size} weight="bold" className={className || "text-rose-400"} />;
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -633,7 +647,7 @@ export default function BloodSugarTracker() {
                 <span className="text-[8.5px] text-slate-400 font-bold">mg/dL</span>
               </div>
               <div className="text-[8.5px] text-slate-400 flex items-center gap-1">
-                <span>{slotConfigs[hoveredDot.log.slot].emoji}</span>
+                <span className="flex items-center">{renderSlotIcon(hoveredDot.log.slot, 12)}</span>
                 <span className="font-semibold text-slate-300">{slotConfigs[hoveredDot.log.slot].label}</span>
               </div>
             </div>
@@ -681,7 +695,7 @@ export default function BloodSugarTracker() {
               }`}
               title="Toggle Trend Chart"
             >
-              <span>📊</span> <span>Graph</span>
+              <ChartLine size={12} weight="bold" /> <span>Graph</span>
             </button>
             <button
               onClick={() => setActiveView(activeView === "history" ? "none" : "history")}
@@ -692,7 +706,7 @@ export default function BloodSugarTracker() {
               }`}
               title="Toggle Historical Logbook"
             >
-              <span>📋</span> <span>Logbook</span>
+              <BookOpen size={12} weight="bold" /> <span>Logbook</span>
             </button>
           </div>
         </div>
@@ -705,7 +719,10 @@ export default function BloodSugarTracker() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 1</span>
-              <span className="text-slate-400 text-xs">🌅 Fasting</span>
+              <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
+                <SunHorizon size={14} weight="bold" className="text-cyan-400" />
+                <span>Fasting</span>
+              </span>
             </div>
             <h4 className="text-sm font-bold text-slate-200">Before Breakfast</h4>
             <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 95 mg/dL</p>
@@ -723,10 +740,10 @@ export default function BloodSugarTracker() {
                 </span>
                 <button
                   onClick={() => handleDeleteReading(fastingReading.id)}
-                  className="text-slate-500 hover:text-red-400 text-[10px] p-1 rounded hover:bg-slate-800/80 transition-colors cursor-pointer"
+                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                   title="Remove log"
                 >
-                  🗑️
+                  <Trash size={14} weight="bold" />
                 </button>
               </div>
             </div>
@@ -748,7 +765,10 @@ export default function BloodSugarTracker() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 2</span>
-              <span className="text-slate-400 text-xs">☀️ Mid-day</span>
+              <span className="text-slate-455 text-[11px] font-semibold flex items-center gap-1">
+                <Sun size={14} weight="bold" className="text-emerald-400" />
+                <span>Mid-day</span>
+              </span>
             </div>
             <h4 className="text-sm font-bold text-slate-200">1h Post-Lunch</h4>
             <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
@@ -766,10 +786,10 @@ export default function BloodSugarTracker() {
                 </span>
                 <button
                   onClick={() => handleDeleteReading(lunchReading.id)}
-                  className="text-slate-500 hover:text-red-400 text-[10px] p-1 rounded hover:bg-slate-800/80 transition-colors cursor-pointer"
+                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                   title="Remove log"
                 >
-                  🗑️
+                  <Trash size={14} weight="bold" />
                 </button>
               </div>
             </div>
@@ -791,7 +811,10 @@ export default function BloodSugarTracker() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 3</span>
-              <span className="text-slate-400 text-xs">🌙 Evening</span>
+              <span className="text-slate-455 text-[11px] font-semibold flex items-center gap-1">
+                <Moon size={14} weight="bold" className="text-rose-400" />
+                <span>Evening</span>
+              </span>
             </div>
             <h4 className="text-sm font-bold text-slate-200">1h Post-Dinner</h4>
             <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
@@ -809,10 +832,10 @@ export default function BloodSugarTracker() {
                 </span>
                 <button
                   onClick={() => handleDeleteReading(dinnerReading.id)}
-                  className="text-slate-500 hover:text-red-400 text-[10px] p-1 rounded hover:bg-slate-800/80 transition-colors cursor-pointer"
+                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                   title="Remove log"
                 >
-                  🗑️
+                  <Trash size={14} weight="bold" />
                 </button>
               </div>
             </div>
@@ -886,7 +909,8 @@ export default function BloodSugarTracker() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 pt-6 border-t border-slate-800/60">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <span>📋</span> Historical Logbook
+                <BookOpen size={16} weight="bold" className="text-emerald-400" />
+                <span>Historical Logbook</span>
               </h3>
               <p className="text-[10px] text-slate-500 mt-0.5">View and manage all historical records</p>
             </div>
@@ -904,33 +928,36 @@ export default function BloodSugarTracker() {
               </button>
               <button
                 onClick={() => setHistoryFilter("fasting")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                   historyFilter === "fasting"
                     ? "bg-cyan-950/50 text-cyan-400 border border-cyan-800/30"
                     : "text-slate-500 hover:text-slate-350"
                 }`}
               >
-                🌅 Fasting
+                <SunHorizon size={12} weight="bold" />
+                <span>Fasting</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-lunch")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                   historyFilter === "post-lunch"
                     ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/30"
                     : "text-slate-500 hover:text-slate-350"
                 }`}
               >
-                ☀️ Lunch
+                <Sun size={12} weight="bold" />
+                <span>Lunch</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-dinner")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
                   historyFilter === "post-dinner"
                     ? "bg-rose-950/50 text-rose-400 border border-rose-800/30"
                     : "text-slate-500 hover:text-slate-350"
                 }`}
               >
-                🌙 Dinner
+                <Moon size={12} weight="bold" />
+                <span>Dinner</span>
               </button>
             </div>
           </div>
@@ -952,8 +979,8 @@ export default function BloodSugarTracker() {
                     className="flex items-center justify-between p-3 rounded-xl bg-slate-900/30 border border-slate-850/30 hover:bg-slate-900/60 hover:border-slate-800 transition-all group/row"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-slate-950 border ${config.borderClass}`}>
-                        {config.emoji}
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-slate-950 border ${config.borderClass}`}>
+                        {renderSlotIcon(log.slot, 16)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -978,10 +1005,10 @@ export default function BloodSugarTracker() {
                       </span>
                       <button
                         onClick={() => handleDeleteReading(log.id)}
-                        className="text-slate-500 hover:text-red-400 hover:bg-slate-800/80 p-1.5 rounded transition-all cursor-pointer opacity-40 group-hover/row:opacity-100"
+                        className="text-slate-500 hover:text-red-400 hover:bg-slate-800/80 p-1.5 rounded transition-all cursor-pointer opacity-40 group-hover/row:opacity-100 flex items-center justify-center"
                         title="Delete entry"
                       >
-                        🗑️
+                        <Trash size={14} weight="bold" />
                       </button>
                     </div>
                   </div>
@@ -992,10 +1019,12 @@ export default function BloodSugarTracker() {
         </div>
       )}
 
-      {/* Guest warning for sync */}
       {!user && isClient && (
         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 text-[10px] font-semibold text-amber-400 animate-pulse">
-          <span>⚠️ Guest Preview Mode: Blood sugar levels will remain locally inside this browser.</span>
+          <div className="flex items-center gap-2">
+            <Warning size={14} weight="bold" className="shrink-0 text-amber-400" />
+            <span>Guest Preview Mode: Blood sugar levels will remain locally inside this browser.</span>
+          </div>
           <button
             onClick={triggerAuthModal}
             className="px-2.5 py-1 rounded bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition-colors cursor-pointer text-center"

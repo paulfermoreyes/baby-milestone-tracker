@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { collection, query, where, orderBy, onSnapshot, limit, Timestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { ChatCircle, Robot, Sparkle, ChartBar, Drop, ThermometerHot, X } from "@phosphor-icons/react";
 
 interface Message {
   id: string;
@@ -264,14 +265,14 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-xl transition-all active:scale-95 cursor-pointer relative group ${
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 cursor-pointer relative group ${
             isOpen
               ? "bg-slate-800 text-cyan-400 border border-cyan-800/40"
               : "bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 shadow-cyan-500/20"
           }`}
           title="Open Prenatal Chat Assistant"
         >
-          {isOpen ? "✕" : "💬"}
+          {isOpen ? <X size={20} weight="bold" /> : <ChatCircle size={24} weight="bold" />}
           {/* Pulsing indicator when closed */}
           {!isOpen && (
             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-slate-900 animate-pulse" />
@@ -289,8 +290,8 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
           {/* Drawer Header */}
           <div className="p-5 border-b border-slate-850 bg-slate-900/40 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center text-slate-950 font-bold text-sm">
-                🤖
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center text-slate-950">
+                <Robot size={20} weight="bold" />
               </div>
               <div>
                 <h3 className="text-sm font-extrabold text-white">Lumina AI Companion</h3>
@@ -302,9 +303,9 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer flex items-center gap-1"
             >
-              Minimize ✕
+              <span>Minimize</span> <X size={12} weight="bold" />
             </button>
           </div>
 
@@ -318,8 +319,8 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
                 }`}
               >
                 {msg.sender === "ai" && (
-                  <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs">
-                    ✨
+                  <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs text-cyan-400">
+                    <Sparkle size={14} weight="fill" />
                   </div>
                 )}
                 <div
@@ -336,8 +337,8 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
 
             {isTyping && (
               <div className="flex gap-3 mr-auto max-w-[85%]">
-                <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs">
-                  ✨
+                <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs text-cyan-400 animate-pulse">
+                  <Sparkle size={14} weight="fill" />
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 rounded-tl-none text-slate-400 text-xs flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -353,27 +354,31 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
           <div className="px-5 py-2 border-t border-slate-900 bg-slate-950 flex gap-2 overflow-x-auto scrollbar-none">
             <button
               onClick={() => handleSend("Give me a daily summary")}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+              className="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              📊 Daily Summary
+              <ChartBar size={12} weight="bold" />
+              <span>Daily Summary</span>
             </button>
             <button
               onClick={() => handleSend("What are my blood sugar averages?")}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+              className="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              🩸 Sugar Levels
+              <Drop size={12} weight="bold" />
+              <span>Sugar Levels</span>
             </button>
             <button
               onClick={() => handleSend("Did I meet my milk goals today?")}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
+              className="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-sky-400 hover:text-sky-300 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              🥛 Milk Intake
+              <Drop size={12} weight="fill" />
+              <span>Milk Intake</span>
             </button>
             <button
               onClick={() => handleSend("Is nausea normal in pregnancy?")}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+              className="flex-shrink-0 px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-slate-400 hover:text-slate-200 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              🤒 Morning Sickness
+              <ThermometerHot size={12} weight="bold" />
+              <span>Morning Sickness</span>
             </button>
           </div>
 

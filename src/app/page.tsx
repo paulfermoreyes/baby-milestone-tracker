@@ -10,6 +10,7 @@ import ContractionTimer from "../components/ContractionTimer";
 import PrenatalChatbot from "../components/PrenatalChatbot";
 import AuthModal from "../components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
+import { Sparkle, Footprints, Timer, Drop, ThermometerHot, Scales } from "@phosphor-icons/react";
 
 export default function Home() {
   const { user, logout, loading } = useAuth();
@@ -36,8 +37,8 @@ export default function Home() {
       {/* Header */}
       <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between border-b border-slate-800/60 backdrop-blur-sm z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-            <span className="text-xl font-bold text-slate-950">✨</span>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-slate-950">
+            <Sparkle size={22} weight="fill" />
           </div>
           <div>
             <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
@@ -196,42 +197,42 @@ export default function Home() {
           onClick={() => scrollToSection("kicks")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-cyan-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">👣</span>
+          <Footprints size={18} weight="bold" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Kicks</span>
         </button>
         <button
           onClick={() => scrollToSection("contractions")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-rose-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">⏱️</span>
+          <Timer size={18} weight="bold" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Timing</span>
         </button>
         <button
           onClick={() => scrollToSection("sugar")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-cyan-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">🩸</span>
+          <Drop size={18} weight="bold" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Sugar</span>
         </button>
         <button
           onClick={() => scrollToSection("milk")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-sky-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">🥛</span>
+          <Drop size={18} weight="fill" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Milk</span>
         </button>
         <button
           onClick={() => scrollToSection("symptoms")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-teal-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">🤒</span>
+          <ThermometerHot size={18} weight="bold" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Diary</span>
         </button>
         <button
           onClick={() => scrollToSection("weight")}
           className="flex flex-col items-center gap-1 group text-slate-400 hover:text-indigo-400 active:scale-95 transition-all cursor-pointer"
         >
-          <span className="text-sm">⚖️</span>
+          <Scales size={18} weight="bold" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Weight</span>
         </button>
       </div>

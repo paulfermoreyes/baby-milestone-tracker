@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { ThermometerHot, PencilSimpleLine, Warning, Trash } from "@phosphor-icons/react";
 
 interface SymptomLog {
   id: string;
@@ -209,7 +210,7 @@ export default function SymptomTracker() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Well-being Logs</span>
-          <span className="text-xl">🤒</span>
+          <ThermometerHot size={20} weight="bold" className="text-cyan-400" />
         </div>
 
         <h3 className="text-lg font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
@@ -264,7 +265,14 @@ export default function SymptomTracker() {
             disabled={loading}
             className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 text-xs font-bold border border-transparent shadow-md active:scale-[0.98] transition-all cursor-pointer text-center"
           >
-            {loading ? "Logging..." : "✍️ Record Symptom"}
+            {loading ? (
+              "Logging..."
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                <PencilSimpleLine size={16} weight="bold" />
+                <span>Record Symptom</span>
+              </span>
+            )}
           </button>
         </form>
 
@@ -292,10 +300,10 @@ export default function SymptomTracker() {
                       </span>
                       <button
                         onClick={() => handleDelete(log.id)}
-                        className="text-slate-500 hover:text-red-400 transition-colors text-[10px] font-bold cursor-pointer"
+                        className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer flex items-center justify-center"
                         title="Delete record"
                       >
-                        ✕
+                        <Trash size={14} weight="bold" />
                       </button>
                     </div>
                   </div>
@@ -312,8 +320,9 @@ export default function SymptomTracker() {
 
       {/* Guest Mode Indicator */}
       {!user && isClient && (
-        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1">
-          <span>⚠️ Guest Preview Session</span>
+        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
+          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <span>Guest Preview Session</span>
           <button onClick={triggerAuthModal} className="underline font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
             Sync
           </button>
