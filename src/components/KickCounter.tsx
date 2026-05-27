@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, addDoc, deleteDoc, doc, serverTimestamp, query, where, orderBy, limit, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { Warning, Footprints, ArrowCounterClockwise } from "@phosphor-icons/react";
 
 export default function KickCounter() {
   const { user } = useAuth();
@@ -95,7 +96,7 @@ export default function KickCounter() {
       {!user && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/20 text-xs font-semibold text-amber-400 flex flex-col sm:flex-row items-center sm:justify-between gap-3 animate-pulse">
           <div className="flex items-center gap-2">
-            <span className="text-sm">⚠️</span>
+            <Warning size={16} weight="bold" className="text-amber-400 shrink-0" />
             <span>Guest Mode: Kicks are simulated and will reset.</span>
           </div>
           <button
@@ -126,16 +127,18 @@ export default function KickCounter() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <button
           onClick={handleKick}
-          className="relative py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-extrabold text-lg shadow-lg shadow-cyan-500/15 hover:shadow-cyan-400/20 active:scale-[0.98] transition-all duration-150 cursor-pointer"
+          className="relative py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-extrabold text-lg shadow-lg shadow-cyan-500/15 hover:shadow-cyan-400/20 active:scale-[0.98] transition-all duration-150 cursor-pointer flex items-center justify-center gap-2"
         >
-          👣 Record a Kick
+          <Footprints size={24} weight="bold" />
+          <span>Record a Kick</span>
         </button>
         <button
           onClick={handleUndo}
           disabled={sessionKicks.length === 0}
-          className="py-4 px-6 rounded-2xl bg-slate-800 hover:bg-slate-750 text-slate-300 disabled:text-slate-650 font-bold text-lg border border-slate-750 disabled:border-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 active:scale-[0.98] cursor-pointer"
+          className="py-4 px-6 rounded-2xl bg-slate-800 hover:bg-slate-750 text-slate-300 disabled:text-slate-650 font-bold text-lg border border-slate-750 disabled:border-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
         >
-          ↩️ Undo Last
+          <ArrowCounterClockwise size={24} weight="bold" />
+          <span>Undo Last</span>
         </button>
       </div>
 

@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { Scales, Warning, Trash } from "@phosphor-icons/react";
 
 interface WeightLog {
   id: string;
@@ -264,7 +265,7 @@ export default function WeightTracker() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Weight & Health</span>
-          <span className="text-xl">⚖️</span>
+          <Scales size={20} weight="bold" className="text-indigo-400" />
         </div>
 
         <div className="flex items-baseline justify-between mb-4">
@@ -330,9 +331,10 @@ export default function WeightTracker() {
                   </div>
                   <button
                     onClick={() => handleDelete(log.id)}
-                    className="text-slate-650 hover:text-red-400 transition-colors text-[10px] font-bold cursor-pointer"
+                    className="text-slate-650 hover:text-red-400 transition-colors cursor-pointer flex items-center justify-center"
+                    title="Delete record"
                   >
-                    ✕
+                    <Trash size={14} weight="bold" />
                   </button>
                 </div>
               ))}
@@ -343,8 +345,9 @@ export default function WeightTracker() {
 
       {/* Guest Mode Indicator */}
       {!user && isClient && (
-        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1">
-          <span>⚠️ Guest Preview Session</span>
+        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
+          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <span>Guest Preview Session</span>
           <button onClick={triggerAuthModal} className="underline font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
             Sync
           </button>

@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { Timer, BellRinging, Play, Square, Warning } from "@phosphor-icons/react";
 
 interface ContractionLog {
   id: string;
@@ -258,7 +259,7 @@ export default function ContractionTimer() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">Labor / Timing</span>
-          <span className="text-xl">⏱️</span>
+          <Timer size={20} weight="bold" className="text-rose-400" />
         </div>
 
         <h3 className="text-lg font-bold text-white mb-2 group-hover:text-rose-400 transition-colors">
@@ -272,7 +273,7 @@ export default function ContractionTimer() {
         {/* Dynamic Labor Alert Message */}
         {checkLaborAlert() && (
           <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400 animate-pulse flex items-start gap-2.5">
-            <span className="text-sm">🚨</span>
+            <BellRinging size={18} weight="bold" className="text-rose-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-extrabold mb-0.5">5-1-1 Labor Guideline Met!</p>
               <p className="text-[10px] text-slate-450 leading-normal font-medium">
@@ -306,7 +307,17 @@ export default function ContractionTimer() {
                 : "bg-slate-800 border border-slate-750 text-rose-400 hover:bg-slate-700/80"
             }`}
           >
-            {isActive ? "🛑 Stop Contraction" : "⚡ Start Contraction"}
+            {isActive ? (
+              <>
+                <Square size={16} weight="fill" />
+                <span>Stop Contraction</span>
+              </>
+            ) : (
+              <>
+                <Play size={16} weight="bold" />
+                <span>Start Contraction</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -355,8 +366,9 @@ export default function ContractionTimer() {
 
       {/* Guest Mode Indicator */}
       {!user && isClient && (
-        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1">
-          <span>⚠️ Guest Preview Session</span>
+        <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
+          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <span>Guest Preview Session</span>
           <button onClick={triggerAuthModal} className="underline font-bold text-rose-400 hover:text-rose-300 transition-colors">
             Sync
           </button>

@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { Drop, Warning } from "@phosphor-icons/react";
 
 interface MilkLog {
   id: string;
@@ -143,11 +144,11 @@ export default function MilkCounter() {
   const isGoalMet = count >= targetGoal;
 
   // Status message selector
-  let statusMessage = "Take at least 2x milk a day for fetal bone health. 🥛";
+  let statusMessage = "Take at least 2x milk servings a day for fetal bone health.";
   if (count === 1) {
-    statusMessage = "1 serving down, 1 more to complete your daily goal! ✨";
+    statusMessage = "1 serving down, 1 more to complete your daily goal!";
   } else if (count >= 2) {
-    statusMessage = "Daily calcium target met! Amazing job! 🎉🥛";
+    statusMessage = "Daily calcium target met! Amazing job!";
   }
 
   return (
@@ -158,7 +159,7 @@ export default function MilkCounter() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">Hydration & Nutrients</span>
-          <span className="text-xl">🥛</span>
+          <Drop size={20} weight="bold" className="text-sky-400" />
         </div>
 
         <div className="flex items-baseline justify-between mb-2">
@@ -206,9 +207,10 @@ export default function MilkCounter() {
       <div className="flex flex-col gap-2 mt-2">
         <button
           onClick={handleRecordMilk}
-          className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-slate-950 text-xs font-bold border border-transparent shadow-md shadow-sky-950/20 active:scale-[0.98] transition-all cursor-pointer text-center"
+          className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-slate-950 text-xs font-bold border border-transparent shadow-md shadow-sky-950/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
         >
-          🥛 Log Milk Serving
+          <Drop size={16} weight="fill" />
+          <span>Log Milk Serving</span>
         </button>
 
         {count > 0 && (
@@ -223,8 +225,9 @@ export default function MilkCounter() {
 
       {/* Guest Mode Indicator */}
       {!user && isClient && (
-        <div className="mt-3 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1">
-          <span>⚠️ Guest Preview Session</span>
+        <div className="mt-3 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
+          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <span>Guest Preview Session</span>
           <button onClick={triggerAuthModal} className="underline font-bold text-sky-400 hover:text-sky-300 transition-colors">
             Sync
           </button>
