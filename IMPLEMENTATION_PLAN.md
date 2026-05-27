@@ -53,6 +53,8 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 
 ### Phase 4: Additional Tracking Modules & UX Enhancements (In Progress)
 - [x] **Daily Blood Sugar Logs & Trend Analytics**: Engineered multi-line trend charts with neon-cyan, neon-emerald, and neon-rose profiles, date-range selectors (7D, 14D, 30D, All), and a filterable history table/log list with deletion controls.
+- [x] **Milk Counter (Calcium & Hydration Tracker)**: Designed a visual cups serving counter with targets (2x cups/day for bone health), progress status bar, interactive serving logs, and unified guest fallback.
+- [x] **Lumina AI Companion (Prenatal Chatbot)**: Developed a floating chat panel with direct real-time Firestore synchronization context. The chatbot computes active statistics (today's kicks, milk logs, average fasting sugar indexes) and returns responsive wellness guidelines.
 - [ ] **Symptom Tracker Diary**: Create glass-card interface with severity dropdown and notes input
 - [ ] **Weight Progress Logger**: Build entry modals and trendlines for tracking weekly weight progress
 - [ ] **Contraction Timer**: Implement active session timing and log history
