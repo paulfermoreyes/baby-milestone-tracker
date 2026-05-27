@@ -19,7 +19,7 @@ This tracking list serves as a living document to track progress across developm
 
 ---
 
-### 3. 🧠 Core Features (In Progress - 75% Complete)
+### 3. 🧠 Core Features (In Progress - 80% Complete)
 - [x] **Caregiver Authentication**: Built a secure global session provider (`AuthContext`) and interactive glassmorphic `<AuthModal>` dialog component.
 - [x] **Firestore Database Schema & Models**: Organized user-linked documents with atomic timestamps.
 - [x] **Fetal Kick Counter**:
@@ -31,6 +31,14 @@ This tracking list serves as a living document to track progress across developm
   - [x] Integrated an adjustable chart range selector supporting 7D, 14D, 30D, and All logs.
   - [x] Built custom floating glassmorphic tooltip indicators on node hovers.
   - [x] Developed an interactive historical logbook table filterable by slot type, featuring real-time row deletions.
+- [x] **Milk Counter**:
+  - [x] Engineered visually appealing servings calculator with a 2-cup daily target.
+  - [x] Added clean progress bar that transitions to a neon gradient upon completion.
+  - [x] Built a visual daily log detailing cup servicing timeline.
+- [x] **Lumina AI Companion (Prenatal Chatbot)**:
+  - [x] Engineered side-drawer panel with smooth slide-out and slide-in animations.
+  - [x] Subscribed to real-time collections for kicks, milk, and glucose logs to act as context.
+  - [x] Designed custom NLP keyword parser to provide direct averages, target range statuses, and diagnostic guidelines.
 - [ ] Symptom Tracker Module (Planned)
 - [ ] Weight Progress Logger (Planned)
 - [ ] Contraction Timer (Planned)
