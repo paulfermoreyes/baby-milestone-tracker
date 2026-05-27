@@ -19,16 +19,22 @@ This tracking list serves as a living document to track progress across developm
 
 ---
 
-### 3. 🧠 Core Features (In Progress - 60% Complete)
+### 3. 🧠 Core Features (In Progress - 75% Complete)
 - [x] **Caregiver Authentication**: Built a secure global session provider (`AuthContext`) and interactive glassmorphic `<AuthModal>` dialog component.
 - [x] **Firestore Database Schema & Models**: Organized user-linked documents with atomic timestamps.
 - [x] **Fetal Kick Counter**:
   - [x] Developed prominent "Kick" & "Undo" buttons.
   - [x] Built live real-time Firestore database synchronization (using `onSnapshot` queries).
   - [x] Implemented simulated offline fallback flow for guests.
-- [ ] **Symptom Tracker Module** (Planned)
-- [ ] **Weight Progress Logger** (Planned)
-- [ ] **Contraction Timer** (Planned)
+- [x] **Daily Blood Sugar Logs & Trend Analytics**:
+  - [x] Engineered a 3-trend-line SVG chart with custom color-coded mapping for Fasting (`#06b6d4`), Post-Lunch (`#10b981`), and Post-Dinner (`#f43f5e`).
+  - [x] Integrated an adjustable chart range selector supporting 7D, 14D, 30D, and All logs.
+  - [x] Built custom floating glassmorphic tooltip indicators on node hovers.
+  - [x] Developed an interactive historical logbook table filterable by slot type, featuring real-time row deletions.
+- [ ] Symptom Tracker Module (Planned)
+- [ ] Weight Progress Logger (Planned)
+- [ ] Contraction Timer (Planned)
+- [ ] Mobile Floating Panel Navigation: Implement a floating action button (FAB) that opens a sleek glassmorphic menu to switch between active dashboard panels on mobile viewports.
 
 ---
 

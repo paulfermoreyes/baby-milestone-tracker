@@ -19,5 +19,19 @@ service cloud.firestore {
       // Block general updates to historical entries to ensure audit integrity
       allow update: if false;
     }
+
+    // Milk Counter log entries
+    match /milk/{milkId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // Blood Sugar tracker entries
+    match /bloodsugar/{bsId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
   }
 }
