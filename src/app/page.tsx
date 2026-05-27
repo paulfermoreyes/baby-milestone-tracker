@@ -4,6 +4,9 @@ import { useRef } from "react";
 import KickCounter from "../components/KickCounter";
 import MilkCounter from "../components/MilkCounter";
 import BloodSugarTracker from "../components/BloodSugarTracker";
+import SymptomTracker from "../components/SymptomTracker";
+import WeightTracker from "../components/WeightTracker";
+import ContractionTimer from "../components/ContractionTimer";
 import PrenatalChatbot from "../components/PrenatalChatbot";
 import AuthModal from "../components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
@@ -16,8 +19,16 @@ export default function Home() {
     authModalRef.current?.showModal();
   };
 
+  // Smooth scroll handler for mobile FAB navigation
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans relative overflow-hidden selection:bg-cyan-500 selection:text-slate-900">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans relative overflow-hidden selection:bg-cyan-500 selection:text-slate-900 pb-20 md:pb-0">
       {/* Decorative background glow elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-900/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-900/20 blur-[120px] pointer-events-none" />
@@ -72,7 +83,7 @@ export default function Home() {
           ) : (
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs font-medium text-slate-400">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
                 Offline Preview Mode
               </div>
               <button
@@ -100,53 +111,36 @@ export default function Home() {
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Main Focus: Kick Counter & Blood Sugar Tracker */}
+          {/* Main Focus: Active trackers & Trend Analytics */}
           <div className="lg:col-span-2 flex flex-col gap-8">
-            <KickCounter />
-            <BloodSugarTracker />
-          </div>
-
-          {/* Side Panels - Visual Previews / Actions */}
-          <div className="flex flex-col gap-6">
-            {/* Milk Counter - Prominent active tracker */}
-            <MilkCounter />
-
-            {/* Future Metric 1: Symptoms Card */}
-            <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Symptoms</span>
-                  <span className="text-xl">🤒</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                  Symptom Diary
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Log symptoms like fatigue, nausea, or mood shifts to share with your healthcare provider.
-                </p>
-              </div>
-              <button className="mt-6 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700/50 hover:border-slate-600 transition-all duration-300 cursor-not-allowed opacity-50">
-                Log New Symptom
-              </button>
+            <div id="kicks">
+              <KickCounter />
+            </div>
+            
+            <div id="contractions">
+              <ContractionTimer />
             </div>
 
-            {/* Future Metric 2: Weight Tracker */}
-            <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Weight & Health</span>
-                  <span className="text-xl">⚖️</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                  Weight Logger
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Record weekly weight progress and monitor healthy target trends during pregnancy.
-                </p>
-              </div>
-              <button className="mt-6 w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700/50 hover:border-slate-600 transition-all duration-300 cursor-not-allowed opacity-50">
-                Log Weight Entry
-              </button>
+            <div id="sugar">
+              <BloodSugarTracker />
+            </div>
+          </div>
+
+          {/* Side Panels - Supplementary tracking cards */}
+          <div className="flex flex-col gap-6">
+            {/* Milk Counter */}
+            <div id="milk">
+              <MilkCounter />
+            </div>
+
+            {/* Symptoms Card */}
+            <div id="symptoms">
+              <SymptomTracker />
+            </div>
+
+            {/* Weight Tracker */}
+            <div id="weight">
+              <WeightTracker />
             </div>
 
             {/* Caregivers panel */}
@@ -196,9 +190,54 @@ export default function Home() {
         <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
       </footer>
 
+      {/* Mobile Floating Action Panel Dock Navigator (FAB navigation) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-xl border-t border-slate-850 py-3.5 px-6 flex items-center justify-around z-30 lg:hidden shadow-2xl">
+        <button
+          onClick={() => scrollToSection("kicks")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-cyan-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">👣</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Kicks</span>
+        </button>
+        <button
+          onClick={() => scrollToSection("contractions")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-rose-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">⏱️</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Timing</span>
+        </button>
+        <button
+          onClick={() => scrollToSection("sugar")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-cyan-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">🩸</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Sugar</span>
+        </button>
+        <button
+          onClick={() => scrollToSection("milk")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-sky-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">🥛</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Milk</span>
+        </button>
+        <button
+          onClick={() => scrollToSection("symptoms")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-teal-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">🤒</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Diary</span>
+        </button>
+        <button
+          onClick={() => scrollToSection("weight")}
+          className="flex flex-col items-center gap-1 group text-slate-400 hover:text-indigo-400 active:scale-95 transition-all cursor-pointer"
+        >
+          <span className="text-sm">⚖️</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Weight</span>
+        </button>
+      </div>
+
       {/* Auth Modal Container */}
       <AuthModal dialogRef={authModalRef} />
     </div>
   );
 }
-
