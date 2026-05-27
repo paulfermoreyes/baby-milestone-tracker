@@ -2,6 +2,9 @@
 
 import { useRef } from "react";
 import KickCounter from "../components/KickCounter";
+import MilkCounter from "../components/MilkCounter";
+import BloodSugarTracker from "../components/BloodSugarTracker";
+import PrenatalChatbot from "../components/PrenatalChatbot";
 import AuthModal from "../components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 
@@ -97,13 +100,17 @@ export default function Home() {
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Main Focus: Kick Counter */}
-          <div className="lg:col-span-2">
+          {/* Main Focus: Kick Counter & Blood Sugar Tracker */}
+          <div className="lg:col-span-2 flex flex-col gap-8">
             <KickCounter />
+            <BloodSugarTracker />
           </div>
 
           {/* Side Panels - Visual Previews / Actions */}
           <div className="flex flex-col gap-6">
+            {/* Milk Counter - Prominent active tracker */}
+            <MilkCounter />
+
             {/* Future Metric 1: Symptoms Card */}
             <div className="glass-card p-6 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex flex-col justify-between hover:border-slate-600/40 transition-all duration-300 group">
               <div>
@@ -179,6 +186,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Global Floating AI Companion */}
+        <PrenatalChatbot />
       </main>
 
       {/* Footer */}

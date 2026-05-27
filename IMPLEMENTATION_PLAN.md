@@ -7,6 +7,7 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - Tracking of pregnancy vitals and events (Fetal Kicks, Symptoms, Weight, Contractions)
 - Real-time active data synchronization across caregivers' devices (Firestore snapshots)
 - Premium dark-theme UI featuring glassmorphism cards, ambient neon glows, and micro-hover lifts.
+- Baby care tracking (Feeding, Diaper changes, Weight and height, Sleep, Vaccinations)
 
 ---
 
@@ -17,6 +18,7 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - **Styling**: Vanilla CSS variable tokens with Tailwind utility layers
 - **Design Tokens**: Defined HSL color configurations for a premium, unified theme
 - **Custom UI Features**: Glassmorphic layout wrapper, smooth transition states, standard dialogue modas
+- **Iconography**: Use lucide icons
 
 ### 2. Backend Cloud Services
 - **Firebase Auth**: Enables sign-in/sign-up flows with automatic profile states
@@ -49,10 +51,12 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - [x] Implemented instant "Undo Last Kick" feature with automatic Firestore document deletion
 - [x] Developed guest preview fallback state allowing interactive simulation before logging in
 
-### Phase 4: Additional Tracking Modules (Planned)
+### Phase 4: Additional Tracking Modules & UX Enhancements (In Progress)
+- [x] **Daily Blood Sugar Logs & Trend Analytics**: Engineered multi-line trend charts with neon-cyan, neon-emerald, and neon-rose profiles, date-range selectors (7D, 14D, 30D, All), and a filterable history table/log list with deletion controls.
 - [ ] **Symptom Tracker Diary**: Create glass-card interface with severity dropdown and notes input
 - [ ] **Weight Progress Logger**: Build entry modals and trendlines for tracking weekly weight progress
 - [ ] **Contraction Timer**: Implement active session timing and log history
+- [ ] **Mobile Floating Panel Navigator**: Implement a premium, animated floating action menu (FAB) on mobile viewports. The FAB will allow seamless switching between active tracking panels (Kicks, Blood Sugar, Milk, etc.) using smooth transitions, reducing page height cognitive load.
 
 ### Phase 5: Production Deployment & QA (Planned)
 - [ ] Configure deployment on Firebase App Hosting / Vercel
