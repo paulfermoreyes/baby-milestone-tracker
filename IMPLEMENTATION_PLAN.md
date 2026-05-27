@@ -51,14 +51,14 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - [x] Implemented instant "Undo Last Kick" feature with automatic Firestore document deletion
 - [x] Developed guest preview fallback state allowing interactive simulation before logging in
 
-### Phase 4: Additional Tracking Modules & UX Enhancements (In Progress)
+### Phase 4: Additional Tracking Modules & UX Enhancements (Complete)
 - [x] **Daily Blood Sugar Logs & Trend Analytics**: Engineered multi-line trend charts with neon-cyan, neon-emerald, and neon-rose profiles, date-range selectors (7D, 14D, 30D, All), and a filterable history table/log list with deletion controls.
 - [x] **Milk Counter (Calcium & Hydration Tracker)**: Designed a visual cups serving counter with targets (2x cups/day for bone health), progress status bar, interactive serving logs, and unified guest fallback.
 - [x] **Lumina AI Companion (Prenatal Chatbot)**: Developed a floating chat panel with direct real-time Firestore synchronization context. The chatbot computes active statistics (today's kicks, milk logs, average fasting sugar indexes) and returns responsive wellness guidelines.
-- [ ] **Symptom Tracker Diary**: Create glass-card interface with severity dropdown and notes input
-- [ ] **Weight Progress Logger**: Build entry modals and trendlines for tracking weekly weight progress
-- [ ] **Contraction Timer**: Implement active session timing and log history
-- [ ] **Mobile Floating Panel Navigator**: Implement a premium, animated floating action menu (FAB) on mobile viewports. The FAB will allow seamless switching between active tracking panels (Kicks, Blood Sugar, Milk, etc.) using smooth transitions, reducing page height cognitive load.
+- [x] **Symptom Tracker Diary**: Create glass-card interface with severity dropdown and notes input.
+- [x] **Weight Progress Logger**: Build entry modals and trendlines for tracking weekly weight progress.
+- [x] **Contraction Timer**: Implement active session timing and log history.
+- [x] **Mobile Floating Panel Navigator**: Implement a premium, animated floating action menu (FAB) on mobile viewports. The FAB will allow seamless switching between active tracking panels (Kicks, Blood Sugar, Milk, etc.) using smooth transitions, reducing page height cognitive load.
 
 ### Phase 5: Production Deployment & QA (Planned)
 - [ ] Configure deployment on Firebase App Hosting / Vercel

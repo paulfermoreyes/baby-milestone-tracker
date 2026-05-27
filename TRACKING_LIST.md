@@ -19,7 +19,7 @@ This tracking list serves as a living document to track progress across developm
 
 ---
 
-### 3. 🧠 Core Features (In Progress - 80% Complete)
+### 3. 🧠 Core Features (100% Complete)
 - [x] **Caregiver Authentication**: Built a secure global session provider (`AuthContext`) and interactive glassmorphic `<AuthModal>` dialog component.
 - [x] **Firestore Database Schema & Models**: Organized user-linked documents with atomic timestamps.
 - [x] **Fetal Kick Counter**:
@@ -39,10 +39,10 @@ This tracking list serves as a living document to track progress across developm
   - [x] Engineered side-drawer panel with smooth slide-out and slide-in animations.
   - [x] Subscribed to real-time collections for kicks, milk, and glucose logs to act as context.
   - [x] Designed custom NLP keyword parser to provide direct averages, target range statuses, and diagnostic guidelines.
-- [ ] Symptom Tracker Module (Planned)
-- [ ] Weight Progress Logger (Planned)
-- [ ] Contraction Timer (Planned)
-- [ ] Mobile Floating Panel Navigation: Implement a floating action button (FAB) that opens a sleek glassmorphic menu to switch between active dashboard panels on mobile viewports.
+- [x] **Symptom Tracker Module**: Developed a dedicated diary for symptoms with severity indices (Mild, Moderate, Severe), customized notes logging, real-time snapshot tables, and local preview caching.
+- [x] **Weight Progress Logger**: Configured an interactive weight progress logger featuring an SVG dynamic trend sparkline chart with gradient overlays, differential stats compared to previous entries, and history logs.
+- [x] **Contraction Timer**: Programmed an active timing stop-watch mechanism, duration and interval logs, offline guest caching, and a dynamic 5-1-1 clinical alarm notification for true labor signs.
+- [x] **Mobile Floating Panel Navigation**: Built a floating action dock that maps interactive buttons directly to target element sections via smooth scroll offsets on small mobile viewports.
 
 ---
 
