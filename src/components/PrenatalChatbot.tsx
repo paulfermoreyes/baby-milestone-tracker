@@ -52,9 +52,9 @@ export default function PrenatalChatbot() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    let unsubKicks = () => {};
-    let unsubMilk = () => {};
-    let unsubGlucose = () => {};
+    let unsubKicks = () => { };
+    let unsubMilk = () => { };
+    let unsubGlucose = () => { };
 
     if (user) {
       // 1. Subscribe to Kicks today
@@ -262,31 +262,34 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
   return (
     <>
       {/* Floating Chat Trigger Button in bottom right corner */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 cursor-pointer relative group ${
-            isOpen
+      <div className="fixed bottom-24 right-6 lg:bottom-6 z-50">
+        {isOpen ? '' :
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 cursor-pointer relative group ${isOpen
               ? "bg-slate-800 text-cyan-400 border border-cyan-800/40"
               : "bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 shadow-cyan-500/20"
-          }`}
-          title="Open Prenatal Chat Assistant"
-        >
-          {isOpen ? <X size={20} weight="bold" /> : <ChatCircle size={24} weight="bold" />}
-          {/* Pulsing indicator when closed */}
-          {!isOpen && (
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-slate-900 animate-pulse" />
-          )}
-        </button>
+              }`}
+            title="Open Prenatal Chat Assistant"
+          >
+            <ChatCircle size={24} weight="bold" />
+            {/* Pulsing indicator when closed */}
+            {!isOpen && (
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-slate-900 animate-pulse" />
+            )}
+          </button>
+        }
       </div>
 
       {/* Chat Drawer Side Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-[440px] bg-slate-950/90 border-l border-slate-850/80 backdrop-blur-2xl shadow-2xl z-40 transition-transform duration-300 ease-out transform ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed z-40 transition-all duration-300 ease-out transform shadow-2xl flex flex-col backdrop-blur-2xl border border-slate-850/80 bg-slate-950/90
+          bottom-24 right-4 left-4 rounded-2xl h-[480px] max-h-[calc(100dvh-130px)]
+          sm:left-auto sm:right-6 sm:w-[400px] sm:h-[550px] sm:max-h-[calc(100dvh-120px)]
+          ${isOpen ? "translate-y-0 opacity-100 scale-100" : "translate-y-12 opacity-0 scale-95 pointer-events-none"}
+        `}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-hidden rounded-2xl">
           {/* Drawer Header */}
           <div className="p-5 border-b border-slate-850 bg-slate-900/40 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -314,9 +317,8 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3 max-w-[85%] ${
-                  msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-                }`}
+                className={`flex gap-3 max-w-[85%] ${msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
+                  }`}
               >
                 {msg.sender === "ai" && (
                   <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs text-cyan-400">
@@ -324,11 +326,10 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
                   </div>
                 )}
                 <div
-                  className={`p-3.5 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-br from-cyan-600/90 to-indigo-600/90 text-white rounded-tr-none shadow-md shadow-cyan-900/10 border border-cyan-500/20"
-                      : "bg-slate-900/80 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm"
-                  }`}
+                  className={`p-3.5 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${msg.sender === "user"
+                    ? "bg-gradient-to-br from-cyan-600/90 to-indigo-600/90 text-white rounded-tr-none shadow-md shadow-cyan-900/10 border border-cyan-500/20"
+                    : "bg-slate-900/80 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm"
+                    }`}
                 >
                   {msg.text}
                 </div>

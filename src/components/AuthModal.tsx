@@ -16,6 +16,8 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<UserRole>("wife");
   const [showPassword, setShowPassword] = useState(false);
+  const [pregnancyWeek, setPregnancyWeek] = useState<number | "">("");
+  const [partnerCode, setPartnerCode] = useState("");
   
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,8 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       setShowPassword(false);
       setError(null);
       setRole("wife");
+      setPregnancyWeek("");
+      setPartnerCode("");
     };
 
     dialog.addEventListener("close", handleClose);
@@ -85,7 +89,10 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         if (!displayName.trim()) {
           throw new Error("Please enter your full name.");
         }
-        await signUpWithEmail(email, password, displayName, role);
+        if (pregnancyWeek === "" || pregnancyWeek < 1 || pregnancyWeek > 42) {
+          throw new Error("Please enter a valid pregnancy week (1-42).");
+        }
+        await signUpWithEmail(email, password, displayName, role, partnerCode.trim(), Number(pregnancyWeek));
       } else {
         await signInWithEmail(email, password);
       }
@@ -147,8 +154,8 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
 
         {/* Header Title */}
         <div className="text-center mb-6">
-          <div className="inline-flex w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-500 items-center justify-center shadow-lg shadow-cyan-500/10 mb-3">
-            <span className="text-2xl font-bold text-slate-950">✨</span>
+          <div className="inline-flex w-12 h-12 rounded-xl overflow-hidden shadow-lg shadow-rose-500/10 items-center justify-center bg-slate-950 border border-slate-800 mb-3">
+            <img src="/logo.png" alt="Lumina Logo" className="w-full h-full object-cover" />
           </div>
           <h2 id="authModalTitle" className="text-2xl font-extrabold tracking-tight text-white">
             {isSignUp ? "Join Lumina Prenatal" : "Welcome Back"}
@@ -164,7 +171,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
             type="button"
             onClick={() => { setIsSignUp(false); setError(null); }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-              !isSignUp ? "bg-slate-800 text-cyan-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              !isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Sign In
@@ -173,7 +180,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
             type="button"
             onClick={() => { setIsSignUp(true); setError(null); }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-              isSignUp ? "bg-slate-800 text-cyan-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Register
@@ -204,6 +211,43 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
                 required
                 disabled={loading}
               />
+            </div>
+          )}
+
+          {isSignUp && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label htmlFor="week-input" className="text-xs font-bold text-slate-300">
+                  Current Week
+                </label>
+                <input
+                  id="week-input"
+                  type="number"
+                  min="1"
+                  max="42"
+                  value={pregnancyWeek}
+                  onChange={(e) => setPregnancyWeek(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="e.g. 12"
+                  className="auth-input"
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="partner-code-input" className="text-xs font-bold text-slate-300">
+                  Partner Code <span className="text-slate-500 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="partner-code-input"
+                  type="text"
+                  value={partnerCode}
+                  onChange={(e) => setPartnerCode(e.target.value.toUpperCase())}
+                  placeholder="CODE"
+                  className="auth-input uppercase"
+                  disabled={loading}
+                  maxLength={6}
+                />
+              </div>
             </div>
           )}
 
@@ -301,7 +345,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
 
           <button
             type="submit"
-            className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 font-extrabold text-sm shadow-md shadow-cyan-500/10 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-extrabold text-sm shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
             disabled={loading}
           >
             {loading ? (

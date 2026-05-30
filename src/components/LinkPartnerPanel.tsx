@@ -120,7 +120,7 @@ export default function LinkPartnerPanel() {
   // ── Linked State ──────────────────────────────────────────────────────────
   if (familyId) {
     return (
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-800 flex flex-col gap-4">
+      <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3">
         <h4 className="text-sm font-bold text-white flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
           Active Caregivers
@@ -210,7 +210,7 @@ export default function LinkPartnerPanel() {
 
   // ── Unlinked State ────────────────────────────────────────────────────────
   return (
-    <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-slate-800 flex flex-col gap-4">
+    <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3">
       <h4 className="text-sm font-bold text-white flex items-center gap-2">
         <LinkSimple size={16} weight="bold" className="text-indigo-400" />
         Link Your Partner
