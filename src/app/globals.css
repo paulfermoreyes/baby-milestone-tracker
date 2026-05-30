@@ -1,45 +1,217 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────── */
+/* Tailwind Theme Variable Configuration                    */
+/* ──────────────────────────────────────────────────────── */
+@theme {
+  --color-slate-50: var(--slate-50);
+  --color-slate-100: var(--slate-100);
+  --color-slate-200: var(--slate-200);
+  --color-slate-300: var(--slate-300);
+  --color-slate-400: var(--slate-400);
+  --color-slate-500: var(--slate-500);
+  --color-slate-600: var(--slate-600);
+  --color-slate-700: var(--slate-700);
+  --color-slate-750: var(--slate-750);
+  --color-slate-800: var(--slate-800);
+  --color-slate-850: var(--slate-850);
+  --color-slate-900: var(--slate-900);
+  --color-slate-950: var(--slate-950);
+}
+
+/* ──────────────────────────────────────────────────────── */
+/* Light Mode (default)                                     */
+/* ──────────────────────────────────────────────────────── */
 :root {
-  /* Primary palette */
-  --color-primary: hsl(190, 55%, 30%);
-  --color-primary-variant: hsl(190, 55%, 45%);
-  --color-accent: hsl(190, 70%, 55%);
-  /* Secondary palette */
-  --color-secondary: hsl(10, 65%, 70%);
-  --color-warning: hsl(45, 30%, 85%);
+  /* Warm Sunset Theme colors */
+  --color-primary: hsl(343, 65%, 42%);
+  --color-accent: hsl(343, 85%, 62%);
+  --color-secondary: hsl(38, 90%, 60%);
 
-  /* Background colors */
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Soft elegant slate color mapping for light mode */
+  --slate-50: #0f172a;
+  --slate-100: #1e293b;
+  --slate-200: #1e293b;
+  --slate-300: #334155;
+  --slate-400: #475569;
+  --slate-500: #64748b;
+  --slate-600: #94a3b8;
+  --slate-700: #cbd5e1;
+  --slate-750: #cbd5e1;
+  --slate-800: #ffffff;
+  --slate-850: #e2e8f0;
+  --slate-900: #fcfbf9;
+  --slate-950: #f1f0ed;
+
+  /* Global semantic tokens */
+  --bg-page: #f8f7f4;
+  --fg-page: #1e293b;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f0ed;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --border-card: rgba(0, 0, 0, 0.08);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+
+  /* Theme Toggle */
+  --bg-card-secondary: rgba(241, 240, 237, 0.7);
+  --border-card: rgba(0, 0, 0, 0.1);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ──────────────────────────────────────────────────────── */
+/* Dark Mode                                                */
+/* ──────────────────────────────────────────────────────── */
+.dark {
+  /* Slate colors for dark mode */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-750: #293548;
+  --slate-800: #1e293b;
+  --slate-850: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  /* Dark background and text */
+  --bg-page: #0f172a;
+  --fg-page: #e2e8f0;
+  --bg-surface: #1e293b;
+  --bg-surface-hover: #334155;
+  --bg-card: rgba(30, 41, 59, 0.6);
+  --border-card: rgba(255, 255, 255, 0.1);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
 }
 
-/* Glassmorphism card */
+/* ──────────────────────────────────────────────────────── */
+/* Base & Global Styles                                     */
+/* ──────────────────────────────────────────────────────── */
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────────────── */
+/* Light Mode Contrast Overrides                            */
+/* ──────────────────────────────────────────────────────── */
+:root:not(.dark) .glass-card h2,
+:root:not(.dark) .glass-card h3,
+:root:not(.dark) .glass-card h4,
+:root:not(.dark) .glass-card .text-white {
+  color: #1e293b !important;
+}
+
+/* Ensure prompt/description texts are readable */
+:root:not(.dark) .glass-card .text-slate-450,
+:root:not(.dark) .glass-card .text-slate-400,
+:root:not(.dark) .glass-card .text-slate-350,
+:root:not(.dark) .glass-card .text-slate-300 {
+  color: #475569 !important;
+}
+
+:root:not(.dark) .glass-card .text-slate-200 {
+  color: #1e293b !important;
+}
+
+/* Action text and gradient button text override */
+:root:not(.dark) .glass-card button.bg-gradient-to-r,
+:root:not(.dark) .glass-card button.bg-gradient-to-tr,
+:root:not(.dark) .glass-card button.bg-gradient-to-r *,
+:root:not(.dark) .glass-card button.bg-gradient-to-tr *,
+:root:not(.dark) button.bg-gradient-to-r,
+:root:not(.dark) button.bg-gradient-to-tr,
+:root:not(.dark) button.bg-gradient-to-r *,
+:root:not(.dark) button.bg-gradient-to-tr * {
+  color: #ffffff !important;
+}
+
+/* Force readable input styling in light mode */
+:root:not(.dark) input,
+:root:not(.dark) select,
+:root:not(.dark) textarea {
+  color: #1e293b !important;
+}
+
+:root:not(.dark) input::placeholder,
+:root:not(.dark) select::placeholder,
+:root:not(.dark) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Guest Warning Banners */
+:root:not(.dark) .bg-amber-500\/15 {
+  background-color: #fef3c7 !important;
+  border-color: #fde68a !important;
+}
+:root:not(.dark) .text-amber-400 {
+  color: #b45309 !important;
+}
+:root:not(.dark) .bg-amber-500 {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+}
+:root:not(.dark) .bg-amber-500:hover {
+  background-color: #d97706 !important;
+}
+
+/* ──────────────────────────────────────────────────────── */
+/* Glassmorphism Card Style                                 */
+/* ──────────────────────────────────────────────────────── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--bg-card);
+  border-radius: 1.5rem;
+  border: 1px solid var(--border-card);
   backdrop-filter: blur(12px) saturate(180%);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dark .glass-card {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 .glass-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+.dark .glass-card:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ──────────────────────────────────────────────────────── */
+/* Liquid Glass Navigation Style                            */
+/* ──────────────────────────────────────────────────────── */
+.liquid-glass-nav {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  backdrop-filter: blur(20px) saturate(220%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
+.dark .liquid-glass-nav {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+.liquid-glass-nav:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+}
+.dark .liquid-glass-nav:hover {
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+}
+
 
 /* Custom premium scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
@@ -49,25 +221,63 @@ body {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--scrollbar-thumb-hover);
 }
 
-/* Auth Dialog Styling */
+/* ──────────────────────────────────────────────────────── */
+/* Theme Toggle Button                                      */
+/* ──────────────────────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-card-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle .toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.dark .theme-toggle .toggle-thumb {
+  transform: translateX(24px);
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* ──────────────────────────────────────────────────────── */
+/* Dialog Styling                                           */
+/* ──────────────────────────────────────────────────────── */
 dialog.auth-dialog {
   border: none;
   background: transparent;
   padding: 0;
   max-width: 440px;
   width: calc(100% - 2rem);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
   border-radius: 1.5rem;
   overflow: visible;
-  color: #fff;
-  /* Ensure true viewport centering across all browsers */
+  color: var(--text-primary);
   position: fixed;
   inset: 0;
   margin: auto;
@@ -76,67 +286,21 @@ dialog.auth-dialog {
 }
 
 dialog.auth-dialog::backdrop {
-  background: rgba(8, 10, 16, 0.7);
-  backdrop-filter: blur(12px) saturate(140%);
-  animation: backdrop-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-dialog.auth-dialog.closing::backdrop {
-  animation: backdrop-fade-out 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: rgba(8, 10, 16, 0.6);
+  backdrop-filter: blur(8px) saturate(120%);
 }
 
 dialog.auth-dialog .modal-content {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
+  background: var(--bg-card);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-card);
   border-radius: 1.5rem;
   padding: 2.25rem 2rem;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
   animation: modal-scale-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   position: relative;
 }
 
-dialog.auth-dialog.closing .modal-content {
-  animation: modal-scale-out 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Input error and focus states */
-.auth-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  color: #fff;
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.2s ease;
-  min-height: 48px;
-}
-
-.auth-input:focus {
-  border-color: hsl(190, 70%, 55%);
-  background: rgba(15, 23, 42, 0.85);
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
-}
-
-.auth-input:invalid:user-invalid {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.05);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
 /* Animations */
-@keyframes backdrop-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes backdrop-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
 @keyframes modal-scale-in {
   from {
     opacity: 0;
@@ -145,16 +309,5 @@ dialog.auth-dialog.closing .modal-content {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes modal-scale-out {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(8px);
   }
 }

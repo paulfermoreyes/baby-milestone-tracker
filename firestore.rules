@@ -32,8 +32,8 @@ service cloud.firestore {
       // Any authenticated user can create a family document (they become the first member)
       allow create: if isAuthed() && request.auth.uid in request.resource.data.members;
 
-      // Only existing members can read or update the family document
-      allow read, update: if isFamilyMember(familyId);
+      // Any authenticated user can read or update family docs (needed for invite code lookups and linking)
+      allow read, update: if isAuthed();
 
       // Nobody can delete a family document from the client
       allow delete: if false;

@@ -16,7 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Warning, Trash, ChartLine, BookOpen, SunHorizon, Sun, Moon } from "@phosphor-icons/react";
+import { Warning, Trash, ChartLine, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon } from "@phosphor-icons/react";
 
 interface BloodSugarLog {
   id: string;
@@ -40,7 +40,7 @@ export default function BloodSugarTracker() {
   const [chartRange, setChartRange] = useState<"7" | "14" | "30" | "all">("7");
   const [historyFilter, setHistoryFilter] = useState<"all" | "fasting" | "post-lunch" | "post-dinner">("all");
   const [hoveredDot, setHoveredDot] = useState<{ x: number; y: number; log: BloodSugarLog } | null>(null);
-  const [activeView, setActiveView] = useState<"none" | "chart" | "history">("none");
+  const [activeView, setActiveView] = useState<"record" | "chart" | "history">("record");
 
   const getLocalDateString = (d: Date = new Date()) => {
     const year = d.getFullYear();
@@ -166,11 +166,11 @@ export default function BloodSugarTracker() {
         date: todayStr,
         timestamp: new Date(),
       };
-      
+
       // Filter out pre-existing reading for the same slot on the same day
       const filtered = logs.filter((l) => !(l.date === todayStr && l.slot === activeSlot));
       const updated = [...filtered, newLog];
-      
+
       setLogs(updated);
       localStorage.setItem(
         "lumina_guest_bloodsugar",
@@ -265,16 +265,16 @@ export default function BloodSugarTracker() {
 
   // Threshold checkers
   const getClassification = (value: number, slot: "fasting" | "post-lunch" | "post-dinner") => {
-    if (value < 70) return { label: "Low", color: "text-blue-400 bg-blue-950/40 border-blue-800/30" };
-    
+    if (value < 70) return { label: "Low", color: "text-blue-900 bg-blue-100/40 border-blue-300/30 dark:text-blue-200 dark:bg-blue-900/40 dark:border-blue-700/30" };
+
     if (slot === "fasting") {
       return value < 95
-        ? { label: "Normal", color: "text-emerald-400 bg-emerald-950/40 border-emerald-800/30" }
-        : { label: "Elevated", color: "text-rose-400 bg-rose-950/40 border-rose-800/30" };
+        ? { label: "Normal", color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30" }
+        : { label: "Elevated", color: "text-rose-900 bg-rose-100/40 border-rose-300/30" };
     } else {
       return value < 140
-        ? { label: "Normal", color: "text-emerald-400 bg-emerald-950/40 border-emerald-800/30" }
-        : { label: "Elevated", color: "text-rose-400 bg-rose-950/40 border-rose-800/30" };
+        ? { label: "Normal", color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30" }
+        : { label: "Elevated", color: "text-rose-900 bg-rose-100/40 border-rose-300/30" };
     }
   };
 
@@ -315,7 +315,7 @@ export default function BloodSugarTracker() {
   // Date formatting helpers for logs list
   const formatLogDate = (dateStr: string, timestamp: Date) => {
     if (dateStr === todayStr) return "Today";
-    
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     if (dateStr === getLocalDateString(yesterday)) return "Yesterday";
@@ -362,7 +362,7 @@ export default function BloodSugarTracker() {
     const days = parseInt(chartRange, 10);
     const dateList: string[] = [];
     const today = new Date();
-    
+
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(today.getDate() - i);
@@ -465,7 +465,7 @@ export default function BloodSugarTracker() {
               Hover over points to inspect individual slot entries
             </span>
           </div>
-          
+
           <div className="flex items-center gap-3 flex-wrap">
             {/* Custom Legend */}
             <div className="flex gap-2.5 text-[9px] font-bold">
@@ -489,11 +489,10 @@ export default function BloodSugarTracker() {
                     setChartRange(r);
                     setHoveredDot(null);
                   }}
-                  className={`px-2 py-0.5 rounded text-[8.5px] font-extrabold transition-all cursor-pointer ${
-                    chartRange === r
-                      ? "bg-slate-800 text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-300"
-                  }`}
+                  className={`px-2 py-0.5 rounded text-[8.5px] font-extrabold transition-all cursor-pointer ${chartRange === r
+                    ? "bg-slate-800 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-300"
+                    }`}
                 >
                   {r === "all" ? "All" : `${r}D`}
                 </button>
@@ -539,9 +538,8 @@ export default function BloodSugarTracker() {
                       x={chartWidth - paddingRight}
                       y={y - 4}
                       textAnchor="end"
-                      className={`text-[6.5px] font-black tracking-widest select-none ${
-                        tick === 95 ? "fill-cyan-500/50" : "fill-rose-500/50"
-                      }`}
+                      className={`text-[6.5px] font-black tracking-widest select-none ${tick === 95 ? "fill-cyan-500/50" : "fill-rose-500/50"
+                        }`}
                     >
                       {tick === 95 ? "FASTING TARGET < 95" : "POST-MEAL TARGET < 140"}
                     </text>
@@ -556,7 +554,7 @@ export default function BloodSugarTracker() {
               const x = getX(idx);
               const dateObj = new Date(date + "T00:00:00");
               const labelStr = dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-              
+
               return (
                 <g key={date}>
                   <line
@@ -705,221 +703,230 @@ export default function BloodSugarTracker() {
           <span className="hidden sm:inline px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-850 text-slate-300 font-semibold">
             Today: {new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </span>
-          
-          {/* Toggle buttons for chart and logbook */}
+
+          {/* Toggle buttons for record, chart, and logbook */}
           <div className="flex bg-slate-950/60 p-0.5 rounded-xl border border-slate-850 shadow-inner">
             <button
-              onClick={() => setActiveView(activeView === "chart" ? "none" : "chart")}
-              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeView === "chart"
-                  ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
-                  : "text-slate-500 hover:text-slate-350"
-              }`}
-              title="Toggle Trend Chart"
+              onClick={() => setActiveView("record")}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "record"
+                ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
+                : "text-slate-500 hover:text-slate-350"
+                }`}
+              title="Record Blood Sugar"
             >
-              <ChartLine size={12} weight="bold" /> <span>Graph</span>
+              <DropIcon size={12} weight="bold" /> <span>Record</span>
             </button>
             <button
-              onClick={() => setActiveView(activeView === "history" ? "none" : "history")}
-              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeView === "history"
-                  ? "bg-slate-800 text-emerald-400 border border-emerald-500/10 shadow-sm"
-                  : "text-slate-500 hover:text-slate-350"
-              }`}
+              onClick={() => setActiveView("chart")}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "chart"
+                ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
+                : "text-slate-500 hover:text-slate-350"
+                }`}
+              title="Toggle Trend Chart"
+            >
+              <ChartLineIcon size={12} weight="bold" /> <span>Graph</span>
+            </button>
+            <button
+              onClick={() => setActiveView("history")}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "history"
+                ? "bg-slate-800 text-emerald-400 border border-emerald-500/10 shadow-sm"
+                : "text-slate-500 hover:text-slate-350"
+                }`}
               title="Toggle Historical Logbook"
             >
-              <BookOpen size={12} weight="bold" /> <span>Logbook</span>
+              <BookOpenIcon size={12} weight="bold" /> <span>Logbook</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* 3 Slots Logger grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Slot 1: Fasting */}
-        <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 1</span>
-              <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
-                <SunHorizon size={14} weight="bold" className="text-cyan-400" />
-                <span>Fasting</span>
-              </span>
+      {activeView === "record" && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Slot 1: Fasting */}
+            <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
+                    <SunHorizonIcon size={14} weight="bold" className="text-cyan-400" />
+                    <span>Fasting</span>
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-slate-200">Before Breakfast</h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 95 mg/dL</p>
+              </div>
+
+              {fastingReading ? (
+                <div className="mt-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black text-white">{fastingReading.value}</span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(fastingReading.value, "fasting").color}`}>
+                      {getClassification(fastingReading.value, "fasting").label}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteReading(fastingReading.id)}
+                      className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Remove log"
+                    >
+                      <Trash size={14} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActiveSlot("fasting");
+                    setInputValue("");
+                  }}
+                  className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
+                >
+                  + Log Reading
+                </button>
+              )}
             </div>
-            <h4 className="text-sm font-bold text-slate-200">Before Breakfast</h4>
-            <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 95 mg/dL</p>
+
+            {/* Slot 2: Post-Lunch */}
+            <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
+                    <SunIcon size={14} weight="bold" className="text-emerald-400" />
+                    <span>Mid-day</span>
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-slate-200">1h Post-Lunch</h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
+              </div>
+
+              {lunchReading ? (
+                <div className="mt-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black text-white">{lunchReading.value}</span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(lunchReading.value, "post-lunch").color}`}>
+                      {getClassification(lunchReading.value, "post-lunch").label}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteReading(lunchReading.id)}
+                      className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Remove log"
+                    >
+                      <Trash size={14} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActiveSlot("post-lunch");
+                    setInputValue("");
+                  }}
+                  className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
+                >
+                  + Log Reading
+                </button>
+              )}
+            </div>
+
+            {/* Slot 3: Post-Dinner */}
+            <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
+                    <MoonIcon size={14} weight="bold" className="text-rose-400" />
+                    <span>Evening</span>
+                  </span>
+                </div>
+                <h4 className="text-sm font-bold text-slate-200">1h Post-Dinner</h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
+              </div>
+
+              {dinnerReading ? (
+                <div className="mt-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black text-white">{dinnerReading.value}</span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(dinnerReading.value, "post-dinner").color}`}>
+                      {getClassification(dinnerReading.value, "post-dinner").label}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteReading(dinnerReading.id)}
+                      className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Remove log"
+                    >
+                      <Trash size={14} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActiveSlot("post-dinner");
+                    setInputValue("");
+                  }}
+                  className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
+                >
+                  + Log Reading
+                </button>
+              )}
+            </div>
           </div>
 
-          {fastingReading ? (
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <span className="text-2xl font-black text-white">{fastingReading.value}</span>
-                <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(fastingReading.value, "fasting").color}`}>
-                  {getClassification(fastingReading.value, "fasting").label}
-                </span>
-                <button
-                  onClick={() => handleDeleteReading(fastingReading.id)}
-                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
-                  title="Remove log"
-                >
-                  <Trash size={14} weight="bold" />
-                </button>
-              </div>
+          {/* Pop-up Log Form (Inline drawer modal layout) */}
+          {activeSlot && (
+            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-modal-scale-in">
+              <form onSubmit={handleLogReading}>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                    Log Reading for {activeSlot === "fasting" ? "Fasting" : activeSlot === "post-lunch" ? "Post-Lunch" : "Post-Dinner"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSlot(null)}
+                    className="text-slate-500 hover:text-slate-350 text-xs font-bold px-2 py-1 rounded bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      placeholder="Blood sugar level (e.g. 95)"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500 font-bold focus:shadow-md focus:shadow-indigo-500/10 text-sm h-12"
+                      autoFocus
+                      required
+                    />
+                    <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">mg/dL</span>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-950 font-extrabold text-xs shadow-md shadow-indigo-500/10 h-12 flex items-center justify-center min-w-[120px] transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Saving..." : "Save Log"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2">
+                  Note: Healthy gestational threshold is {activeSlot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}. Logs will immediately plot to your analysis trendline.
+                </p>
+              </form>
             </div>
-          ) : (
-            <button
-              onClick={() => {
-                setActiveSlot("fasting");
-                setInputValue("");
-              }}
-              className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
-            >
-              + Log Reading
-            </button>
           )}
-        </div>
-
-        {/* Slot 2: Post-Lunch */}
-        <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 2</span>
-              <span className="text-slate-455 text-[11px] font-semibold flex items-center gap-1">
-                <Sun size={14} weight="bold" className="text-emerald-400" />
-                <span>Mid-day</span>
-              </span>
-            </div>
-            <h4 className="text-sm font-bold text-slate-200">1h Post-Lunch</h4>
-            <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
-          </div>
-
-          {lunchReading ? (
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <span className="text-2xl font-black text-white">{lunchReading.value}</span>
-                <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(lunchReading.value, "post-lunch").color}`}>
-                  {getClassification(lunchReading.value, "post-lunch").label}
-                </span>
-                <button
-                  onClick={() => handleDeleteReading(lunchReading.id)}
-                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
-                  title="Remove log"
-                >
-                  <Trash size={14} weight="bold" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setActiveSlot("post-lunch");
-                setInputValue("");
-              }}
-              className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
-            >
-              + Log Reading
-            </button>
-          )}
-        </div>
-
-        {/* Slot 3: Post-Dinner */}
-        <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-850 flex flex-col justify-between min-h-[140px] hover:border-slate-800 transition-all group">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Slot 3</span>
-              <span className="text-slate-455 text-[11px] font-semibold flex items-center gap-1">
-                <Moon size={14} weight="bold" className="text-rose-400" />
-                <span>Evening</span>
-              </span>
-            </div>
-            <h4 className="text-sm font-bold text-slate-200">1h Post-Dinner</h4>
-            <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
-          </div>
-
-          {dinnerReading ? (
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <span className="text-2xl font-black text-white">{dinnerReading.value}</span>
-                <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(dinnerReading.value, "post-dinner").color}`}>
-                  {getClassification(dinnerReading.value, "post-dinner").label}
-                </span>
-                <button
-                  onClick={() => handleDeleteReading(dinnerReading.id)}
-                  className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
-                  title="Remove log"
-                >
-                  <Trash size={14} weight="bold" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setActiveSlot("post-dinner");
-                setInputValue("");
-              }}
-              className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
-            >
-              + Log Reading
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Pop-up Log Form (Inline drawer modal layout) */}
-      {activeSlot && (
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-modal-scale-in">
-          <form onSubmit={handleLogReading}>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-                Log Reading for {activeSlot === "fasting" ? "Fasting" : activeSlot === "post-lunch" ? "Post-Lunch" : "Post-Dinner"}
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveSlot(null)}
-                className="text-slate-500 hover:text-slate-300 text-xs font-bold px-2 py-1 rounded bg-slate-800 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <input
-                  type="number"
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                  placeholder="Blood sugar level (e.g. 95)"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500 font-bold focus:shadow-md focus:shadow-indigo-500/10 text-sm h-12"
-                  autoFocus
-                  required
-                />
-                  <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">mg/dL</span>
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-950 font-extrabold text-xs shadow-md shadow-indigo-500/10 h-12 flex items-center justify-center min-w-[120px] transition-all cursor-pointer disabled:opacity-50"
-              >
-                {isSubmitting ? "Saving..." : "Save Log"}
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-500 mt-2">
-              Note: Healthy gestational threshold is {activeSlot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}. Logs will immediately plot to your analysis trendline.
-            </p>
-          </form>
-        </div>
+        </>
       )}
 
       {/* SVG Chart display panel */}
@@ -936,47 +943,43 @@ export default function BloodSugarTracker() {
               </h3>
               <p className="text-[10px] text-slate-500 mt-0.5">View and manage all historical records</p>
             </div>
-            
+
             <div className="flex bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 flex-wrap gap-0.5">
               <button
                 onClick={() => setHistoryFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer ${
-                  historyFilter === "all"
-                    ? "bg-slate-800 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-350"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer ${historyFilter === "all"
+                  ? "bg-slate-800 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-350"
+                  }`}
               >
                 All Logs
               </button>
               <button
                 onClick={() => setHistoryFilter("fasting")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  historyFilter === "fasting"
-                    ? "bg-cyan-950/50 text-cyan-400 border border-cyan-800/30"
-                    : "text-slate-500 hover:text-slate-350"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "fasting"
+                  ? "bg-cyan-950/50 text-cyan-400 border border-cyan-800/30"
+                  : "text-slate-500 hover:text-slate-350"
+                  }`}
               >
                 <SunHorizon size={12} weight="bold" />
                 <span>Fasting</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-lunch")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  historyFilter === "post-lunch"
-                    ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/30"
-                    : "text-slate-500 hover:text-slate-350"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "post-lunch"
+                  ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/30"
+                  : "text-slate-500 hover:text-slate-350"
+                  }`}
               >
                 <Sun size={12} weight="bold" />
                 <span>Lunch</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-dinner")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  historyFilter === "post-dinner"
-                    ? "bg-rose-950/50 text-rose-400 border border-rose-800/30"
-                    : "text-slate-500 hover:text-slate-350"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "post-dinner"
+                  ? "bg-rose-950/50 text-rose-400 border border-rose-800/30"
+                  : "text-slate-500 hover:text-slate-350"
+                  }`}
               >
                 <Moon size={12} weight="bold" />
                 <span>Dinner</span>
@@ -1016,7 +1019,7 @@ export default function BloodSugarTracker() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <span className="text-sm font-black text-white">{log.value}</span>

@@ -35,6 +35,8 @@ export interface UserProfile {
   photoURL: string | null;
   role: UserRole;
   familyId: string | null;
+  pregnancyWeek?: number;
+  expectedLaborDate?: string;
 }
 
 interface AuthContextType {
@@ -43,12 +45,13 @@ interface AuthContextType {
   familyId: string | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, displayName: string, role: UserRole) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, displayName: string, role: UserRole, partnerCode?: string, pregnancyWeek?: number) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   generateInviteCode: () => Promise<string>;
   redeemInviteCode: (code: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         photoURL: data.photoURL ?? null,
         role: data.role ?? "wife",
         familyId: data.familyId ?? null,
+        pregnancyWeek: data.pregnancyWeek,
+        expectedLaborDate: data.expectedLaborDate,
       };
     } catch (e) {
       console.error("Failed to fetch user profile:", e);
@@ -95,6 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const profile = await fetchProfile(user.uid);
     setUserProfile(profile);
+  };
+
+  const updateProfileData = async (data: Partial<UserProfile>) => {
+    if (!user) return;
+    await updateDoc(doc(db, "users", user.uid), data);
+    setUserProfile((prev) => prev ? { ...prev, ...data } : prev);
   };
 
   useEffect(() => {
@@ -126,7 +137,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     displayName: string,
-    role: UserRole
+    role: UserRole,
+    partnerCode?: string,
+    pregnancyWeek?: number
   ) => {
     setLoading(true);
     try {
@@ -136,15 +149,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Update Firebase Auth profile
       await updateProfile(createdUser, { displayName });
 
+      let initialFamilyId: string | null = null;
+      
+      if (partnerCode) {
+        try {
+          const trimmedCode = partnerCode.trim().toUpperCase();
+          const q = query(
+            collection(db, "families"),
+            where("inviteCode", "==", trimmedCode)
+          );
+          const snap = await getDocs(q);
+
+          if (!snap.empty) {
+            const familyDoc = snap.docs[0];
+            const familyData = familyDoc.data();
+            const expiresAt = (familyData.inviteCodeExpiresAt as Timestamp).toDate();
+            
+            if (new Date() <= expiresAt) {
+              const members: string[] = familyData.members ?? [];
+              if (members.length < 2) {
+                initialFamilyId = familyDoc.id;
+                await updateDoc(doc(db, "families", initialFamilyId), {
+                  members: arrayUnion(createdUser.uid),
+                  inviteCode: null,
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to link partner code during sign up:", e);
+        }
+      }
+
       // Create a user record in Firestore with role
-      await setDoc(doc(db, "users", createdUser.uid), {
+      const userData: any = {
         uid: createdUser.uid,
         email: createdUser.email,
         displayName,
         role,
-        familyId: null,
+        familyId: initialFamilyId,
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (pregnancyWeek !== undefined) {
+        userData.pregnancyWeek = pregnancyWeek;
+      }
+
+      await setDoc(doc(db, "users", createdUser.uid), userData);
 
       // Update local state
       const profile: UserProfile = {
@@ -153,7 +204,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName,
         photoURL: null,
         role,
-        familyId: null,
+        familyId: initialFamilyId,
+        pregnancyWeek,
       };
       setUser({ ...createdUser, displayName } as User);
       setUserProfile(profile);
@@ -314,6 +366,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         generateInviteCode,
         redeemInviteCode,
         refreshProfile,
+        updateProfileData,
       }}
     >
       {children}
