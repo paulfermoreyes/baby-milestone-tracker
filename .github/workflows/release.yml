@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for tags
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -16,10 +18,31 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Create version and publish
+      - name: Ensure a changeset exists
+        run: |
+          # If no changeset files exist, generate a generic one
+          if [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
+            npx changeset add --empty --summary "Automated changeset based on recent commits"
+          fi
+      - name: Version packages
+        id: version
         run: |
           npx changeset version
-          npx changeset publish
+          # Extract new version after changeset versioning
+          VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Publish to npm
+        run: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           npm_config_auth_token: ${{ secrets.NPM_TOKEN }}
+      - name: Push version commit and tags
+        run: |
+          git push
+          git push --tags
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          name: Release v${{ steps.version.outputs.new_version }}
+          generate_release_notes: true
