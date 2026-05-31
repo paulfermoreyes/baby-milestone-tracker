@@ -88,7 +88,9 @@ export default function Home() {
         }`} />
 
       {/* Header */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between backdrop-blur-sm z-30 border-b border-slate-850/60">
+      <header className={`w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between backdrop-blur-sm border-b border-slate-850/60 relative transition-all ${
+        isProfileDropdownOpen ? "z-[110]" : "z-30"
+      }`}>
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl overflow-hidden shadow-lg flex items-center justify-center ${isDark
             ? "shadow-rose-500/10 bg-slate-950 border border-slate-800"

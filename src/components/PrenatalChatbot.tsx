@@ -283,7 +283,7 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
 
       {/* Chat Drawer Side Panel */}
       <div
-        className={`fixed z-40 transition-all duration-300 ease-out transform shadow-2xl flex flex-col backdrop-blur-2xl border border-slate-850/80 bg-slate-950/90
+        className={`fixed z-100 transition-all duration-300 ease-out transform shadow-2xl flex flex-col backdrop-blur-2xl border border-slate-850/80 bg-slate-950/90
           bottom-24 right-4 left-4 rounded-2xl h-[480px] max-h-[calc(100dvh-130px)]
           sm:left-auto sm:right-6 sm:w-[400px] sm:h-[550px] sm:max-h-[calc(100dvh-120px)]
           ${isOpen ? "translate-y-0 opacity-100 scale-100" : "translate-y-12 opacity-0 scale-95 pointer-events-none"}
