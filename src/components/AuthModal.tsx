@@ -154,8 +154,8 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
 
         {/* Header Title */}
         <div className="text-center mb-6">
-          <div className="inline-flex w-12 h-12 rounded-xl overflow-hidden shadow-lg shadow-rose-500/10 items-center justify-center bg-slate-950 border border-slate-800 mb-3">
-            <img src="/logo.png" alt="Lumina Logo" className="w-full h-full object-cover" />
+          <div className="inline-flex w-12 h-12 items-center justify-center mb-3">
+            <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
           </div>
           <h2 id="authModalTitle" className="text-2xl font-extrabold tracking-tight text-white">
             {isSignUp ? "Join Lumina Prenatal" : "Welcome Back"}

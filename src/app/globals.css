@@ -317,3 +317,40 @@ dialog.auth-dialog .modal-content {
     transform: scale(1) translateY(0);
   }
 }
+
+/* Reusable Auth Form Inputs */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  background-color: rgba(15, 23, 42, 0.45);
+  border: 1.5px solid rgba(51, 65, 85, 0.4);
+  color: #f1f5f9;
+}
+
+.dark .auth-input {
+  background-color: rgba(2, 6, 23, 0.45);
+  border: 1.5px solid rgba(30, 41, 59, 0.8);
+  color: #f1f5f9;
+}
+
+:root:not(.dark) .auth-input {
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #1e293b !important;
+}
+
+.auth-input:focus {
+  border-color: #f43f5e !important; /* rose-500 */
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15);
+}
+
+.dark .auth-input:focus {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25);
+}
+

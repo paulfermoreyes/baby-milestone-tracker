@@ -120,8 +120,8 @@ export default function LinkPartnerPanel() {
   // ── Linked State ──────────────────────────────────────────────────────────
   if (familyId) {
     return (
-      <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3">
-        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+      <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3 text-slate-200">
+        <h4 className="text-sm font-bold flex items-center gap-2 text-slate-100">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
           Active Caregivers
         </h4>
@@ -132,7 +132,7 @@ export default function LinkPartnerPanel() {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <div className="flex -space-x-2 overflow-hidden">
+            <div className="flex -space-x-2">
               {/* Current user avatar */}
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
@@ -144,19 +144,19 @@ export default function LinkPartnerPanel() {
               {/* Partner avatar */}
               {partnerInfo ? (
                 partnerInfo.photoURL ? (
-                  <img src={partnerInfo.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
+                  <img src={partnerInfo.photoURL} alt="" className="inline-block h-8 w-8 bg-white rounded-full ring-2 ring-slate-900" />
                 ) : (
                   <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">
                     {(partnerInfo.displayName || "P").charAt(0).toUpperCase()}
                   </div>
                 )
               ) : (
-                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-400">?</div>
+                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">?</div>
               )}
             </div>
 
             <div>
-              <span className="text-xs font-semibold text-slate-200 block">
+              <span className="text-xs font-semibold text-slate-100 block">
                 {user?.displayName || "You"} & {partnerInfo?.displayName || "Partner"}
               </span>
               {partnerInfo && (
@@ -167,40 +167,40 @@ export default function LinkPartnerPanel() {
         )}
 
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <Check size={14} weight="bold" className="text-emerald-400 shrink-0" />
-          <span className="text-xs font-semibold text-emerald-400">Couple dashboard linked</span>
+          <Check size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Couple dashboard linked</span>
         </div>
 
         {/* Allow re-generating a code even when linked (e.g. link was reset) */}
         {mode === "generate" && generatedCode ? (
-          <div className="mt-1 p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col gap-2">
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">New Invite Code</span>
+          <div className="mt-1 p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Invite Code</span>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-[0.25em] text-white font-mono">{generatedCode}</span>
+              <span className="text-xl font-black tracking-[0.25em] text-slate-100 font-mono">{generatedCode}</span>
               <button
                 onClick={handleCopy}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition-colors cursor-pointer"
                 title="Copy code"
               >
-                {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                {copied ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />}
               </button>
             </div>
             {countdown > 0 && (
-              <span className="text-[9px] text-slate-500">Expires in {formatCountdown(countdown)}</span>
+              <span className="text-[9px] text-slate-400">Expires in {formatCountdown(countdown)}</span>
             )}
           </div>
         ) : (
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="text-[10px] font-semibold text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors cursor-pointer text-left"
+            className="text-[10px] font-semibold text-slate-400 hover:text-slate-200 underline underline-offset-2 transition-colors cursor-pointer text-left"
           >
             {loading ? "Generating…" : "Generate new invite code"}
           </button>
         )}
 
         {error && (
-          <p className="text-[10px] text-red-400 font-semibold flex items-center gap-1">
+          <p className="text-[10px] text-red-500 dark:text-red-400 font-semibold flex items-center gap-1">
             <Warning size={12} /> {error}
           </p>
         )}
@@ -210,9 +210,9 @@ export default function LinkPartnerPanel() {
 
   // ── Unlinked State ────────────────────────────────────────────────────────
   return (
-    <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3">
-      <h4 className="text-sm font-bold text-white flex items-center gap-2">
-        <LinkSimple size={16} weight="bold" className="text-indigo-400" />
+    <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3 text-slate-200">
+      <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+        <LinkSimple size={16} weight="bold" className="text-indigo-600 dark:text-indigo-400" />
         Link Your Partner
       </h4>
       <p className="text-xs text-slate-400 leading-relaxed">
@@ -220,7 +220,7 @@ export default function LinkPartnerPanel() {
       </p>
 
       {error && (
-        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-400 flex items-start gap-2">
+        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs font-semibold text-red-500 dark:text-red-400 flex items-start gap-2">
           <Warning size={14} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -230,14 +230,14 @@ export default function LinkPartnerPanel() {
         <div className="grid grid-cols-1 gap-2">
           <button
             onClick={() => { setMode("generate"); setError(null); }}
-            className="py-2.5 px-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 hover:border-indigo-500/40 text-indigo-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-2"
+            className="py-2.5 px-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/25 hover:border-indigo-300 dark:hover:bg-indigo-500/40 text-indigo-650 dark:text-indigo-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-2"
           >
             <Users size={14} weight="bold" />
             Generate Invite Code
           </button>
           <button
             onClick={() => { setMode("enter"); setError(null); }}
-            className="py-2.5 px-4 rounded-xl bg-slate-900/60 hover:bg-slate-800/60 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-2"
+            className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-slate-200 font-bold text-xs border border-slate-750 hover:border-slate-700 transition-all cursor-pointer flex items-center gap-2"
           >
             <LinkSimple size={14} weight="bold" />
             Enter Partner&apos;s Code
@@ -251,33 +251,33 @@ export default function LinkPartnerPanel() {
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-extrabold text-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white dark:text-slate-950 font-extrabold text-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
             >
-              {loading ? <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" /> : <Users size={14} weight="bold" />}
+              {loading ? <span className="w-3.5 h-3.5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" /> : <Users size={14} weight="bold" />}
               {loading ? "Generating…" : "Generate Code"}
             </button>
           ) : (
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-indigo-500/20 flex flex-col gap-3">
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Share this code with your partner</span>
+            <div className="p-4 rounded-xl bg-slate-950/60 border border-indigo-500/20 flex flex-col gap-3">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Share this code with your partner</span>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-black tracking-[0.3em] text-white font-mono">{generatedCode}</span>
+                <span className="text-2xl font-black tracking-[0.3em] text-slate-100 font-mono">{generatedCode}</span>
                 <button
                   onClick={handleCopy}
-                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                  className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
                 >
-                  {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  {copied ? <Check size={14} className="text-emerald-650 dark:text-emerald-400" /> : <Copy size={14} />}
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
               {countdown > 0 && (
-                <span className="text-[9px] text-amber-500/80 font-medium">⏱ Expires in {formatCountdown(countdown)}</span>
+                <span className="text-[9px] text-amber-600 dark:text-amber-500/80 font-medium">⏱ Expires in {formatCountdown(countdown)}</span>
               )}
             </div>
           )}
 
           <button
             onClick={() => { setMode("idle"); setGeneratedCode(null); setError(null); }}
-            className="text-[10px] text-slate-500 hover:text-slate-300 underline underline-offset-2 cursor-pointer transition-colors"
+            className="text-[10px] text-slate-400 hover:text-slate-200 underline underline-offset-2 cursor-pointer transition-colors"
           >
             Cancel
           </button>
@@ -293,7 +293,7 @@ export default function LinkPartnerPanel() {
               onChange={(e) => setEnterCode(e.target.value.toUpperCase())}
               placeholder="e.g. ABC123"
               maxLength={6}
-              className="flex-1 px-3 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm font-mono font-bold text-white outline-none focus:border-cyan-500 tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-sans placeholder:font-normal"
+              className="flex-1 px-3 py-2.5 bg-slate-950/60 border border-slate-850 rounded-xl text-sm font-mono font-bold text-slate-100 outline-none focus:border-cyan-500 tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-sans placeholder:font-normal placeholder:text-slate-400"
             />
             <button
               onClick={handleRedeem}
@@ -305,7 +305,7 @@ export default function LinkPartnerPanel() {
           </div>
           <button
             onClick={() => { setMode("idle"); setError(null); }}
-            className="text-[10px] text-slate-500 hover:text-slate-300 underline underline-offset-2 cursor-pointer transition-colors"
+            className="text-[10px] text-slate-400 hover:text-slate-200 underline underline-offset-2 cursor-pointer transition-colors"
           >
             Cancel
           </button>
