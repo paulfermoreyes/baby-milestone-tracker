@@ -81,6 +81,11 @@ service cloud.firestore {
         allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
         allow update: if false;
       }
+
+      // Baptism Organizer
+      match /baptism/{baptismId} {
+        allow read, write: if isFamilyMember(familyId);
+      }
     }
 
     // ── Legacy root collections (personal, pre-link) ─────────────────────────
@@ -120,6 +125,11 @@ service cloud.firestore {
       allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
       allow read, delete: if ownsResource();
       allow update: if false;
+    }
+
+    match /baptism/{baptismId} {
+      allow create: if isAuthed() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAuthed() && (resource.data.userId == request.auth.uid || baptismId == request.auth.uid);
     }
   }
 }

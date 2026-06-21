@@ -1,27 +1,21 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import KickCounter from "../components/KickCounter";
-import MilkCounter from "../components/MilkCounter";
-import BloodSugarTracker from "../components/BloodSugarTracker";
-import SymptomTracker from "../components/SymptomTracker";
-import WeightTracker from "../components/WeightTracker";
-import ContractionTimer from "../components/ContractionTimer";
-import PrenatalChatbot from "../components/PrenatalChatbot";
-import AuthModal from "../components/AuthModal";
-import LinkPartnerPanel from "../components/LinkPartnerPanel";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Footprints, Timer, Drop, ThermometerHot, Scales, Sun, Moon, Users, ChatCircleText, Warning } from "@phosphor-icons/react";
+import { Sun, Moon, Warning, ThermometerHot, Footprints, Users } from "@phosphor-icons/react";
+import AppShell from "@/components/AppShell";
+import KickSummaryCard from "@/components/dashboard/KickSummaryCard";
+import ContractionSummaryCard from "@/components/dashboard/ContractionSummaryCard";
+import BloodSugarSummaryCard from "@/components/dashboard/BloodSugarSummaryCard";
+import MilkSummaryCard from "@/components/dashboard/MilkSummaryCard";
+import SymptomSummaryCard from "@/components/dashboard/SymptomSummaryCard";
+import WeightSummaryCard from "@/components/dashboard/WeightSummaryCard";
+import BaptismSummaryCard from "@/components/dashboard/BaptismSummaryCard";
 
 export default function Home() {
-  const { user, userProfile, logout, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, updateProfileData } = useAuth();
+  const { user, userProfile, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, updateProfileData } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const authModalRef = useRef<HTMLDialogElement | null>(null);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-
-  const [showMissingInfoModal, setShowMissingInfoModal] = useState(false);
-  const [expectedLaborDate, setExpectedLaborDate] = useState("");
 
   // Landing page interactive form state
   const [isSignUp, setIsSignUp] = useState(false);
@@ -34,19 +28,6 @@ export default function Home() {
   const [partnerCode, setPartnerCode] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
-
-  useEffect(() => {
-    if (!loading && user && userProfile && !userProfile.expectedLaborDate) {
-      setShowMissingInfoModal(true);
-    }
-  }, [loading, user, userProfile]);
-
-  const handleSaveMissingInfo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!expectedLaborDate) return;
-    await updateProfileData({ expectedLaborDate });
-    setShowMissingInfoModal(false);
-  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,38 +81,13 @@ export default function Home() {
     }
   };
 
-  const openAuthModal = () => {
-    authModalRef.current?.showModal();
-  };
-
-  // Smooth scroll handler for mobile FAB navigation
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
-  const roleBadge = userProfile?.role === "husband"
-    ? { emoji: "👨", label: "Husband", classes: "bg-indigo-500/15 border-indigo-500/30 text-indigo-600 dark:text-indigo-300" }
-    : { emoji: "👩", label: "Wife", classes: "bg-pink-500/15 border-pink-500/30 text-pink-600 dark:text-pink-300" };
-
   const isDark = theme === "dark";
 
-  const componentMap = {
-    symptoms: <SymptomTracker />,
-    weight: <WeightTracker />,
-    sugar: <BloodSugarTracker />,
-    milk: <MilkCounter />,
-    kicks: <KickCounter />,
-    contractions: <ContractionTimer />
-  };
-
+  // LOADING STATE
   if (loading) {
-    const isDarkTheme = theme === "dark";
     return (
       <div className={`min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden ${
-        isDarkTheme ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
+        isDark ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
       }`}>
         <div className="flex flex-col items-center gap-4 z-10">
           <div className="w-16 h-16 animate-bounce">
@@ -141,27 +97,27 @@ export default function Home() {
             Lumina
           </h1>
           <div className={`w-8 h-8 rounded-full border-4 border-t-rose-500 animate-spin ${
-            isDarkTheme ? "border-slate-800" : "border-slate-200"
+            isDark ? "border-slate-800" : "border-slate-200"
           }`} />
         </div>
       </div>
     );
   }
 
+  // LANDING / ONBOARDING PAGE (LOGGED OUT)
   if (!user) {
-    const isDarkTheme = theme === "dark";
     return (
       <div className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-12 ${
-        isDarkTheme
+        isDark
           ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
           : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
       }`}>
         {/* Decorative background glow elements */}
         <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-          isDarkTheme ? "bg-rose-950/25" : "bg-rose-200/30"
+          isDark ? "bg-rose-950/25" : "bg-rose-200/30"
         }`} />
         <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-          isDarkTheme ? "bg-amber-950/20" : "bg-amber-200/20"
+          isDark ? "bg-amber-950/20" : "bg-amber-200/20"
         }`} />
 
         {/* Header */}
@@ -176,22 +132,22 @@ export default function Home() {
                   Lumina
                 </h1>
                 <p className={`text-[10px] uppercase tracking-widest font-semibold ${
-                  isDarkTheme ? "text-slate-400" : "text-slate-500"
+                  isDark ? "text-slate-400" : "text-slate-500"
                 }`}>
                   Prenatal Suite
                 </p>
               </div>
             </div>
 
-            {/* Theme Toggle only */}
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               className="theme-toggle"
-              aria-label={`Switch to ${isDarkTheme ? "light" : "dark"} mode`}
-              title={`Switch to ${isDarkTheme ? "light" : "dark"} mode`}
+              aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+              title={`Switch to ${isDark ? "light" : "dark"} mode`}
             >
               <span className="toggle-thumb">
-                {isDarkTheme ? (
+                {isDark ? (
                   <Moon size={12} weight="fill" className="text-white" />
                 ) : (
                   <Sun size={12} weight="fill" className="text-white" />
@@ -207,7 +163,7 @@ export default function Home() {
           <div className="lg:col-span-7 flex flex-col gap-8 text-center lg:text-left">
             <div>
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider ${
-                isDarkTheme ? "bg-rose-500/10 text-rose-400" : "bg-rose-500/10 text-rose-600"
+                isDark ? "bg-rose-500/10 text-rose-400" : "bg-rose-500/10 text-rose-600"
               }`}>
                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                 Real-Time Caregiver Syncing
@@ -216,7 +172,7 @@ export default function Home() {
                 Simplify Your <span className="bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Prenatal Journey</span>
               </h2>
               <p className={`text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 ${
-                isDarkTheme ? "text-slate-400" : "text-slate-600"
+                isDark ? "text-slate-400" : "text-slate-600"
               }`}>
                 Collaborative prenatal health tracking, real-time caregiver sync, and instant AI guidance designed to support your pregnancy milestones and connect parents.
               </p>
@@ -231,7 +187,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-white mb-1">Symptom Logging & Weight Trends</h4>
-                  <p className={`text-xs leading-relaxed ${isDarkTheme ? "text-slate-400" : "text-slate-600"}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-650"}`}>
                     Log daily symptoms, track physical changes, and maintain a detailed weight log with visual metrics to share with your healthcare provider.
                   </p>
                 </div>
@@ -244,7 +200,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-white mb-1">Fetal Activity & Contraction Vitals</h4>
-                  <p className={`text-xs leading-relaxed ${isDarkTheme ? "text-slate-400" : "text-slate-600"}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-655"}`}>
                     Count baby's daily kicks for fetal safety, track contraction frequency using our precise timing tool, and monitor vital signs like blood sugar levels.
                   </p>
                 </div>
@@ -257,7 +213,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-white mb-1">Caregiver Syncing & AI Assistance</h4>
-                  <p className={`text-xs leading-relaxed ${isDarkTheme ? "text-slate-400" : "text-slate-600"}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-660"}`}>
                     Link dashboards with your spouse to sync milestones and logs in real-time. Chat with our dedicated AI prenatal companion for instant, secure advice.
                   </p>
                 </div>
@@ -277,7 +233,7 @@ export default function Home() {
                 <h3 className="text-2xl font-extrabold tracking-tight text-white">
                   {isSignUp ? "Join Lumina" : "Welcome Back"}
                 </h3>
-                <p className={`text-xs mt-1 ${isDarkTheme ? "text-slate-400" : "text-slate-600"}`}>
+                <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
                   {isSignUp ? "Connect with caregivers and sync milestones" : "Access your caregiver dashboard"}
                 </p>
               </div>
@@ -314,7 +270,7 @@ export default function Home() {
               <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
                 {isSignUp && (
                   <div className="space-y-1.5">
-                    <label htmlFor="name-input-form" className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>
+                    <label htmlFor="name-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                       Full Name
                     </label>
                     <input
@@ -334,7 +290,7 @@ export default function Home() {
                 {isSignUp && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="week-input-form" className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>
+                      <label htmlFor="week-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                         Current Week
                       </label>
                       <input
@@ -351,7 +307,7 @@ export default function Home() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="partner-code-input-form" className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>
+                      <label htmlFor="partner-code-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                         Partner Code <span className="text-slate-500 font-normal">(opt)</span>
                       </label>
                       <input
@@ -368,10 +324,10 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Role Selector — shown only on Sign Up */}
+                {/* Role Selector */}
                 {isSignUp && (
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>I am the…</label>
+                    <label className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>I am the…</label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -404,7 +360,7 @@ export default function Home() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="email-input-form" className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>
+                  <label htmlFor="email-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                     Email Address
                   </label>
                   <input
@@ -422,7 +378,7 @@ export default function Home() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label htmlFor="password-input-form" className={`text-xs font-bold ${isDarkTheme ? "text-slate-300" : "text-slate-700"}`}>
+                    <label htmlFor="password-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
                       Password
                     </label>
                   </div>
@@ -477,7 +433,7 @@ export default function Home() {
                   <div className="w-full border-t border-slate-800/80"></div>
                 </div>
                 <span className={`relative px-3 text-[10px] uppercase font-bold tracking-widest text-slate-500 ${
-                  isDarkTheme ? "bg-slate-900" : "bg-white"
+                  isDark ? "bg-slate-900" : "bg-white"
                 }`}>
                   Or Sync With
                 </span>
@@ -488,7 +444,7 @@ export default function Home() {
                 type="button"
                 onClick={handleGoogleFormSignIn}
                 className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs border transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer ${
-                  isDarkTheme
+                  isDark
                     ? "bg-slate-900 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700/80"
                     : "bg-slate-100 hover:bg-slate-200 text-slate-750 hover:text-slate-950 border-slate-350 hover:border-slate-400"
                 }`}
@@ -520,7 +476,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${
-          isDarkTheme ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
+          isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
         }`}>
           <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
         </footer>
@@ -528,341 +484,83 @@ export default function Home() {
     );
   }
 
+  // REDESIGNED DASHBOARD HUB (LOGGED IN) - Wrapped inside AppShell
   const week = userProfile?.pregnancyWeek || 0;
-  let order: (keyof typeof componentMap)[] = ["kicks", "contractions", "sugar", "milk", "symptoms", "weight"];
+  
+  // Dynamic priority ordering based on pregnancy week
+  let order: string[] = ["kicks", "contractions", "sugar", "milk", "symptoms", "weight", "baptism"];
   if (week > 0 && week <= 13) {
-    order = ["symptoms", "weight", "sugar", "milk", "kicks", "contractions"];
+    order = ["symptoms", "weight", "sugar", "milk", "kicks", "contractions", "baptism"];
   } else if (week >= 14 && week <= 27) {
-    order = ["weight", "kicks", "symptoms", "sugar", "milk", "contractions"];
+    order = ["weight", "kicks", "symptoms", "sugar", "milk", "contractions", "baptism"];
   } else if (week >= 28) {
-    order = ["contractions", "kicks", "sugar", "weight", "symptoms", "milk"];
+    order = ["contractions", "kicks", "sugar", "weight", "symptoms", "milk", "baptism"];
   }
 
-  const mainFocusKeys = order.slice(0, 3);
-  const sidePanelKeys = order.slice(3, 6);
+  const largeKeys = order.slice(0, 3);
+  const smallKeys = order.slice(3, 7);
+
+  const renderSummaryCard = (key: string, mode: "large" | "small") => {
+    switch (key) {
+      case "kicks":
+        return <KickSummaryCard key={key} mode={mode} />;
+      case "contractions":
+        return <ContractionSummaryCard key={key} mode={mode} />;
+      case "sugar":
+        return <BloodSugarSummaryCard key={key} mode={mode} />;
+      case "milk":
+        return <MilkSummaryCard key={key} mode={mode} />;
+      case "symptoms":
+        return <SymptomSummaryCard key={key} mode={mode} />;
+      case "weight":
+        return <WeightSummaryCard key={key} mode={mode} />;
+      case "baptism":
+        return <BaptismSummaryCard key={key} mode={mode} />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-24 md:pb-0 ${isDark
-      ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
-      : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
-      }`}>
-      {/* Decorative background glow elements */}
-      <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-rose-950/25" : "bg-rose-200/30"
-        }`} />
-      <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-amber-950/20" : "bg-amber-200/20"
-        }`} />
-
-      {/* Header */}
-      <header className={`w-full backdrop-blur-sm border-b border-slate-850/60 relative transition-all ${isProfileDropdownOpen ? "z-[110]" : "z-30"
-        }`}>
-        <div className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-                Lumina
-              </h1>
-              <p className={`text-[10px] uppercase tracking-widest font-semibold ${isDark ? "text-slate-400" : "text-slate-500"
-                }`}>
-                Prenatal Suite
-              </p>
-            </div>
-          </div>
-
-          {/* Auth Control Block */}
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="theme-toggle"
-              aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-              title={`Switch to ${isDark ? "light" : "dark"} mode`}
-            >
-              <span className="toggle-thumb">
-                {isDark ? (
-                  <Moon size={12} weight="fill" className="text-white" />
-                ) : (
-                  <Sun size={12} weight="fill" className="text-white" />
-                )}
-              </span>
-            </button>
-
-            {loading ? (
-              <div className={`w-6 h-6 rounded-full border-2 animate-spin ${isDark ? "border-slate-700 border-t-rose-500" : "border-slate-300 border-t-rose-500"
-                }`} />
-            ) : user ? (
-              <div className="flex items-center gap-3">
-                {/* User profile dropdown trigger */}
-                <div className="relative">
-                  <button
-                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden ${isDark
-                      ? "bg-slate-800/60 border-slate-700/40 hover:bg-slate-800"
-                      : "bg-white/80 border-slate-200/60 hover:bg-white"
-                      }`}
-                    aria-label="Toggle profile menu"
-                  >
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="w-full h-full object-cover rounded-full" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-950 text-xs font-extrabold">
-                        {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isProfileDropdownOpen && (
-                    <>
-                      {/* Click-away backdrop */}
-                      <div
-                        className="fixed inset-0 z-40 cursor-default"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                      />
-                      <div className="absolute right-0 mt-2 w-80 rounded-2xl p-5 bg-slate-950 border border-slate-850/80 z-50 shadow-2xl flex flex-col gap-4 animate-modal-scale-in text-slate-200">
-
-                        {/* User Info Header inside Dropdown */}
-                        <div className="flex items-center gap-3 pb-3 border-b border-slate-850/60">
-                          {user.photoURL ? (
-                            <img src={user.photoURL} alt="" className="w-9 h-9 rounded-full" />
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-100 text-xs font-extrabold">
-                              {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div className="overflow-hidden text-left">
-                            <span className="text-xs font-extrabold block truncate text-slate-100">
-                              {user.displayName || "Caregiver"}
-
-                            </span>
-                            <span className="text-[10px] text-slate-400 block truncate">
-                              {user.email}
-                            </span>
-
-                            {/* Role badge */}
-                            {userProfile?.role && (
-                              <div className={`mt-1 px-2.5 rounded-full text-xs ${roleBadge.classes}`}>
-                                <span>{roleBadge.emoji}</span>
-                                <span>{roleBadge.label}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Couple Linking module inside Dropdown */}
-                        <div className="text-left">
-                          <LinkPartnerPanel />
-                        </div>
-
-                        {/* Dropdown Actions */}
-                        <div className="border-t border-slate-850/60 pt-3">
-                          <button
-                            onClick={() => {
-                              logout();
-                              setIsProfileDropdownOpen(false);
-                            }}
-                            className="w-full py-2 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center bg-rose-200 dark:bg-slate-850 hover:bg-rose-300/80 dark:hover:bg-slate-800 text-red-800 dark:text-red-400"
-                          >
-                            Sign Out
-                          </button>
-                        </div>
-
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${isDark
-                  ? "bg-slate-800/80 border border-slate-700/50 text-slate-400"
-                  : "bg-amber-50 border border-amber-200 text-amber-700"
-                  }`}>
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                  Offline Preview Mode
-                </div>
-                <button
-                  onClick={openAuthModal}
-                  className={`py-2 px-4 rounded-xl font-extrabold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer text-white ${isDark
-                    ? "bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 shadow-rose-500/10"
-                    : "bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 shadow-rose-600/20"
-                    }`}
-                >
-                  Sign In / Join
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 z-10">
-        {/* Welcome Section */}
-        <div className="mb-10 text-center md:text-left">
-          <h2 className={`text-3xl md:text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-100"}`}>
-            Welcome to Your Dashboard
-            {userProfile?.pregnancyWeek ? (
-              <span className={`text-2xl md:text-3xl ml-3 ${isDark ? "text-rose-400" : "text-rose-500"}`}>
-                - Week {userProfile.pregnancyWeek}
-              </span>
-            ) : null}
-          </h2>
-          <p className={isDark ? "text-slate-400 max-w-2xl" : "text-slate-500 max-w-2xl"}>
-            Track daily progress, log vital signs, and stay connected with other caregivers in real-time. Keep a close eye on key prenatal metrics.
-          </p>
-        </div>
-
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Main Focus: Active trackers & Trend Analytics */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            {mainFocusKeys.map((key) => (
-              <div id={key} key={key}>
-                {componentMap[key]}
-              </div>
-            ))}
-          </div>
-
-          {/* Side Panels - Supplementary tracking cards */}
-          <div className="flex flex-col gap-6">
-            {sidePanelKeys.map((key) => (
-              <div id={key} key={key}>
-                {componentMap[key]}
-              </div>
-            ))}
-
-            {/* Guest caregiver placeholder */}
-            {!user && (
-              <div className={`p-6 rounded-2xl border flex flex-col gap-4 ${isDark
-                ? "bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-800"
-                : "bg-gradient-to-br from-white/80 to-slate-50/80 border-slate-200"
-                }`}>
-                <h4 className={`text-sm font-bold flex items-center gap-2 ${isDark ? "text-white" : "text-slate-950"
-                  }`}>
-                  <span className="w-2 h-2 rounded-full bg-rose-400" />
-                  Active Caregivers
-                </h4>
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2 overflow-hidden">
-                    <div className={`inline-block h-8 w-8 rounded-full ring-2 flex items-center justify-center text-xs font-bold ${isDark
-                      ? "ring-slate-900 bg-slate-700 text-slate-400"
-                      : "ring-white bg-slate-200 text-slate-500"
-                      }`}>G</div>
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-rose-500 flex items-center justify-center text-xs font-bold text-white">P</div>
-                  </div>
-                  <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`}>Guest Mode</span>
-                </div>
-                <p className={`text-xs leading-normal ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Sign in to link with your partner and share the same dashboard.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Global Floating AI Companion */}
-        <PrenatalChatbot />
-      </main>
-
-      {/* Footer */}
-      <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
-        }`}>
-        <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
-      </footer>
-
-      {/* Mobile Floating Action Panel Dock Navigator (FAB navigation) */}
-      <div className="fixed bottom-4 left-4 right-4 py-3 px-4 flex items-center justify-around z-30 lg:hidden rounded-2xl liquid-glass-nav">
-        <button
-          onClick={() => scrollToSection("kicks")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-rose-400" : "text-slate-400 hover:text-rose-500"
-            }`}
-        >
-          <Footprints size={18} weight="bold" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Kicks</span>
-        </button>
-        <button
-          onClick={() => scrollToSection("contractions")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-rose-400" : "text-slate-400 hover:text-rose-500"
-            }`}
-        >
-          <Timer size={18} weight="bold" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Timing</span>
-        </button>
-        <button
-          onClick={() => scrollToSection("sugar")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-rose-400" : "text-slate-400 hover:text-rose-500"
-            }`}
-        >
-          <Drop size={18} weight="bold" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Sugar</span>
-        </button>
-        <button
-          onClick={() => scrollToSection("milk")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-sky-400" : "text-slate-400 hover:text-sky-500"
-            }`}
-        >
-          <Drop size={18} weight="fill" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Milk</span>
-        </button>
-        <button
-          onClick={() => scrollToSection("symptoms")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-teal-400" : "text-slate-400 hover:text-teal-500"
-            }`}
-        >
-          <ThermometerHot size={18} weight="bold" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Diary</span>
-        </button>
-        <button
-          onClick={() => scrollToSection("weight")}
-          className={`flex flex-col items-center gap-1 group active:scale-95 transition-all cursor-pointer ${isDark ? "text-slate-400 hover:text-amber-400" : "text-slate-400 hover:text-amber-500"
-            }`}
-        >
-          <Scales size={18} weight="bold" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Weight</span>
-        </button>
+    <AppShell>
+      {/* Welcome & Info Section */}
+      <div className="mb-10 text-center md:text-left">
+        <h2 className={`text-3xl md:text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+          Welcome to Your Dashboard
+          {userProfile?.pregnancyWeek ? (
+            <span className={`text-2xl md:text-3xl ml-3 ${isDark ? "text-rose-450" : "text-rose-600"}`}>
+              - Week {userProfile.pregnancyWeek}
+            </span>
+          ) : null}
+        </h2>
+        <p className={`text-sm leading-relaxed max-w-2xl ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+          Track daily progress, log vital signs, and stay connected with other caregivers in real-time. Keep a close eye on key prenatal metrics.
+        </p>
       </div>
 
-      {/* Auth Modal Container */}
-      <AuthModal dialogRef={authModalRef} />
-
-      {/* Missing Info Modal */}
-      {showMissingInfoModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className={`w-full max-w-md p-6 rounded-2xl shadow-xl border ${isDark ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-200 text-slate-900"}`}>
-            <h3 className="text-xl font-extrabold mb-2">Almost there!</h3>
-            <p className={`text-sm mb-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              Please provide your Expected Labor Date (EDD) so we can tailor your experience.
-            </p>
-            <form onSubmit={handleSaveMissingInfo} className="space-y-4">
-              <div className="space-y-1.5 text-left">
-                <label htmlFor="edd-input" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                  Expected Labor Date
-                </label>
-                <input
-                  id="edd-input"
-                  type="date"
-                  value={expectedLaborDate}
-                  onChange={(e) => setExpectedLaborDate(e.target.value)}
-                  className={`w-full p-3 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-rose-500/50 ${isDark
-                    ? "bg-slate-800/50 border-slate-700 text-white placeholder-slate-500"
-                    : "bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400"
-                    }`}
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-extrabold text-sm shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all duration-150 cursor-pointer"
-              >
-                Save Date
-              </button>
-            </form>
+      {/* Dynamic Grid Layout */}
+      <div className="space-y-8 text-slate-200">
+        
+        {/* ROW 1: Active High-Priority Trackers (Large Detailed Views) */}
+        <div>
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-left">
+            Active Priority Focus
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {largeKeys.map((key) => renderSummaryCard(key, "large"))}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* ROW 2: Secondary Trackers (Small Compact Views) */}
+        <div>
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-left">
+            Secondary Vital Logs
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {smallKeys.map((key) => renderSummaryCard(key, "small"))}
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }
