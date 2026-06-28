@@ -14,7 +14,7 @@ interface Message {
 }
 
 export default function PrenatalChatbot() {
-  const { user } = useAuth();
+  const { user, familyId } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,32 +58,57 @@ export default function PrenatalChatbot() {
 
     if (user) {
       // 1. Subscribe to Kicks today
-      const qKicks = query(
-        collection(db, "kicks"),
-        where("userId", "==", user.uid),
-        where("createdAt", ">=", startOfDay)
-      );
+      let qKicks;
+      if (familyId) {
+        qKicks = query(
+          collection(db, "families", familyId, "kicks"),
+          where("createdAt", ">=", startOfDay)
+        );
+      } else {
+        qKicks = query(
+          collection(db, "kicks"),
+          where("userId", "==", user.uid),
+          where("createdAt", ">=", startOfDay)
+        );
+      }
       unsubKicks = onSnapshot(qKicks, (snapshot) => {
         setKickCount(snapshot.size);
       });
 
       // 2. Subscribe to Milk today
-      const qMilk = query(
-        collection(db, "milk"),
-        where("userId", "==", user.uid),
-        where("createdAt", ">=", startOfDay)
-      );
+      let qMilk;
+      if (familyId) {
+        qMilk = query(
+          collection(db, "families", familyId, "milk"),
+          where("createdAt", ">=", startOfDay)
+        );
+      } else {
+        qMilk = query(
+          collection(db, "milk"),
+          where("userId", "==", user.uid),
+          where("createdAt", ">=", startOfDay)
+        );
+      }
       unsubMilk = onSnapshot(qMilk, (snapshot) => {
         setMilkCount(snapshot.size);
       });
 
       // 3. Subscribe to Blood Sugar records
-      const qGlucose = query(
-        collection(db, "bloodsugar"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(20)
-      );
+      let qGlucose;
+      if (familyId) {
+        qGlucose = query(
+          collection(db, "families", familyId, "bloodsugar"),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+      } else {
+        qGlucose = query(
+          collection(db, "bloodsugar"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+      }
       unsubGlucose = onSnapshot(qGlucose, (snapshot) => {
         const temp: { value: number; slot: string; date: string }[] = [];
         snapshot.forEach((doc) => {
@@ -100,7 +125,7 @@ export default function PrenatalChatbot() {
       // Guest local storage fallback polling / reading
       const readGuestLogs = () => {
         // Kicks count simulation count
-        const kickData = setKickCount(0); // For simple display, kicks are usually in counter component state or localStorage
+        setKickCount(0); // For simple display, kicks are usually in counter component state or localStorage
         // Let's read guest kicks from counter fallback if saved
         // Guest Milk
         const guestMilk = localStorage.getItem("lumina_guest_milk");
@@ -138,7 +163,7 @@ export default function PrenatalChatbot() {
       unsubMilk();
       unsubGlucose();
     };
-  }, [user]);
+  }, [user, familyId]);
 
   // Answer matching engine (local database NLP processor)
   const generateResponse = (userText: string): string => {

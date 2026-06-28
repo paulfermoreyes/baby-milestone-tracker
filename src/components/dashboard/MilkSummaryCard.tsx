@@ -96,7 +96,7 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
       if (familyId) {
         await addDoc(collection(db, "families", familyId, "milk"), payload);
       } else {
-        await addDoc(collection(db, "milk"), payload);
+        await addDoc(collection(db, "milk"), { ...payload, userId: user.uid });
       }
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);

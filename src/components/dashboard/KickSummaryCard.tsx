@@ -106,7 +106,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
       if (familyId) {
         await addDoc(collection(db, "families", familyId, "kicks"), payload);
       } else {
-        await addDoc(collection(db, "kicks"), payload);
+        await addDoc(collection(db, "kicks"), { ...payload, userId: user.uid });
       }
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);
