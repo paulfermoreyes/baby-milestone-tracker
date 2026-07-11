@@ -25,6 +25,7 @@ export default function KickCounter() {
   // Synchronize with Firestore real-time snapshots
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionKicks([]);
       return;
     }

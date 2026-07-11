@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth, UserRole } from "@/context/AuthContext";
 
 interface AuthModalProps {
@@ -42,7 +42,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
     return () => dialog.removeEventListener("close", handleClose);
   }, [dialogRef]);
 
-  const handleCloseWithAnimation = () => {
+  const handleCloseWithAnimation = useCallback(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
@@ -52,7 +52,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       dialog.close();
       dialog.classList.remove("closing");
     }, 240);
-  };
+  }, [dialogRef]);
 
   // Fallback for light-dismiss on browsers that don't support `closedby="any"` natively yet (e.g. Safari)
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
 
     dialog.addEventListener("click", handleLightDismiss);
     return () => dialog.removeEventListener("click", handleLightDismiss);
-  }, [dialogRef]);
+  }, [dialogRef, handleCloseWithAnimation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +155,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         {/* Header Title */}
         <div className="text-center mb-6">
           <div className="inline-flex w-12 h-12 items-center justify-center mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
           </div>
           <h2 id="authModalTitle" className="text-2xl font-extrabold tracking-tight text-white">

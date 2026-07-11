@@ -12,8 +12,10 @@ export class BloodSugarPage {
   readonly fastingLogBtn: Locator;
   readonly valueInput: Locator;
   readonly saveBtn: Locator;
+  readonly updateBtn: Locator;
   readonly closeFormBtn: Locator;
   readonly loggedValueText: Locator;
+  readonly editLogBtn: Locator;
   readonly removeLogBtn: Locator;
 
   constructor(page: Page) {
@@ -32,10 +34,12 @@ export class BloodSugarPage {
     // Entry Form Pop-up
     this.valueInput = page.getByPlaceholder("Blood sugar level (e.g. 95)");
     this.saveBtn = page.getByRole("button", { name: "Save Log" });
+    this.updateBtn = page.getByRole("button", { name: "Update Log" });
     this.closeFormBtn = page.getByRole("button", { name: "Close" });
     
     // Logged values in slot cards
     this.loggedValueText = this.fastingContainer.locator("span.text-2xl");
+    this.editLogBtn = this.fastingContainer.getByTitle("Edit log");
     this.removeLogBtn = this.fastingContainer.getByTitle("Remove log");
   }
 

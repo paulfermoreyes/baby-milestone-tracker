@@ -38,6 +38,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
   useEffect(() => {
     if (!user) {
       // Offline simulated preview data
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayKicksCount(8);
       setRecentCountHistory([4, 6, 8, 5, 8]);
       return;

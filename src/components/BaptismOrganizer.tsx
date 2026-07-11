@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -13,8 +13,6 @@ import {
   Plus,
   Trash,
   Pencil,
-  Check,
-  X,
   Warning,
   Sparkle,
   UserPlus
@@ -66,6 +64,7 @@ export default function BaptismOrganizer() {
   const [activeFilter, setActiveFilter] = useState<"all" | "godparents" | "guests">("all");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -79,6 +78,7 @@ export default function BaptismOrganizer() {
       if (localData) {
         try {
           const parsed = JSON.parse(localData) as BaptismEventData;
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setDate(parsed.date || "");
           setTime(parsed.time || "");
           setVenueName(parsed.venueName || "");
