@@ -26,10 +26,23 @@ test.describe("Blood Sugar Tracker E2E UI Tests", () => {
     await expect(bloodSugarPage.valueInput).not.toBeVisible();
     await expect(bloodSugarPage.loggedValueText).toHaveText("90");
 
+    // Click edit on Fasting card
+    await bloodSugarPage.editLogBtn.click();
+    await expect(bloodSugarPage.valueInput).toBeVisible();
+    await expect(bloodSugarPage.valueInput).toHaveValue("90");
+
+    // Change value to 85 and click update
+    await bloodSugarPage.enterBloodSugar(85);
+    await bloodSugarPage.updateBtn.click();
+
+    // Form should close and Fasting card should now display "85"
+    await expect(bloodSugarPage.valueInput).not.toBeVisible();
+    await expect(bloodSugarPage.loggedValueText).toHaveText("85");
+
     // Click "Logbook" tab to verify it is recorded in historical data
     await bloodSugarPage.logbookViewBtn.click();
     await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("Fasting");
-    await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("90");
+    await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("85");
 
     // Switch back to "Record" and delete the reading
     await bloodSugarPage.recordViewBtn.click();

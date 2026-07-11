@@ -33,6 +33,7 @@ export default function WeightTracker() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -50,6 +51,7 @@ export default function WeightTracker() {
             date: string;
             timestampStr: string;
           }[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setWeightLogs(
             parsed.map((item) => ({
               ...item,

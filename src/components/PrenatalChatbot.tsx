@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { collection, query, where, orderBy, onSnapshot, limit, Timestamp } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { ChatCircle, Robot, Sparkle, ChartBar, Drop, ThermometerHot, X } from "@phosphor-icons/react";
@@ -132,7 +132,7 @@ export default function PrenatalChatbot() {
         if (guestMilk) {
           try {
             setMilkCount(JSON.parse(guestMilk).length);
-          } catch (e) {
+          } catch {
             setMilkCount(0);
           }
         } else {
@@ -144,7 +144,7 @@ export default function PrenatalChatbot() {
         if (guestGlucose) {
           try {
             setGlucoseLogs(JSON.parse(guestGlucose));
-          } catch (e) {
+          } catch {
             setGlucoseLogs([]);
           }
         } else {

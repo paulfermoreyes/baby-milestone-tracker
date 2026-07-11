@@ -31,6 +31,7 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogs([
         { id: "1", weight: 142.5, date: "2026-05-01", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) },
         { id: "2", weight: 144.2, date: "2026-05-15", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15) },

@@ -28,6 +28,7 @@ export default function MilkCounter() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -40,6 +41,7 @@ export default function MilkCounter() {
       if (localData) {
         try {
           const parsed = JSON.parse(localData) as { id: string; timestampStr: string }[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setMilkLogs(parsed.map((item) => ({ id: item.id, timestamp: new Date(item.timestampStr) })));
         } catch (e) {
           console.error("Failed to parse guest milk logs", e);
@@ -201,7 +203,7 @@ export default function MilkCounter() {
         {/* History Log */}
         {count > 0 && (
           <div className="mb-6">
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2">Today's Servings</span>
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2">Today&apos;s Servings</span>
             <div className="max-h-[88px] overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
               {milkLogs.slice().reverse().map((log, index) => (
                 <div key={log.id} className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-slate-900/40 border border-slate-850/50 text-[11px]">

@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon, Warning, ThermometerHot, Footprints, Users } from "@phosphor-icons/react";
+import { Sun, Moon, ThermometerHot, Footprints, Users } from "@phosphor-icons/react";
 import AppShell from "@/components/AppShell";
 import KickSummaryCard from "@/components/dashboard/KickSummaryCard";
 import ContractionSummaryCard from "@/components/dashboard/ContractionSummaryCard";
@@ -12,9 +12,10 @@ import MilkSummaryCard from "@/components/dashboard/MilkSummaryCard";
 import SymptomSummaryCard from "@/components/dashboard/SymptomSummaryCard";
 import WeightSummaryCard from "@/components/dashboard/WeightSummaryCard";
 import BaptismSummaryCard from "@/components/dashboard/BaptismSummaryCard";
+import BirthChecklistSummaryCard from "@/components/dashboard/BirthChecklistSummaryCard";
 
 export default function Home() {
-  const { user, userProfile, loading, signUpWithEmail, signInWithEmail, signInWithGoogle, updateProfileData } = useAuth();
+  const { user, userProfile, loading, signUpWithEmail, signInWithEmail, signInWithGoogle } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   // Landing page interactive form state
@@ -86,19 +87,18 @@ export default function Home() {
   // LOADING STATE
   if (loading) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden ${
-        isDark ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
-      }`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden ${isDark ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
+        }`}>
         <div className="flex flex-col items-center gap-4 z-10">
           <div className="w-16 h-16 animate-bounce">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent animate-pulse">
             Lumina
           </h1>
-          <div className={`w-8 h-8 rounded-full border-4 border-t-rose-500 animate-spin ${
-            isDark ? "border-slate-800" : "border-slate-200"
-          }`} />
+          <div className={`w-8 h-8 rounded-full border-4 border-t-rose-500 animate-spin ${isDark ? "border-slate-800" : "border-slate-200"
+            }`} />
         </div>
       </div>
     );
@@ -107,33 +107,30 @@ export default function Home() {
   // LANDING / ONBOARDING PAGE (LOGGED OUT)
   if (!user) {
     return (
-      <div className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-12 ${
-        isDark
-          ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
-          : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
-      }`}>
+      <div className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-12 ${isDark
+        ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
+        : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
+        }`}>
         {/* Decorative background glow elements */}
-        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-          isDark ? "bg-rose-950/25" : "bg-rose-200/30"
-        }`} />
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-          isDark ? "bg-amber-950/20" : "bg-amber-200/20"
-        }`} />
+        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-rose-950/25" : "bg-rose-200/30"
+          }`} />
+        <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-amber-950/20" : "bg-amber-200/20"
+          }`} />
 
         {/* Header */}
         <header className="w-full backdrop-blur-sm border-b border-slate-850/60 relative z-30">
           <div className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
                   Lumina
                 </h1>
-                <p className={`text-[10px] uppercase tracking-widest font-semibold ${
-                  isDark ? "text-slate-400" : "text-slate-500"
-                }`}>
+                <p className={`text-[10px] uppercase tracking-widest font-semibold ${isDark ? "text-slate-400" : "text-slate-500"
+                  }`}>
                   Prenatal Suite
                 </p>
               </div>
@@ -162,18 +159,11 @@ export default function Home() {
           {/* Left Column: Welcome & Purpose Cards (Col Span 7) */}
           <div className="lg:col-span-7 flex flex-col gap-8 text-center lg:text-left">
             <div>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider ${
-                isDark ? "bg-rose-500/10 text-rose-400" : "bg-rose-500/10 text-rose-600"
-              }`}>
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                Real-Time Caregiver Syncing
-              </span>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mt-4 mb-6 leading-tight">
                 Simplify Your <span className="bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Prenatal Journey</span>
               </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 ${
-                isDark ? "text-slate-400" : "text-slate-600"
-              }`}>
+              <p className={`text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 ${isDark ? "text-slate-400" : "text-slate-600"
+                }`}>
                 Collaborative prenatal health tracking, real-time caregiver sync, and instant AI guidance designed to support your pregnancy milestones and connect parents.
               </p>
             </div>
@@ -201,7 +191,7 @@ export default function Home() {
                 <div>
                   <h4 className="text-base font-bold text-white mb-1">Fetal Activity & Contraction Vitals</h4>
                   <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-655"}`}>
-                    Count baby's daily kicks for fetal safety, track contraction frequency using our precise timing tool, and monitor vital signs like blood sugar levels.
+                    Count baby&apos;s daily kicks for fetal safety, track contraction frequency using our precise timing tool, and monitor vital signs like blood sugar levels.
                   </p>
                 </div>
               </div>
@@ -243,18 +233,16 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => { setIsSignUp(false); setFormError(null); }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    !isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
-                  }`}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${!isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+                    }`}
                 >
                   Sign In
                 </button>
                 <button
                   type="button"
                   onClick={() => { setIsSignUp(true); setFormError(null); }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
-                  }`}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+                    }`}
                 >
                   Register
                 </button>
@@ -333,11 +321,10 @@ export default function Home() {
                         type="button"
                         onClick={() => setRole("husband")}
                         disabled={formLoading}
-                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
-                          role === "husband"
-                            ? "bg-indigo-500/15 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/10"
-                            : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
-                        }`}
+                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${role === "husband"
+                          ? "bg-indigo-500/15 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/10"
+                          : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                          }`}
                       >
                         <span className="text-xl">👨</span>
                         <span>Husband</span>
@@ -346,11 +333,10 @@ export default function Home() {
                         type="button"
                         onClick={() => setRole("wife")}
                         disabled={formLoading}
-                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
-                          role === "wife"
-                            ? "bg-pink-500/15 border-pink-500/50 text-pink-300 shadow-sm shadow-pink-500/10"
-                            : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
-                        }`}
+                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${role === "wife"
+                          ? "bg-pink-500/15 border-pink-500/50 text-pink-300 shadow-sm shadow-pink-500/10"
+                          : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                          }`}
                       >
                         <span className="text-xl">👩</span>
                         <span>Wife</span>
@@ -432,9 +418,8 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-800/80"></div>
                 </div>
-                <span className={`relative px-3 text-[10px] uppercase font-bold tracking-widest text-slate-500 ${
-                  isDark ? "bg-slate-900" : "bg-white"
-                }`}>
+                <span className={`relative px-3 text-[10px] uppercase font-bold tracking-widest text-slate-500 ${isDark ? "bg-slate-900" : "bg-white"
+                  }`}>
                   Or Sync With
                 </span>
               </div>
@@ -443,11 +428,10 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleGoogleFormSignIn}
-                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs border transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer ${
-                  isDark
-                    ? "bg-slate-900 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700/80"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-750 hover:text-slate-950 border-slate-350 hover:border-slate-400"
-                }`}
+                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs border transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer ${isDark
+                  ? "bg-slate-900 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700/80"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-750 hover:text-slate-950 border-slate-350 hover:border-slate-400"
+                  }`}
                 disabled={formLoading}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -475,9 +459,8 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${
-          isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
-        }`}>
+        <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
+          }`}>
           <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
         </footer>
       </div>
@@ -486,19 +469,19 @@ export default function Home() {
 
   // REDESIGNED DASHBOARD HUB (LOGGED IN) - Wrapped inside AppShell
   const week = userProfile?.pregnancyWeek || 0;
-  
+
   // Dynamic priority ordering based on pregnancy week
-  let order: string[] = ["kicks", "contractions", "sugar", "milk", "symptoms", "weight", "baptism"];
+  let order: string[] = ["kicks", "contractions", "sugar", "milk", "symptoms", "weight", "checklist", "baptism"];
   if (week > 0 && week <= 13) {
-    order = ["symptoms", "weight", "sugar", "milk", "kicks", "contractions", "baptism"];
+    order = ["symptoms", "weight", "sugar", "milk", "kicks", "contractions", "checklist", "baptism"];
   } else if (week >= 14 && week <= 27) {
-    order = ["weight", "kicks", "symptoms", "sugar", "milk", "contractions", "baptism"];
+    order = ["weight", "kicks", "symptoms", "sugar", "milk", "contractions", "checklist", "baptism"];
   } else if (week >= 28) {
-    order = ["contractions", "kicks", "sugar", "weight", "symptoms", "milk", "baptism"];
+    order = ["contractions", "kicks", "checklist", "sugar", "weight", "symptoms", "milk", "baptism"];
   }
 
   const largeKeys = order.slice(0, 3);
-  const smallKeys = order.slice(3, 7);
+  const smallKeys = order.slice(3, 8);
 
   const renderSummaryCard = (key: string, mode: "large" | "small") => {
     switch (key) {
@@ -516,6 +499,8 @@ export default function Home() {
         return <WeightSummaryCard key={key} mode={mode} />;
       case "baptism":
         return <BaptismSummaryCard key={key} mode={mode} />;
+      case "checklist":
+        return <BirthChecklistSummaryCard key={key} mode={mode} />;
       default:
         return null;
     }
@@ -540,7 +525,7 @@ export default function Home() {
 
       {/* Dynamic Grid Layout */}
       <div className="space-y-8 text-slate-200">
-        
+
         {/* ROW 1: Active High-Priority Trackers (Large Detailed Views) */}
         <div>
           <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-left">

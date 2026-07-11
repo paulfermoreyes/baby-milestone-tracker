@@ -26,6 +26,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -38,6 +39,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
       if (localData) {
         try {
           const parsed = JSON.parse(localData);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setDate(parsed.date || "");
           setVenueName(parsed.venueName || "");
           setInvitees(parsed.invitees || []);

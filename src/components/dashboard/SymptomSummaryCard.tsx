@@ -42,6 +42,7 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayLogs([
         { id: "1", symptoms: ["Back Pain", "Mild Fatigue"], severity: "mild", date: todayStr, timestamp: new Date() },
         { id: "2", symptoms: ["Nausea"], severity: "moderate", date: todayStr, timestamp: new Date() }
