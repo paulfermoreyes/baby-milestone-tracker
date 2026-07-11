@@ -44,6 +44,7 @@ export default function SymptomTracker() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -62,6 +63,7 @@ export default function SymptomTracker() {
             notes: string;
             timestampStr: string;
           }[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setSymptomLogs(
             parsed.map((item) => ({
               ...item,
@@ -254,7 +256,7 @@ export default function SymptomTracker() {
               <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">Severity</label>
               <select
                 value={severity}
-                onChange={(e) => setSeverity(e.target.value as any)}
+                onChange={(e) => setSeverity(e.target.value as "Mild" | "Moderate" | "Severe")}
                 className="w-full px-3 py-2 bg-slate-900/60 border border-slate-850 rounded-xl text-xs text-white outline-none focus:border-cyan-500"
               >
                 <option value="Mild" className="bg-slate-950 text-slate-100"> Mild</option>
@@ -293,7 +295,7 @@ export default function SymptomTracker() {
 
         {/* History Panel */}
         <div>
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Today's Logs</span>
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Today&apos;s Logs</span>
           {symptomLogs.length === 0 ? (
             <div className="text-center py-6 rounded-xl bg-slate-900/30 border border-slate-850/50 text-[11px] text-slate-500">
               No symptoms logged today.

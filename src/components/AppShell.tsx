@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Moon, Sun, Users, Warning } from "@phosphor-icons/react";
+import { Moon, Sun } from "@phosphor-icons/react";
 import LinkPartnerPanel from "./LinkPartnerPanel";
 import PrenatalChatbot from "./PrenatalChatbot";
 import AuthModal from "./AuthModal";
@@ -25,11 +25,13 @@ export default function AppShell({ children }: AppShellProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   useEffect(() => {
     if (!loading && user && userProfile && !userProfile.expectedLaborDate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowMissingInfoModal(true);
     }
   }, [loading, user, userProfile]);
@@ -80,6 +82,7 @@ export default function AppShell({ children }: AppShellProps) {
         <div className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 cursor-pointer group">
             <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
             </div>
             <div>
@@ -130,6 +133,7 @@ export default function AppShell({ children }: AppShellProps) {
                     aria-label="Toggle profile menu"
                   >
                     {user.photoURL ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={user.photoURL} alt="" className="w-full h-full object-cover rounded-full" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-950 text-xs font-extrabold">
@@ -150,6 +154,7 @@ export default function AppShell({ children }: AppShellProps) {
                         {/* User Info Header inside Dropdown */}
                         <div className="flex items-center gap-3 pb-3 border-b border-slate-850/60">
                           {user.photoURL ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img src={user.photoURL} alt="" className="w-9 h-9 rounded-full" />
                           ) : (
                             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-100 text-xs font-extrabold">

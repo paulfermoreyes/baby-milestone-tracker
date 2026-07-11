@@ -32,6 +32,7 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
   useEffect(() => {
     if (!user) {
       // simulated preview
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecentContractions([
         { id: "1", duration: 45, interval: 300, createdAt: new Date(Date.now() - 1000 * 60 * 12) },
         { id: "2", duration: 55, interval: 280, createdAt: new Date(Date.now() - 1000 * 60 * 17) },
@@ -83,6 +84,7 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
   };
 
   const formatTimeAgo = (date: Date) => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Math.floor((Date.now() - date.getTime()) / 1000); // seconds
     if (diff < 60) return "Just now";
     const mins = Math.floor(diff / 60);

@@ -20,13 +20,6 @@ interface MilkSummaryCardProps {
   mode: "large" | "small";
 }
 
-interface MilkLog {
-  id: string;
-  amount: number; // in ounces
-  date: string;
-  timestamp: Date;
-}
-
 export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
   const { user, familyId } = useAuth();
   const [todayTotal, setTodayTotal] = useState(0);
@@ -43,6 +36,7 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayTotal(12.5);
       return;
     }

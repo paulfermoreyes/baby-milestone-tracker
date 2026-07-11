@@ -135,6 +135,7 @@ export default function LinkPartnerPanel() {
             <div className="flex -space-x-2">
               {/* Current user avatar */}
               {user?.photoURL ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
               ) : (
                 <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">
@@ -144,6 +145,7 @@ export default function LinkPartnerPanel() {
               {/* Partner avatar */}
               {partnerInfo ? (
                 partnerInfo.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={partnerInfo.photoURL} alt="" className="inline-block h-8 w-8 bg-white rounded-full ring-2 ring-slate-900" />
                 ) : (
                   <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">

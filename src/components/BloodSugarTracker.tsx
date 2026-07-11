@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   serverTimestamp,
   query,
@@ -16,7 +17,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Warning, Trash, ChartLine, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon } from "@phosphor-icons/react";
+import { Warning, Trash, PencilSimple, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon } from "@phosphor-icons/react";
 
 interface BloodSugarLog {
   id: string;
@@ -33,6 +34,7 @@ export default function BloodSugarTracker() {
 
   // Form states
   const [activeSlot, setActiveSlot] = useState<"fasting" | "post-lunch" | "post-dinner" | null>(null);
+  const [editingLog, setEditingLog] = useState<BloodSugarLog | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,6 +67,7 @@ export default function BloodSugarTracker() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 
@@ -84,6 +87,7 @@ export default function BloodSugarTracker() {
             date: string;
             timestampStr: string;
           }[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLogs(
             parsed.map((item) => ({
               ...item,
@@ -257,6 +261,70 @@ export default function BloodSugarTracker() {
     }
   };
 
+  // Start editing a reading
+  const handleStartEdit = (log: BloodSugarLog) => {
+    setEditingLog(log);
+    setInputValue(log.value.toString());
+    setActiveSlot(null); // Close creation form if open
+  };
+
+  // Handle updating an edited reading
+  const handleEditReading = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLog || !inputValue) return;
+
+    const value = parseFloat(inputValue);
+    if (isNaN(value) || value <= 0 || value > 500) {
+      alert("Please enter a valid blood sugar reading (e.g. 50 - 400 mg/dL).");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    if (!user) {
+      // Guest mode: update locally
+      const updated = logs.map((l) => (l.id === editingLog.id ? { ...l, value } : l));
+      setLogs(updated);
+      localStorage.setItem(
+        "lumina_guest_bloodsugar",
+        JSON.stringify(
+          updated.map((l) => ({
+            id: l.id,
+            value: l.value,
+            slot: l.slot,
+            date: l.date,
+            timestampStr: l.timestamp.toISOString(),
+          }))
+        )
+      );
+      setEditingLog(null);
+      setInputValue("");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      if (familyId) {
+        await updateDoc(doc(db, "families", familyId, "bloodsugar", editingLog.id), {
+          value,
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        await updateDoc(doc(db, "bloodsugar", editingLog.id), {
+          value,
+          updatedAt: serverTimestamp(),
+        });
+      }
+      setEditingLog(null);
+      setInputValue("");
+    } catch (err) {
+      console.error("Error updating blood sugar entry:", err);
+      alert("Failed to update reading in the cloud.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Today's logs
   const todayLogs = logs.filter((l) => l.date === todayStr);
   const fastingReading = todayLogs.find((l) => l.slot === "fasting");
@@ -313,7 +381,7 @@ export default function BloodSugarTracker() {
   };
 
   // Date formatting helpers for logs list
-  const formatLogDate = (dateStr: string, timestamp: Date) => {
+  const formatLogDate = (dateStr: string) => {
     if (dateStr === todayStr) return "Today";
 
     const yesterday = new Date();
@@ -740,6 +808,56 @@ export default function BloodSugarTracker() {
         </div>
       </div>
 
+      {/* Pop-up Edit Form (Inline drawer modal layout) */}
+      {editingLog && (
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-modal-scale-in">
+          <form onSubmit={handleEditReading}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                Edit {slotConfigs[editingLog.slot].label} Reading on {formatLogDate(editingLog.date)}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingLog(null);
+                  setInputValue("");
+                }}
+                className="text-slate-500 hover:text-slate-350 text-xs font-bold px-2 py-1 rounded bg-slate-800 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  placeholder="Blood sugar level (e.g. 95)"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500 font-bold focus:shadow-md focus:shadow-indigo-500/10 text-sm h-12"
+                  autoFocus
+                  required
+                />
+                <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">mg/dL</span>
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-950 font-extrabold text-xs shadow-md shadow-indigo-500/10 h-12 flex items-center justify-center min-w-[120px] transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? "Updating..." : "Update Log"}
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-2">
+              Note: Healthy gestational threshold is {editingLog.slot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}.
+            </p>
+          </form>
+        </div>
+      )}
+
       {/* 3 Slots Logger grid */}
       {activeView === "record" && (
         <>
@@ -768,6 +886,13 @@ export default function BloodSugarTracker() {
                       {getClassification(fastingReading.value, "fasting").label}
                     </span>
                     <button
+                      onClick={() => handleStartEdit(fastingReading)}
+                      className="text-slate-500 hover:text-indigo-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Edit log"
+                    >
+                      <PencilSimple size={14} weight="bold" />
+                    </button>
+                    <button
                       onClick={() => handleDeleteReading(fastingReading.id)}
                       className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                       title="Remove log"
@@ -780,6 +905,7 @@ export default function BloodSugarTracker() {
                 <button
                   onClick={() => {
                     setActiveSlot("fasting");
+                    setEditingLog(null);
                     setInputValue("");
                   }}
                   className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
@@ -813,6 +939,13 @@ export default function BloodSugarTracker() {
                       {getClassification(lunchReading.value, "post-lunch").label}
                     </span>
                     <button
+                      onClick={() => handleStartEdit(lunchReading)}
+                      className="text-slate-500 hover:text-indigo-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Edit log"
+                    >
+                      <PencilSimple size={14} weight="bold" />
+                    </button>
+                    <button
                       onClick={() => handleDeleteReading(lunchReading.id)}
                       className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                       title="Remove log"
@@ -825,6 +958,7 @@ export default function BloodSugarTracker() {
                 <button
                   onClick={() => {
                     setActiveSlot("post-lunch");
+                    setEditingLog(null);
                     setInputValue("");
                   }}
                   className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
@@ -858,6 +992,13 @@ export default function BloodSugarTracker() {
                       {getClassification(dinnerReading.value, "post-dinner").label}
                     </span>
                     <button
+                      onClick={() => handleStartEdit(dinnerReading)}
+                      className="text-slate-500 hover:text-indigo-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Edit log"
+                    >
+                      <PencilSimple size={14} weight="bold" />
+                    </button>
+                    <button
                       onClick={() => handleDeleteReading(dinnerReading.id)}
                       className="text-slate-500 hover:text-red-400 p-1.5 rounded hover:bg-slate-850 transition-colors cursor-pointer flex items-center justify-center"
                       title="Remove log"
@@ -870,6 +1011,7 @@ export default function BloodSugarTracker() {
                 <button
                   onClick={() => {
                     setActiveSlot("post-dinner");
+                    setEditingLog(null);
                     setInputValue("");
                   }}
                   className="mt-4 w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-400 hover:text-indigo-300 border border-slate-750 hover:border-slate-700 font-extrabold text-[11.5px] transition-all cursor-pointer text-center"
@@ -1015,7 +1157,7 @@ export default function BloodSugarTracker() {
                           </span>
                         </div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
-                          {formatLogDate(log.date, log.timestamp)}
+                          {formatLogDate(log.date)}
                         </div>
                       </div>
                     </div>
@@ -1028,6 +1170,13 @@ export default function BloodSugarTracker() {
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold border ${classification.color}`}>
                         {classification.label}
                       </span>
+                      <button
+                        onClick={() => handleStartEdit(log)}
+                        className="text-slate-500 hover:text-indigo-400 hover:bg-slate-800/80 p-1.5 rounded transition-all cursor-pointer opacity-40 group-hover/row:opacity-100 flex items-center justify-center"
+                        title="Edit entry"
+                      >
+                        <PencilSimple size={14} weight="bold" />
+                      </button>
                       <button
                         onClick={() => handleDeleteReading(log.id)}
                         className="text-slate-500 hover:text-red-400 hover:bg-slate-800/80 p-1.5 rounded transition-all cursor-pointer opacity-40 group-hover/row:opacity-100 flex items-center justify-center"

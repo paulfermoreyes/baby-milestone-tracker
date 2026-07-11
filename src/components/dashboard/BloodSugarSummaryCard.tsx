@@ -42,6 +42,7 @@ export default function BloodSugarSummaryCard({ mode }: BloodSugarSummaryCardPro
   useEffect(() => {
     if (!user) {
       // offline preview mode
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogs([
         { id: "1", value: 92, slot: "fasting", date: todayStr, timestamp: new Date(Date.now() - 1000 * 60 * 600) },
         { id: "2", value: 125, slot: "post-lunch", date: todayStr, timestamp: new Date(Date.now() - 1000 * 60 * 200) },
@@ -152,7 +153,7 @@ export default function BloodSugarSummaryCard({ mode }: BloodSugarSummaryCardPro
 
               {/* Slot checklist of today */}
               <div className="pt-2">
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Today's Schedule</span>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Today&apos;s Schedule</span>
                 <div className="grid grid-cols-3 gap-2">
                   {(["fasting", "post-lunch", "post-dinner"] as const).map((slot) => {
                     const todaySlotLog = todayLogs.find((l) => l.slot === slot);
