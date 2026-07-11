@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useTheme } from "@/context/ThemeContext";
 import {
   House,
   Footprints,
@@ -14,15 +13,16 @@ import {
   Scales,
   List,
   X,
-  Calendar
+  Calendar,
+  ListChecks
 } from "@phosphor-icons/react";
 
 interface TrackerItem {
   key: string;
   label: string;
   href: string;
-  icon: React.ComponentType<any>;
-  iconProps?: any;
+  icon: React.ComponentType<{ weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone"; size?: number; className?: string }>;
+  iconProps?: { weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone"; size?: number; className?: string };
   colorClass: string;
   activeColorClass: string;
 }
@@ -30,15 +30,13 @@ interface TrackerItem {
 export default function BottomNav() {
   const pathname = usePathname();
   const { userProfile } = useAuth();
-  const { theme } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-
-  const isDark = theme === "dark";
 
   // Tracker Configurations
   const allItems: Record<string, TrackerItem> = {
@@ -113,6 +111,15 @@ export default function BottomNav() {
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-purple-400",
       activeColorClass: "text-purple-400 font-extrabold"
+    },
+    checklist: {
+      key: "checklist",
+      label: "Checklist",
+      href: "/trackers/birth-preparation-checklist",
+      icon: ListChecks,
+      iconProps: { weight: "bold" },
+      colorClass: "text-slate-400 hover:text-emerald-400",
+      activeColorClass: "text-emerald-400 font-extrabold"
     }
   };
 
@@ -126,7 +133,7 @@ export default function BottomNav() {
   } else if (week >= 14 && week <= 27) {
     mobilePriorityKeys = ["weight", "kicks", "symptoms"];
   } else if (week >= 28) {
-    mobilePriorityKeys = ["contractions", "kicks", "sugar"];
+    mobilePriorityKeys = ["contractions", "kicks", "checklist"];
   }
 
   const mobileDockKeys = ["home", ...mobilePriorityKeys];

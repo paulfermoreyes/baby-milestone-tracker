@@ -22,6 +22,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Read saved theme, default to light
     const saved = localStorage.getItem("lumina-theme") as Theme | null;
     const initial = saved || "light";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initial);
     setMounted(true);
   }, []);

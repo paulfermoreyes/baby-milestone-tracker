@@ -25,6 +25,11 @@ service cloud.firestore {
     match /users/{userId} {
       // Users can only read and write their own profile
       allow read, write: if isAuthed() && request.auth.uid == userId;
+
+      // Birth Preparation Checklist (solo, cross-device)
+      match /checklist/{checklistId} {
+        allow read, write: if isAuthed() && request.auth.uid == userId;
+      }
     }
 
     // ── Family documents ─────────────────────────────────────────────────────
@@ -84,6 +89,11 @@ service cloud.firestore {
 
       // Baptism Organizer
       match /baptism/{baptismId} {
+        allow read, write: if isFamilyMember(familyId);
+      }
+
+      // Birth Preparation Checklist
+      match /checklist/{checklistId} {
         allow read, write: if isFamilyMember(familyId);
       }
     }

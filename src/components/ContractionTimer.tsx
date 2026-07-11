@@ -34,6 +34,7 @@ export default function ContractionTimer() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -54,6 +55,7 @@ export default function ContractionTimer() {
             duration: number;
             interval?: number;
           }[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLogs(
             parsed.map((item) => ({
               id: item.id,

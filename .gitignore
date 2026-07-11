@@ -44,3 +44,7 @@ next-env.d.ts
 /playwright-report/
 /test-results/
 
+# local logs
+baby-milestone-app-log.log
+
+
