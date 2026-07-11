@@ -686,29 +686,35 @@ export default function BirthChecklist() {
               key={cat.id}
               className="glass-card bg-slate-800/30 border border-slate-700/30 rounded-2xl overflow-hidden transition-all duration-200 hover:border-slate-600/40"
             >
-              {/* Category header */}
-              <button
-                onClick={() => toggleCategory(cat.id)}
-                className="w-full flex items-center gap-3 px-5 py-4 text-left cursor-pointer group"
+              {/* Category header container */}
+              <div
+                className="w-full flex items-center gap-3 px-5 py-4 group"
               >
-                <span className="text-xl select-none">{cat.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-extrabold text-white truncate">
-                      {cat.name}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-500">
-                      {doneCount}/{total}
-                    </span>
+                {/* Toggle Clickable Area */}
+                <button
+                  onClick={() => toggleCategory(cat.id)}
+                  className="flex-1 flex items-center gap-3 text-left cursor-pointer min-w-0 focus:outline-none"
+                  title={isExpanded ? "Collapse category" : "Expand category"}
+                >
+                  <span className="text-xl select-none">{cat.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-extrabold text-white truncate">
+                        {cat.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {doneCount}/{total}
+                      </span>
+                    </div>
+                    {/* Category progress bar */}
+                    <div className="w-full h-1 rounded-full bg-slate-900/70 mt-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                        style={{ width: `${catPct}%` }}
+                      />
+                    </div>
                   </div>
-                  {/* Category progress bar */}
-                  <div className="w-full h-1 rounded-full bg-slate-900/70 mt-1.5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
-                      style={{ width: `${catPct}%` }}
-                    />
-                  </div>
-                </div>
+                </button>
 
                 {/* Delete category button */}
                 <button
@@ -716,26 +722,31 @@ export default function BirthChecklist() {
                     e.stopPropagation();
                     handleDeleteCategory(cat.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer focus:opacity-100 focus:outline-none"
                   title="Delete category"
                 >
                   <Trash size={12} weight="bold" />
                 </button>
 
-                {isExpanded ? (
-                  <CaretDown
-                    size={14}
-                    weight="bold"
-                    className="text-slate-400 shrink-0"
-                  />
-                ) : (
-                  <CaretRight
-                    size={14}
-                    weight="bold"
-                    className="text-slate-400 shrink-0"
-                  />
-                )}
-              </button>
+                {/* Collapse/Expand Chevron button */}
+                <button
+                  onClick={() => toggleCategory(cat.id)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0 focus:outline-none"
+                  title={isExpanded ? "Collapse category" : "Expand category"}
+                >
+                  {isExpanded ? (
+                    <CaretDown
+                      size={14}
+                      weight="bold"
+                    />
+                  ) : (
+                    <CaretRight
+                      size={14}
+                      weight="bold"
+                    />
+                  )}
+                </button>
+              </div>
 
               {/* Expanded content: two-col lanes */}
               {isExpanded && (
