@@ -182,7 +182,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Create a user record in Firestore with role
-      const userData = {
+      const userData: {
+        uid: string;
+        email: string | null;
+        displayName: string;
+        role: UserRole;
+        familyId: string | null;
+        createdAt: any;
+        pregnancyWeek?: number;
+      } = {
         uid: createdUser.uid,
         email: createdUser.email,
         displayName,
