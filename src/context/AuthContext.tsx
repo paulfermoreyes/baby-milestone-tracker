@@ -188,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName: string;
         role: UserRole;
         familyId: string | null;
-        createdAt: any;
+        createdAt: unknown;
         pregnancyWeek?: number;
       } = {
         uid: createdUser.uid,

@@ -301,7 +301,7 @@ function DropLane({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function BirthChecklist() {
-  const { user, familyId, userProfile } = useAuth();
+  const { user, familyId, userProfile, loading } = useAuth();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -333,8 +333,8 @@ export default function BirthChecklist() {
   // Hospital Bag expanded
   const [bagExpanded, setBagExpanded] = useState(true);
 
-  // Track if data was seeded
-  const seededRef = useRef(false);
+  // Track if data was seeded / loaded for a specific path
+  const loadedPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -373,7 +373,9 @@ export default function BirthChecklist() {
     (updater: (prev: Category[]) => Category[]) => {
       setCategories((prev) => {
         const next = updater(prev);
-        persist(next);
+        queueMicrotask(() => {
+          persist(next);
+        });
         return next;
       });
     },
@@ -383,7 +385,7 @@ export default function BirthChecklist() {
   // ── Initial load ────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || loading) return;
 
     if (!user) {
       // Guest mode
@@ -425,21 +427,22 @@ export default function BirthChecklist() {
       return;
     }
 
+    const currentPath = ref.path;
     const unsub = onSnapshot(
       ref,
       (snap) => {
         if (snap.exists()) {
           const data = snap.data() as ChecklistDocument;
           setCategories(data.categories || []);
-          if (!seededRef.current) {
+          if (loadedPathRef.current !== currentPath) {
             setExpandedCategories(
               new Set((data.categories || []).map((c) => c.id))
             );
-            seededRef.current = true;
+            loadedPathRef.current = currentPath;
           }
-        } else if (!seededRef.current) {
+        } else if (loadedPathRef.current !== currentPath) {
           // First time — seed
-          seededRef.current = true;
+          loadedPathRef.current = currentPath;
           const seed = makeSeedCategories();
           setCategories(seed);
           setExpandedCategories(new Set(seed.map((c) => c.id)));
@@ -458,7 +461,7 @@ export default function BirthChecklist() {
     );
 
     return () => unsub();
-  }, [user, familyId, isClient]);
+  }, [user, familyId, isClient, loading]);
 
   // ── Drag handlers ───────────────────────────────────────────────────────────
 
@@ -624,7 +627,7 @@ export default function BirthChecklist() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
-  if (!isClient || isLoading) {
+  if (!isClient || isLoading || loading) {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-3">
