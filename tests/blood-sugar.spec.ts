@@ -9,6 +9,9 @@ test.describe("Blood Sugar Tracker E2E UI Tests", () => {
     // Verify tracker heading is visible
     await expect(bloodSugarPage.heading).toBeVisible();
 
+    // Export CSV button should not be visible when there are no logs
+    await expect(page.getByRole("button", { name: "Export CSV" })).not.toBeVisible();
+
     // Confirm that the view tab defaults to "Record" and "Fasting" slot exists
     await expect(bloodSugarPage.fastingLogBtn).toBeVisible();
 
@@ -43,6 +46,13 @@ test.describe("Blood Sugar Tracker E2E UI Tests", () => {
     await bloodSugarPage.logbookViewBtn.click();
     await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("Fasting");
     await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("85");
+
+    // Export CSV and verify the file download is triggered
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export CSV" }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain("blood_sugar_report_");
+    expect(download.suggestedFilename()).toContain(".csv");
 
     // Switch back to "Record" and delete the reading
     await bloodSugarPage.recordViewBtn.click();
