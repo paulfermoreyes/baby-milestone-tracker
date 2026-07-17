@@ -17,7 +17,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Warning, Trash, PencilSimple, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon } from "@phosphor-icons/react";
+import { Warning, Trash, PencilSimple, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon, DownloadSimple } from "@phosphor-icons/react";
 
 interface BloodSugarLog {
   id: string;
@@ -403,6 +403,35 @@ export default function BloodSugarTracker() {
     });
   };
 
+  const handleDownloadCSV = () => {
+    if (logs.length === 0) return;
+
+    const headers = ["Date", "Time", "Slot", "Blood Sugar (mg/dL)", "Status"];
+    const sortedLogs = [...logs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    const rows = sortedLogs.map((log) => [
+      log.date,
+      formatLogTime(log.timestamp),
+      slotConfigs[log.slot]?.label || log.slot,
+      log.value,
+      getClassification(log.value, log.slot).label
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `blood_sugar_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Filtering logs based on selected chartRange
   const getFilteredLogsForChart = () => {
     if (chartRange === "all") return logs;
@@ -768,6 +797,17 @@ export default function BloodSugarTracker() {
           <h2 className="text-2xl font-black text-white mt-1">Daily Blood Sugar Logs</h2>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-400">
+          {logs.length > 0 && (
+            <button
+              onClick={handleDownloadCSV}
+              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-850 hover:border-slate-800 text-indigo-400 hover:text-indigo-300 font-extrabold text-[9px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              title="Download report in CSV format"
+            >
+              <DownloadSimple size={12} weight="bold" />
+              <span>Export CSV</span>
+            </button>
+          )}
+
           <span className="hidden sm:inline px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-850 text-slate-300 font-semibold">
             Today: {new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </span>
