@@ -57,7 +57,8 @@ export default function Home() {
         code === "auth/invalid-credential" ||
         code === "auth/invalid-login-credentials" ||
         code === "auth/api-key-not-valid" ||
-        code === "auth/invalid-api-key"
+        code === "auth/invalid-api-key" ||
+        (typeof code === "string" && code.includes("api-key"))
       ) {
         friendlyMessage = "Invalid email or password. Please try again.";
       } else if (code === "auth/email-already-in-use") {
