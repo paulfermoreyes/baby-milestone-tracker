@@ -20,6 +20,7 @@ import {
   DotsNine,
   UserCircle,
   CurrencyDollar,
+  ArrowCounterClockwise,
 } from "@phosphor-icons/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -150,7 +151,13 @@ function getDocRef(user: { uid: string } | null, familyId: string | null) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function OverallProgressBar({ categories }: { categories: Category[] }) {
+function OverallProgressBar({
+  categories,
+  onResetSession,
+}: {
+  categories: Category[];
+  onResetSession: () => void;
+}) {
   const allItems = categories.flatMap((c) => c.items);
   const totalItemsCount = allItems.length;
   const readyItemsCount = allItems.filter(
@@ -177,14 +184,24 @@ function OverallProgressBar({ categories }: { categories: Category[] }) {
 
   return (
     <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl mb-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <Sparkle size={13} weight="fill" className="text-emerald-400" />
           Overall Progress & Inventory
         </span>
-        <span className="text-xs font-black text-emerald-400">
-          {readyItemsCount} / {totalItemsCount} ready ({pct}%)
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-black text-emerald-400">
+            {readyItemsCount} / {totalItemsCount} ready ({pct}%)
+          </span>
+          <button
+            onClick={onResetSession}
+            className="flex items-center gap-1 text-[11px] font-bold text-slate-400 hover:text-slate-200 bg-slate-900/60 hover:bg-slate-800 border border-slate-700/50 rounded-xl px-2.5 py-1 transition-all cursor-pointer"
+            title="Reset Session / Checklist"
+          >
+            <ArrowCounterClockwise size={13} weight="bold" />
+            <span>Reset Session</span>
+          </button>
+        </div>
       </div>
 
       <div className="w-full h-2.5 rounded-full bg-slate-900/70 overflow-hidden">
@@ -531,6 +548,9 @@ export default function BirthChecklist() {
   // Hospital Bag expanded
   const [bagExpanded, setBagExpanded] = useState(true);
 
+  // Reset Modal state
+  const [showResetModal, setShowResetModal] = useState(false);
+
   // Track if data was seeded / loaded for a specific path
   const loadedPathRef = useRef<string | null>(null);
 
@@ -543,13 +563,17 @@ export default function BirthChecklist() {
 
   const persist = useCallback(
     async (updated: Category[]) => {
-      if (!user) {
+      // Always store locally so guest session or offline access retains custom categories/items
+      try {
         localStorage.setItem(
           "lumina_guest_checklist",
           JSON.stringify({ categories: updated })
         );
-        return;
+      } catch (e) {
+        console.error("Failed to write guest checklist to localStorage:", e);
       }
+
+      if (!user) return;
       const ref = getDocRef(user, familyId);
       if (!ref) return;
       try {
@@ -639,14 +663,30 @@ export default function BirthChecklist() {
             loadedPathRef.current = currentPath;
           }
         } else if (loadedPathRef.current !== currentPath) {
-          // First time — seed
+          // First time for this user path — check if we have local guest categories to preserve & migrate
           loadedPathRef.current = currentPath;
-          const seed = makeSeedCategories();
-          setCategories(seed);
-          setExpandedCategories(new Set(seed.map((c) => c.id)));
+          let initialCategories: Category[] = [];
+          const localRaw = typeof window !== "undefined" ? localStorage.getItem("lumina_guest_checklist") : null;
+          if (localRaw) {
+            try {
+              const parsed = JSON.parse(localRaw) as ChecklistDocument;
+              if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+                initialCategories = parsed.categories;
+              }
+            } catch {
+              // ignore parse error
+            }
+          }
+
+          if (initialCategories.length === 0) {
+            initialCategories = makeSeedCategories();
+          }
+
+          setCategories(initialCategories);
+          setExpandedCategories(new Set(initialCategories.map((c) => c.id)));
           setDoc(
             ref,
-            { categories: seed, updatedAt: serverTimestamp() },
+            { categories: initialCategories, updatedAt: serverTimestamp() },
             { merge: true }
           ).catch(console.error);
         }
@@ -907,7 +947,10 @@ export default function BirthChecklist() {
       )}
 
       {/* Overall progress */}
-      <OverallProgressBar categories={categories} />
+      <OverallProgressBar
+        categories={categories}
+        onResetSession={() => setShowResetModal(true)}
+      />
 
       {/* Category accordions */}
       <div className="space-y-3">
@@ -1269,6 +1312,87 @@ export default function BirthChecklist() {
           </div>
         )}
       </div>
+
+      {/* Reset Session Modal */}
+      {showResetModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          onClick={() => setShowResetModal(false)}
+        >
+          <div
+            className="glass-card max-w-md w-full p-6 bg-slate-900 border border-slate-700/60 rounded-3xl space-y-5 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <ArrowCounterClockwise size={20} className="text-amber-400" />
+                <h3 className="text-base font-extrabold text-white">Reset Checklist Session</h3>
+              </div>
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X size={16} weight="bold" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Choose how you would like to reset your birth preparation checklist.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  mutate((prev) =>
+                    prev.map((cat) => ({
+                      ...cat,
+                      items: cat.items.map((i) => ({
+                        ...i,
+                        status: "pending",
+                      })),
+                    }))
+                  );
+                  setShowResetModal(false);
+                }}
+                className="w-full text-left p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 transition-all cursor-pointer group"
+              >
+                <div className="text-xs font-black text-emerald-400 group-hover:text-emerald-300">
+                  Reset Progress Only (Preserve Categories & Items)
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Resets all items to &quot;Not Ready&quot; status. All custom categories (like Consumables, Grooming) and added items are preserved.
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  const seed = makeSeedCategories();
+                  mutate(() => seed);
+                  setExpandedCategories(new Set(seed.map((c) => c.id)));
+                  setShowResetModal(false);
+                }}
+                className="w-full text-left p-3.5 rounded-2xl bg-slate-800/40 hover:bg-slate-800/80 border border-rose-500/30 transition-all cursor-pointer group"
+              >
+                <div className="text-xs font-black text-rose-400 group-hover:text-rose-300">
+                  Reset to Default Seed Categories
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Replaces current checklist with default initial categories. Custom categories and items will be reset.
+                </div>
+              </button>
+            </div>
+
+            <div className="pt-2 text-right">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
