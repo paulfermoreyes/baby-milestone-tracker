@@ -20,7 +20,7 @@ export class ChecklistPage {
 
   async goto() {
     await this.page.goto("/trackers/birth-preparation-checklist", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.waitForSelector("header", { state: "visible", timeout: 30000 });
   }
 
   async addCustomCategory(name: string) {

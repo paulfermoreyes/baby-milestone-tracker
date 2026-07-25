@@ -66,4 +66,51 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
     // Verify top summary displays total estimated cost of at least $450.00
     await expect(page.getByText("$450.00", { exact: true })).toBeVisible();
   });
+
+  test("should persist custom categories and items across session reloads and support progress reset", async ({ page }) => {
+    const checklistPage = new ChecklistPage(page);
+    await checklistPage.goto();
+
+    // Session #1: Create categories "Consumables" and "Grooming", add "toothbrush" under Grooming
+    await checklistPage.addCustomCategory("Consumables");
+    await checklistPage.addCustomCategory("Grooming");
+
+    const groomingCard = page.locator("div.glass-card").filter({
+      has: page.locator("span", { hasText: "Grooming" })
+    });
+    await expect(groomingCard).toBeVisible();
+
+    const addItemInput = groomingCard.getByPlaceholder("Add item…");
+    await addItemInput.fill("toothbrush");
+    await groomingCard.getByTitle("Add item").click();
+    await expect(groomingCard).toContainText("toothbrush");
+
+    // Session #2: Reload the page to simulate new session
+    await page.reload();
+    await expect(checklistPage.heading).toBeVisible();
+
+    // Verify categories Consumables and Grooming and toothbrush still exist
+    const consumablesCardAfterReload = page.locator("div.glass-card").filter({
+      has: page.locator("span", { hasText: "Consumables" })
+    });
+    const groomingCardAfterReload = page.locator("div.glass-card").filter({
+      has: page.locator("span", { hasText: "Grooming" })
+    });
+
+    await expect(consumablesCardAfterReload).toBeVisible();
+    await expect(groomingCardAfterReload).toBeVisible();
+    await expect(groomingCardAfterReload).toContainText("toothbrush");
+
+    // Test Reset Session modal
+    await page.getByTitle("Reset Session / Checklist").click();
+    await expect(page.getByText("Reset Checklist Session")).toBeVisible();
+
+    // Click "Reset Progress Only"
+    await page.getByText("Reset Progress Only (Preserve Categories & Items)").click();
+
+    // Ensure custom categories & toothbrush are still preserved
+    await expect(consumablesCardAfterReload).toBeVisible();
+    await expect(groomingCardAfterReload).toBeVisible();
+    await expect(groomingCardAfterReload).toContainText("toothbrush");
+  });
 });
