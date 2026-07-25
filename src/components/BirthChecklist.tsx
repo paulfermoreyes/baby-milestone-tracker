@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import {
   Plus,
+  Minus,
   Trash,
   CaretDown,
   CaretRight,
@@ -18,6 +19,7 @@ import {
   X,
   DotsNine,
   UserCircle,
+  CurrencyDollar,
 } from "@phosphor-icons/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -29,6 +31,9 @@ interface ChecklistItem {
   label: string;
   status: ItemStatus;
   addedBy?: string;
+  quantity?: number;
+  cost?: number;
+  costMode?: "unit" | "total";
 }
 
 interface Category {
@@ -41,6 +46,24 @@ interface Category {
 interface ChecklistDocument {
   categories: Category[];
   updatedAt?: unknown;
+}
+
+// ─── Helper Functions ─────────────────────────────────────────────────────────
+
+function getItemQuantity(item: ChecklistItem): number {
+  return typeof item.quantity === "number" && item.quantity > 0 ? item.quantity : 1;
+}
+
+function getItemUnitCost(item: ChecklistItem): number {
+  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0) return 0;
+  const qty = getItemQuantity(item);
+  return item.costMode === "total" ? item.cost / qty : item.cost;
+}
+
+function getItemTotalCost(item: ChecklistItem): number {
+  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0) return 0;
+  const qty = getItemQuantity(item);
+  return item.costMode === "total" ? item.cost : item.cost * qty;
 }
 
 // ─── Default seed data ────────────────────────────────────────────────────────
@@ -112,6 +135,7 @@ function makeSeedCategories(): Category[] {
       id: makeId(),
       label,
       status: "pending" as ItemStatus,
+      quantity: 1,
     })),
   }));
 }
@@ -128,32 +152,76 @@ function getDocRef(user: { uid: string } | null, familyId: string | null) {
 
 function OverallProgressBar({ categories }: { categories: Category[] }) {
   const allItems = categories.flatMap((c) => c.items);
-  const total = allItems.length;
-  const done = allItems.filter(
+  const totalItemsCount = allItems.length;
+  const readyItemsCount = allItems.filter(
     (i) => i.status === "ready" || i.status === "in-bag"
   ).length;
-  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  const totalInventoryQty = allItems.reduce(
+    (sum, i) => sum + getItemQuantity(i),
+    0
+  );
+  const readyInventoryQty = allItems
+    .filter((i) => i.status === "ready" || i.status === "in-bag")
+    .reduce((sum, i) => sum + getItemQuantity(i), 0);
+
+  const totalBudget = allItems.reduce(
+    (sum, i) => sum + getItemTotalCost(i),
+    0
+  );
+  const readyBudget = allItems
+    .filter((i) => i.status === "ready" || i.status === "in-bag")
+    .reduce((sum, i) => sum + getItemTotalCost(i), 0);
+
+  const pct = totalItemsCount === 0 ? 0 : Math.round((readyItemsCount / totalItemsCount) * 100);
 
   return (
-    <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl mb-6">
-      <div className="flex items-center justify-between mb-3">
+    <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl mb-6 space-y-4">
+      <div className="flex items-center justify-between">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <Sparkle size={13} weight="fill" className="text-emerald-400" />
-          Overall Progress
+          Overall Progress & Inventory
         </span>
         <span className="text-xs font-black text-emerald-400">
-          {done} / {total} ready
+          {readyItemsCount} / {totalItemsCount} ready ({pct}%)
         </span>
       </div>
+
       <div className="w-full h-2.5 rounded-full bg-slate-900/70 overflow-hidden">
         <div
           className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-right text-[10px] font-bold text-slate-500 mt-1.5">
-        {pct}% complete
-      </p>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+        <div className="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
+            Inventory Units
+          </span>
+          <span className="text-sm font-black text-slate-200">
+            {readyInventoryQty} / {totalInventoryQty} <span className="text-xs font-semibold text-slate-400">items</span>
+          </span>
+        </div>
+
+        <div className="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
+            Est. Total Cost
+          </span>
+          <span className="text-sm font-black text-emerald-400">
+            ${totalBudget.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60 col-span-2 sm:col-span-1">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
+            Ready Items Cost
+          </span>
+          <span className="text-sm font-black text-teal-300">
+            ${readyBudget.toFixed(2)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -162,6 +230,8 @@ interface DraggableItemProps {
   item: ChecklistItem;
   categoryId: string;
   onDelete: () => void;
+  onUpdateQuantity: (newQty: number) => void;
+  onUpdateCost: (cost: number | undefined, costMode: "unit" | "total") => void;
   onDragStart: (e: React.DragEvent) => void;
   userDisplayName?: string | null;
 }
@@ -170,10 +240,33 @@ function DraggableItem({
   item,
   categoryId,
   onDelete,
+  onUpdateQuantity,
+  onUpdateCost,
   onDragStart,
   userDisplayName,
 }: DraggableItemProps) {
+  const [showCostEdit, setShowCostEdit] = useState(false);
+  const [costInput, setCostInput] = useState(
+    typeof item.cost === "number" && item.cost > 0 ? item.cost.toString() : ""
+  );
+  const [costMode, setCostMode] = useState<"unit" | "total">(
+    item.costMode || "unit"
+  );
+
   const isReady = item.status === "ready";
+  const qty = getItemQuantity(item);
+  const totalCost = getItemTotalCost(item);
+  const unitCost = getItemUnitCost(item);
+
+  const handleSaveCost = () => {
+    const val = parseFloat(costInput);
+    if (!isNaN(val) && val > 0) {
+      onUpdateCost(val, costMode);
+    } else {
+      onUpdateCost(undefined, "unit");
+    }
+    setShowCostEdit(false);
+  };
 
   return (
     <div
@@ -181,58 +274,163 @@ function DraggableItem({
       onDragStart={onDragStart}
       data-item-id={item.id}
       data-category-id={categoryId}
-      className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all duration-150 cursor-grab active:cursor-grabbing active:scale-[0.98] select-none
+      className={`group flex flex-col gap-2 p-3 rounded-xl border transition-all duration-150 cursor-grab active:cursor-grabbing select-none
         ${
           isReady
             ? "bg-emerald-500/8 border-emerald-500/20 hover:border-emerald-500/35"
             : "bg-slate-900/40 border-slate-800/60 hover:border-slate-700/80"
         }`}
     >
-      {/* Drag handle */}
-      <DotsNine
-        size={14}
-        className="text-slate-600 group-hover:text-slate-400 transition-colors shrink-0"
-      />
-
-      {/* Status icon */}
-      {isReady ? (
-        <CheckCircle
-          size={15}
-          weight="fill"
-          className="text-emerald-400 shrink-0"
+      <div className="flex items-center gap-2.5">
+        {/* Drag handle */}
+        <DotsNine
+          size={14}
+          className="text-slate-600 group-hover:text-slate-400 transition-colors shrink-0"
         />
-      ) : (
-        <Circle size={15} className="text-slate-600 shrink-0" />
-      )}
 
-      {/* Label */}
-      <span
-        className={`flex-1 text-xs font-semibold leading-tight ${
-          isReady ? "text-emerald-300 line-through decoration-emerald-500/40" : "text-slate-200"
-        }`}
-      >
-        {item.label}
-      </span>
+        {/* Status icon */}
+        {isReady ? (
+          <CheckCircle
+            size={15}
+            weight="fill"
+            className="text-emerald-400 shrink-0"
+          />
+        ) : (
+          <Circle size={15} className="text-slate-600 shrink-0" />
+        )}
 
-      {/* Attribution badge */}
-      {item.addedBy && (
-        <span className="hidden group-hover:flex items-center gap-0.5 text-[9px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-1.5 py-0.5 shrink-0">
-          <UserCircle size={9} weight="fill" />
-          {item.addedBy === userDisplayName ? "you" : item.addedBy}
+        {/* Label */}
+        <span
+          className={`flex-1 text-xs font-semibold leading-tight ${
+            isReady ? "text-emerald-300 line-through decoration-emerald-500/40" : "text-slate-200"
+          }`}
+        >
+          {item.label}
         </span>
-      )}
 
-      {/* Delete button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        className="shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
-        title="Remove item"
-      >
-        <Trash size={11} weight="bold" />
-      </button>
+        {/* Quantity Counter */}
+        <div
+          className="flex items-center gap-1 bg-slate-950/70 border border-slate-800/80 rounded-lg px-1.5 py-0.5 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => onUpdateQuantity(Math.max(1, qty - 1))}
+            disabled={qty <= 1}
+            className="text-slate-400 hover:text-white disabled:opacity-30 cursor-pointer p-0.5"
+            title="Decrease quantity"
+          >
+            <Minus size={10} weight="bold" />
+          </button>
+          <span className="text-[10px] font-black text-amber-400 px-1 min-w-[14px] text-center">
+            {qty}
+          </span>
+          <button
+            onClick={() => onUpdateQuantity(qty + 1)}
+            className="text-slate-400 hover:text-white cursor-pointer p-0.5"
+            title="Increase quantity"
+          >
+            <Plus size={10} weight="bold" />
+          </button>
+        </div>
+
+        {/* Cost button / badge */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowCostEdit((prev) => !prev);
+          }}
+          className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer shrink-0 ${
+            totalCost > 0
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+              : "bg-slate-950/40 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700"
+          }`}
+          title="Specify item cost"
+        >
+          <CurrencyDollar size={11} weight="bold" />
+          <span>
+            {totalCost > 0
+              ? `$${totalCost.toFixed(2)}${qty > 1 ? ` ($${unitCost.toFixed(2)}/ea)` : ""}`
+              : "Cost"}
+          </span>
+        </button>
+
+        {/* Attribution badge */}
+        {item.addedBy && (
+          <span className="hidden group-hover:flex items-center gap-0.5 text-[9px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-1.5 py-0.5 shrink-0">
+            <UserCircle size={9} weight="fill" />
+            {item.addedBy === userDisplayName ? "you" : item.addedBy}
+          </span>
+        )}
+
+        {/* Delete button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+          title="Remove item"
+        >
+          <Trash size={11} weight="bold" />
+        </button>
+      </div>
+
+      {/* Cost Edit Inline Card */}
+      {showCostEdit && (
+        <div
+          className="mt-1 p-2.5 bg-slate-950/90 border border-slate-700/60 rounded-xl flex items-center gap-2 text-xs"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 flex-1">
+            <span className="text-slate-500 font-bold">$</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={costInput}
+              onChange={(e) => setCostInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveCost();
+              }}
+              className="w-full bg-transparent text-slate-200 text-xs font-bold focus:outline-none placeholder-slate-600"
+            />
+          </div>
+
+          {/* Mode Switcher */}
+          <div className="flex rounded-lg border border-slate-800 p-0.5 bg-slate-900">
+            <button
+              onClick={() => setCostMode("unit")}
+              className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md transition-colors cursor-pointer ${
+                costMode === "unit"
+                  ? "bg-emerald-500 text-slate-950"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              title="Cost for 1 item"
+            >
+              1 item
+            </button>
+            <button
+              onClick={() => setCostMode("total")}
+              className={`px-2 py-0.5 text-[10px] font-extrabold rounded-md transition-colors cursor-pointer ${
+                costMode === "total"
+                  ? "bg-emerald-500 text-slate-950"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+              title={`Cost for all ${qty} items`}
+            >
+              {qty} count
+            </button>
+          </div>
+
+          <button
+            onClick={handleSaveCost}
+            className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase tracking-wider cursor-pointer"
+          >
+            Save
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -577,6 +775,45 @@ export default function BirthChecklist() {
     );
   };
 
+  const handleUpdateQuantity = (
+    categoryId: string,
+    itemId: string,
+    newQty: number
+  ) => {
+    mutate((prev) =>
+      prev.map((cat) =>
+        cat.id === categoryId
+          ? {
+              ...cat,
+              items: cat.items.map((i) =>
+                i.id === itemId ? { ...i, quantity: newQty } : i
+              ),
+            }
+          : cat
+      )
+    );
+  };
+
+  const handleUpdateCost = (
+    categoryId: string,
+    itemId: string,
+    cost: number | undefined,
+    costMode: "unit" | "total"
+  ) => {
+    mutate((prev) =>
+      prev.map((cat) =>
+        cat.id === categoryId
+          ? {
+              ...cat,
+              items: cat.items.map((i) =>
+                i.id === itemId ? { ...i, cost, costMode } : i
+              ),
+            }
+          : cat
+      )
+    );
+  };
+
   const handleAddCategory = () => {
     const name = newCatName.trim();
     if (!name) return;
@@ -779,6 +1016,12 @@ export default function BirthChecklist() {
                           item={item}
                           categoryId={cat.id}
                           onDelete={() => handleDeleteItem(cat.id, item.id)}
+                          onUpdateQuantity={(newQty) =>
+                            handleUpdateQuantity(cat.id, item.id, newQty)
+                          }
+                          onUpdateCost={(cost, costMode) =>
+                            handleUpdateCost(cat.id, item.id, cost, costMode)
+                          }
                           onDragStart={(e) =>
                             handleDragStart(e, item.id, cat.id)
                           }
@@ -845,6 +1088,12 @@ export default function BirthChecklist() {
                           item={item}
                           categoryId={cat.id}
                           onDelete={() => handleDeleteItem(cat.id, item.id)}
+                          onUpdateQuantity={(newQty) =>
+                            handleUpdateQuantity(cat.id, item.id, newQty)
+                          }
+                          onUpdateCost={(cost, costMode) =>
+                            handleUpdateCost(cat.id, item.id, cost, costMode)
+                          }
                           onDragStart={(e) =>
                             handleDragStart(e, item.id, cat.id)
                           }
