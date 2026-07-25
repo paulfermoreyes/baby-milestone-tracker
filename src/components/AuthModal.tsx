@@ -101,7 +101,13 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       console.error(err);
       let friendlyMessage = err instanceof Error ? err.message : "An authentication error occurred.";
       const code = (err as { code?: string }).code;
-      if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
+      if (
+        code === "auth/user-not-found" ||
+        code === "auth/wrong-password" ||
+        code === "auth/invalid-credential" ||
+        code === "auth/invalid-api-key" ||
+        (typeof code === "string" && code.includes("api-key"))
+      ) {
         friendlyMessage = "Invalid email or password. Please try again.";
       } else if (code === "auth/email-already-in-use") {
         friendlyMessage = "This email is already in use. Try signing in instead.";
