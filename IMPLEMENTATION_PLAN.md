@@ -3,6 +3,7 @@
 ## Goal Description
 
 Develop a multi-caregiver prenatal and infant tracking platform. The solution is a mobile-first, high-fidelity web application built with **Next.js** (React) and a real-time cloud backend using **Firebase** (Auth + Firestore). Key features include:
+
 - Caregiver Authentication and shared session context (Firebase Auth)
 - Tracking of pregnancy vitals and events (Fetal Kicks, Symptoms, Weight, Contractions)
 - Real-time active data synchronization across caregivers' devices (Firestore snapshots)
@@ -14,6 +15,7 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 ## Technical Architecture
 
 ### 1. Frontend Core
+
 - **Framework**: Next.js App Router (React 19)
 - **Styling**: Vanilla CSS variable tokens with Tailwind utility layers
 - **Design Tokens**: Defined HSL color configurations for a premium, unified theme
@@ -21,12 +23,13 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - **Iconography**: Use lucide icons
 
 ### 2. Backend Cloud Services
+
 - **Firebase Auth**: Enables sign-in/sign-up flows with automatic profile states
 - **Cloud Firestore**: Non-relational real-time storage
   - `kicks` collection – logs baby kicks mapped to `userId` and `createdAt`
-  - `symptoms` collection *(planned)* – logs symptoms and severity scales
-  - `weight` collection *(planned)* – logs caregiver weights and targets
-  - `contractions` collection *(planned)* – logs contraction times, durations, and intervals
+  - `symptoms` collection _(planned)_ – logs symptoms and severity scales
+  - `weight` collection _(planned)_ – logs caregiver weights and targets
+  - `contractions` collection _(planned)_ – logs contraction times, durations, and intervals
 - **Firestore Subscriptions**: Live `onSnapshot` queries filter collections by authenticated `userId` to instantly sync views.
 
 ---
@@ -34,6 +37,7 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 ## Implementation Checklist & Phases
 
 ### Phase 1: Project Setup & Base Architecture (Complete)
+
 - [x] Bootstrapped Next.js App with Tailwind & TypeScript configuration
 - [x] Created custom design system styling token dictionary inside `globals.css`
 - [x] Initialized Git repository, connected to remote origin, and pushed initial codebase:
@@ -41,17 +45,20 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - [x] Configured Firebase SDK client setup in `src/lib/firebase.ts` and set up environment parameter defaults inside `.env.local`
 
 ### Phase 2: Caregiver Authentication (Complete)
+
 - [x] Built global `AuthContext` to manage current login and sync state
 - [x] Built responsive `<AuthModal>` dialog component with custom CSS transitions
 - [x] Built customized auth-control buttons (Sign In / Join, Sign Out, custom profile badges) inside the dashboard navigation
 
 ### Phase 3: Fetal Kick Counter & Real-Time Sync (Complete)
+
 - [x] Built client-side `<KickCounter>` widget
 - [x] Integrated real-time snapshot listeners to dynamically sync logged events
 - [x] Implemented instant "Undo Last Kick" feature with automatic Firestore document deletion
 - [x] Developed guest preview fallback state allowing interactive simulation before logging in
 
 ### Phase 4: Additional Tracking Modules & UX Enhancements (Complete)
+
 - [x] **Daily Blood Sugar Logs & Trend Analytics**: Engineered multi-line trend charts with neon-cyan, neon-emerald, and neon-rose profiles, date-range selectors (7D, 14D, 30D, All), and a filterable history table/log list with deletion controls.
 - [x] **Milk Counter (Calcium & Hydration Tracker)**: Designed a visual cups serving counter with targets (2x cups/day for bone health), progress status bar, interactive serving logs, and unified guest fallback.
 - [x] **Lumina AI Companion (Prenatal Chatbot)**: Developed a floating chat panel with direct real-time Firestore synchronization context. The chatbot computes active statistics (today's kicks, milk logs, average fasting sugar indexes) and returns responsive wellness guidelines.
@@ -61,6 +68,7 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 - [x] **Mobile Floating Panel Navigator**: Implement a premium, animated floating action menu (FAB) on mobile viewports. The FAB will allow seamless switching between active tracking panels (Kicks, Blood Sugar, Milk, etc.) using smooth transitions, reducing page height cognitive load.
 
 ### Phase 5: Production Deployment & QA (Planned)
+
 - [ ] Configure deployment on Firebase App Hosting / Vercel
 - [ ] Perform comprehensive Row-Level Security Rules setup for Firestore collections
 - [ ] Conduct accessibility (A11y) checks and performance LCP audits
@@ -70,10 +78,12 @@ Develop a multi-caregiver prenatal and infant tracking platform. The solution is
 ## Verification Plan
 
 ### Automated Tests
+
 - Run `npm run build` to verify standard production bundle output.
 - Write unit tests for data manipulation utilities.
 
 ### Manual Verification
+
 - Test registration/login/logout actions.
 - Test active synchronization across multiple device screens simultaneously.
 - Verify fallback behavior when offline or signed out as a guest.

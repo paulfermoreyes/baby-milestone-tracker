@@ -15,13 +15,18 @@ export class KicksPage {
     this.recordBtn = page.getByRole("button", { name: "Record a Kick" });
     this.undoBtn = page.getByRole("button", { name: "Undo Last" });
     this.counterText = page.locator("span.bg-gradient-to-r.from-cyan-400");
-    this.emptyLogText = page.getByText("No kicks recorded in this session yet.");
+    this.emptyLogText = page.getByText(
+      "No kicks recorded in this session yet.",
+    );
     this.logsList = page.locator("div.max-h-\\[160px\\]");
   }
 
   async goto() {
     await this.page.goto("/trackers/kicks", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 15000,
+    });
   }
 
   async recordKick() {

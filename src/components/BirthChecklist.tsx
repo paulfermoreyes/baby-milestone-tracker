@@ -52,17 +52,21 @@ interface ChecklistDocument {
 // ─── Helper Functions ─────────────────────────────────────────────────────────
 
 function getItemQuantity(item: ChecklistItem): number {
-  return typeof item.quantity === "number" && item.quantity > 0 ? item.quantity : 1;
+  return typeof item.quantity === "number" && item.quantity > 0
+    ? item.quantity
+    : 1;
 }
 
 function getItemUnitCost(item: ChecklistItem): number {
-  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0) return 0;
+  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0)
+    return 0;
   const qty = getItemQuantity(item);
   return item.costMode === "total" ? item.cost / qty : item.cost;
 }
 
 function getItemTotalCost(item: ChecklistItem): number {
-  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0) return 0;
+  if (typeof item.cost !== "number" || isNaN(item.cost) || item.cost <= 0)
+    return 0;
   const qty = getItemQuantity(item);
   return item.costMode === "total" ? item.cost : item.cost * qty;
 }
@@ -161,26 +165,26 @@ function OverallProgressBar({
   const allItems = categories.flatMap((c) => c.items);
   const totalItemsCount = allItems.length;
   const readyItemsCount = allItems.filter(
-    (i) => i.status === "ready" || i.status === "in-bag"
+    (i) => i.status === "ready" || i.status === "in-bag",
   ).length;
 
   const totalInventoryQty = allItems.reduce(
     (sum, i) => sum + getItemQuantity(i),
-    0
+    0,
   );
   const readyInventoryQty = allItems
     .filter((i) => i.status === "ready" || i.status === "in-bag")
     .reduce((sum, i) => sum + getItemQuantity(i), 0);
 
-  const totalBudget = allItems.reduce(
-    (sum, i) => sum + getItemTotalCost(i),
-    0
-  );
+  const totalBudget = allItems.reduce((sum, i) => sum + getItemTotalCost(i), 0);
   const readyBudget = allItems
     .filter((i) => i.status === "ready" || i.status === "in-bag")
     .reduce((sum, i) => sum + getItemTotalCost(i), 0);
 
-  const pct = totalItemsCount === 0 ? 0 : Math.round((readyItemsCount / totalItemsCount) * 100);
+  const pct =
+    totalItemsCount === 0
+      ? 0
+      : Math.round((readyItemsCount / totalItemsCount) * 100);
 
   return (
     <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl mb-6 space-y-4">
@@ -217,7 +221,8 @@ function OverallProgressBar({
             Inventory Units
           </span>
           <span className="text-sm font-black text-slate-200">
-            {readyInventoryQty} / {totalInventoryQty} <span className="text-xs font-semibold text-slate-400">items</span>
+            {readyInventoryQty} / {totalInventoryQty}{" "}
+            <span className="text-xs font-semibold text-slate-400">items</span>
           </span>
         </div>
 
@@ -264,10 +269,10 @@ function DraggableItem({
 }: DraggableItemProps) {
   const [showCostEdit, setShowCostEdit] = useState(false);
   const [costInput, setCostInput] = useState(
-    typeof item.cost === "number" && item.cost > 0 ? item.cost.toString() : ""
+    typeof item.cost === "number" && item.cost > 0 ? item.cost.toString() : "",
   );
   const [costMode, setCostMode] = useState<"unit" | "total">(
-    item.costMode || "unit"
+    item.costMode || "unit",
   );
 
   const isReady = item.status === "ready";
@@ -319,7 +324,9 @@ function DraggableItem({
         {/* Label */}
         <span
           className={`flex-1 text-xs font-semibold leading-tight ${
-            isReady ? "text-emerald-300 line-through decoration-emerald-500/40" : "text-slate-200"
+            isReady
+              ? "text-emerald-300 line-through decoration-emerald-500/40"
+              : "text-slate-200"
           }`}
         >
           {item.label}
@@ -520,7 +527,7 @@ export default function BirthChecklist() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
@@ -538,7 +545,7 @@ export default function BirthChecklist() {
 
   // Add-item inputs per category
   const [addItemInputs, setAddItemInputs] = useState<Record<string, string>>(
-    {}
+    {},
   );
 
   // Add-category input
@@ -567,7 +574,7 @@ export default function BirthChecklist() {
       try {
         localStorage.setItem(
           "lumina_guest_checklist",
-          JSON.stringify({ categories: updated })
+          JSON.stringify({ categories: updated }),
         );
       } catch (e) {
         console.error("Failed to write guest checklist to localStorage:", e);
@@ -580,13 +587,13 @@ export default function BirthChecklist() {
         await setDoc(
           ref,
           { categories: updated, updatedAt: serverTimestamp() },
-          { merge: true }
+          { merge: true },
         );
       } catch (err) {
         console.error("Failed to save checklist:", err);
       }
     },
-    [user, familyId]
+    [user, familyId],
   );
 
   // ── Mutation helpers ────────────────────────────────────────────────────────
@@ -601,7 +608,7 @@ export default function BirthChecklist() {
         return next;
       });
     },
-    [persist]
+    [persist],
   );
 
   // ── Initial load ────────────────────────────────────────────────────────────
@@ -618,7 +625,7 @@ export default function BirthChecklist() {
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setCategories(parsed.categories || []);
           setExpandedCategories(
-            new Set(parsed.categories?.map((c) => c.id) ?? [])
+            new Set(parsed.categories?.map((c) => c.id) ?? []),
           );
         } catch {
           const seed = makeSeedCategories();
@@ -626,7 +633,7 @@ export default function BirthChecklist() {
           setExpandedCategories(new Set(seed.map((c) => c.id)));
           localStorage.setItem(
             "lumina_guest_checklist",
-            JSON.stringify({ categories: seed })
+            JSON.stringify({ categories: seed }),
           );
         }
       } else {
@@ -635,7 +642,7 @@ export default function BirthChecklist() {
         setExpandedCategories(new Set(seed.map((c) => c.id)));
         localStorage.setItem(
           "lumina_guest_checklist",
-          JSON.stringify({ categories: seed })
+          JSON.stringify({ categories: seed }),
         );
       }
       setIsLoading(false);
@@ -658,7 +665,7 @@ export default function BirthChecklist() {
           setCategories(data.categories || []);
           if (loadedPathRef.current !== currentPath) {
             setExpandedCategories(
-              new Set((data.categories || []).map((c) => c.id))
+              new Set((data.categories || []).map((c) => c.id)),
             );
             loadedPathRef.current = currentPath;
           }
@@ -666,11 +673,17 @@ export default function BirthChecklist() {
           // First time for this user path — check if we have local guest categories to preserve & migrate
           loadedPathRef.current = currentPath;
           let initialCategories: Category[] = [];
-          const localRaw = typeof window !== "undefined" ? localStorage.getItem("lumina_guest_checklist") : null;
+          const localRaw =
+            typeof window !== "undefined"
+              ? localStorage.getItem("lumina_guest_checklist")
+              : null;
           if (localRaw) {
             try {
               const parsed = JSON.parse(localRaw) as ChecklistDocument;
-              if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+              if (
+                Array.isArray(parsed.categories) &&
+                parsed.categories.length > 0
+              ) {
                 initialCategories = parsed.categories;
               }
             } catch {
@@ -687,7 +700,7 @@ export default function BirthChecklist() {
           setDoc(
             ref,
             { categories: initialCategories, updatedAt: serverTimestamp() },
-            { merge: true }
+            { merge: true },
           ).catch(console.error);
         }
         setIsLoading(false);
@@ -695,7 +708,7 @@ export default function BirthChecklist() {
       (err) => {
         console.error("Checklist snapshot error:", err);
         setIsLoading(false);
-      }
+      },
     );
 
     return () => unsub();
@@ -706,7 +719,7 @@ export default function BirthChecklist() {
   const handleDragStart = (
     e: React.DragEvent,
     itemId: string,
-    categoryId: string
+    categoryId: string,
   ) => {
     e.dataTransfer.setData("itemId", itemId);
     e.dataTransfer.setData("categoryId", categoryId);
@@ -723,7 +736,7 @@ export default function BirthChecklist() {
   const handleLaneDrop = (
     e: React.DragEvent,
     targetCategoryId: string,
-    targetStatus: "pending" | "ready"
+    targetStatus: "pending" | "ready",
   ) => {
     e.preventDefault();
     setLaneDragTarget(null);
@@ -737,10 +750,10 @@ export default function BirthChecklist() {
         return {
           ...cat,
           items: cat.items.map((item) =>
-            item.id === itemId ? { ...item, status: targetStatus } : item
+            item.id === itemId ? { ...item, status: targetStatus } : item,
           ),
         };
-      })
+      }),
     );
     setDraggingItem(null);
   };
@@ -758,10 +771,10 @@ export default function BirthChecklist() {
         return {
           ...cat,
           items: cat.items.map((item) =>
-            item.id === itemId ? { ...item, status: "in-bag" } : item
+            item.id === itemId ? { ...item, status: "in-bag" } : item,
           ),
         };
-      })
+      }),
     );
     setDraggingItem(null);
   };
@@ -770,7 +783,7 @@ export default function BirthChecklist() {
   const handleBagChipDragStart = (
     e: React.DragEvent,
     itemId: string,
-    categoryId: string
+    categoryId: string,
   ) => {
     e.dataTransfer.setData("itemId", itemId);
     e.dataTransfer.setData("categoryId", categoryId);
@@ -799,8 +812,8 @@ export default function BirthChecklist() {
                 },
               ],
             }
-          : cat
-      )
+          : cat,
+      ),
     );
     setAddItemInputs((prev) => ({ ...prev, [categoryId]: "" }));
   };
@@ -810,15 +823,15 @@ export default function BirthChecklist() {
       prev.map((cat) =>
         cat.id === categoryId
           ? { ...cat, items: cat.items.filter((i) => i.id !== itemId) }
-          : cat
-      )
+          : cat,
+      ),
     );
   };
 
   const handleUpdateQuantity = (
     categoryId: string,
     itemId: string,
-    newQty: number
+    newQty: number,
   ) => {
     mutate((prev) =>
       prev.map((cat) =>
@@ -826,11 +839,11 @@ export default function BirthChecklist() {
           ? {
               ...cat,
               items: cat.items.map((i) =>
-                i.id === itemId ? { ...i, quantity: newQty } : i
+                i.id === itemId ? { ...i, quantity: newQty } : i,
               ),
             }
-          : cat
-      )
+          : cat,
+      ),
     );
   };
 
@@ -838,7 +851,7 @@ export default function BirthChecklist() {
     categoryId: string,
     itemId: string,
     cost: number | undefined,
-    costMode: "unit" | "total"
+    costMode: "unit" | "total",
   ) => {
     mutate((prev) =>
       prev.map((cat) =>
@@ -846,11 +859,11 @@ export default function BirthChecklist() {
           ? {
               ...cat,
               items: cat.items.map((i) =>
-                i.id === itemId ? { ...i, cost, costMode } : i
+                i.id === itemId ? { ...i, cost, costMode } : i,
               ),
             }
-          : cat
-      )
+          : cat,
+      ),
     );
   };
 
@@ -889,7 +902,7 @@ export default function BirthChecklist() {
 
   const triggerAuthModal = () => {
     const dialog = document.querySelector(
-      "dialog.auth-dialog"
+      "dialog.auth-dialog",
     ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
@@ -899,7 +912,7 @@ export default function BirthChecklist() {
   const allInBag = categories.flatMap((cat) =>
     cat.items
       .filter((i) => i.status === "in-bag")
-      .map((i) => ({ ...i, categoryId: cat.id }))
+      .map((i) => ({ ...i, categoryId: cat.id })),
   );
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -960,9 +973,10 @@ export default function BirthChecklist() {
           const readyItems = cat.items.filter((i) => i.status === "ready");
           const total = cat.items.length;
           const doneCount = cat.items.filter(
-            (i) => i.status === "ready" || i.status === "in-bag"
+            (i) => i.status === "ready" || i.status === "in-bag",
           ).length;
-          const catPct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+          const catPct =
+            total === 0 ? 0 : Math.round((doneCount / total) * 100);
 
           return (
             <div
@@ -970,9 +984,7 @@ export default function BirthChecklist() {
               className="glass-card bg-slate-800/30 border border-slate-700/30 rounded-2xl overflow-hidden transition-all duration-200 hover:border-slate-600/40"
             >
               {/* Category header container */}
-              <div
-                className="w-full flex items-center gap-3 px-5 py-4 group"
-              >
+              <div className="w-full flex items-center gap-3 px-5 py-4 group">
                 {/* Toggle Clickable Area */}
                 <button
                   onClick={() => toggleCategory(cat.id)}
@@ -1018,15 +1030,9 @@ export default function BirthChecklist() {
                   title={isExpanded ? "Collapse category" : "Expand category"}
                 >
                   {isExpanded ? (
-                    <CaretDown
-                      size={14}
-                      weight="bold"
-                    />
+                    <CaretDown size={14} weight="bold" />
                   ) : (
-                    <CaretRight
-                      size={14}
-                      weight="bold"
-                    />
+                    <CaretRight size={14} weight="bold" />
                   )}
                 </button>
               </div>
@@ -1287,11 +1293,11 @@ export default function BirthChecklist() {
                                   items: cat.items.map((i) =>
                                     i.id === item.id
                                       ? { ...i, status: "ready" }
-                                      : i
+                                      : i,
                                   ),
                                 }
-                              : cat
-                          )
+                              : cat,
+                          ),
                         );
                       }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity text-violet-400 hover:text-rose-400 cursor-pointer"
@@ -1326,7 +1332,9 @@ export default function BirthChecklist() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <ArrowCounterClockwise size={20} className="text-amber-400" />
-                <h3 className="text-base font-extrabold text-white">Reset Checklist Session</h3>
+                <h3 className="text-base font-extrabold text-white">
+                  Reset Checklist Session
+                </h3>
               </div>
               <button
                 onClick={() => setShowResetModal(false)}
@@ -1337,7 +1345,8 @@ export default function BirthChecklist() {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              Choose how you would like to reset your birth preparation checklist.
+              Choose how you would like to reset your birth preparation
+              checklist.
             </p>
 
             <div className="space-y-3">
@@ -1350,7 +1359,7 @@ export default function BirthChecklist() {
                         ...i,
                         status: "pending",
                       })),
-                    }))
+                    })),
                   );
                   setShowResetModal(false);
                 }}
@@ -1360,7 +1369,9 @@ export default function BirthChecklist() {
                   Reset Progress Only (Preserve Categories & Items)
                 </div>
                 <div className="text-[11px] text-slate-400 mt-1">
-                  Resets all items to &quot;Not Ready&quot; status. All custom categories (like Consumables, Grooming) and added items are preserved.
+                  Resets all items to &quot;Not Ready&quot; status. All custom
+                  categories (like Consumables, Grooming) and added items are
+                  preserved.
                 </div>
               </button>
 
@@ -1377,7 +1388,8 @@ export default function BirthChecklist() {
                   Reset to Default Seed Categories
                 </div>
                 <div className="text-[11px] text-slate-400 mt-1">
-                  Replaces current checklist with default initial categories. Custom categories and items will be reset.
+                  Replaces current checklist with default initial categories.
+                  Custom categories and items will be reset.
                 </div>
               </button>
             </div>

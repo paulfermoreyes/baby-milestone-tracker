@@ -40,9 +40,17 @@ export default function MilkCounter() {
       const localData = localStorage.getItem("lumina_guest_milk");
       if (localData) {
         try {
-          const parsed = JSON.parse(localData) as { id: string; timestampStr: string }[];
+          const parsed = JSON.parse(localData) as {
+            id: string;
+            timestampStr: string;
+          }[];
           // eslint-disable-next-line react-hooks/set-state-in-effect
-          setMilkLogs(parsed.map((item) => ({ id: item.id, timestamp: new Date(item.timestampStr) })));
+          setMilkLogs(
+            parsed.map((item) => ({
+              id: item.id,
+              timestamp: new Date(item.timestampStr),
+            })),
+          );
         } catch (e) {
           console.error("Failed to parse guest milk logs", e);
           setMilkLogs([]);
@@ -61,14 +69,14 @@ export default function MilkCounter() {
       q = query(
         collection(db, "families", familyId, "milk"),
         where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc")
+        orderBy("createdAt", "desc"),
       );
     } else {
       q = query(
         collection(db, "milk"),
         where("userId", "==", user.uid),
         where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc")
+        orderBy("createdAt", "desc"),
       );
     }
 
@@ -78,14 +86,16 @@ export default function MilkCounter() {
         const logs: MilkLog[] = [];
         snapshot.forEach((d) => {
           const data = d.data();
-          const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
+          const timestamp = data.createdAt
+            ? (data.createdAt as Timestamp).toDate()
+            : new Date();
           logs.push({ id: d.id, timestamp });
         });
         setMilkLogs(logs.reverse());
       },
       (err) => {
         console.error("Error reading milk logs from Firestore:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -99,7 +109,12 @@ export default function MilkCounter() {
       setMilkLogs(updated);
       localStorage.setItem(
         "lumina_guest_milk",
-        JSON.stringify(updated.map((l) => ({ id: l.id, timestampStr: l.timestamp.toISOString() })))
+        JSON.stringify(
+          updated.map((l) => ({
+            id: l.id,
+            timestampStr: l.timestamp.toISOString(),
+          })),
+        ),
       );
       return;
     }
@@ -131,7 +146,12 @@ export default function MilkCounter() {
       setMilkLogs(updated);
       localStorage.setItem(
         "lumina_guest_milk",
-        JSON.stringify(updated.map((l) => ({ id: l.id, timestampStr: l.timestamp.toISOString() })))
+        JSON.stringify(
+          updated.map((l) => ({
+            id: l.id,
+            timestampStr: l.timestamp.toISOString(),
+          })),
+        ),
       );
       return;
     }
@@ -149,7 +169,9 @@ export default function MilkCounter() {
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
 
@@ -158,8 +180,10 @@ export default function MilkCounter() {
   const progressPercent = Math.min((count / targetGoal) * 100, 100);
   const isGoalMet = count >= targetGoal;
 
-  let statusMessage = "Take at least 2x milk servings a day for fetal bone health.";
-  if (count === 1) statusMessage = "1 serving down, 1 more to complete your daily goal!";
+  let statusMessage =
+    "Take at least 2x milk servings a day for fetal bone health.";
+  if (count === 1)
+    statusMessage = "1 serving down, 1 more to complete your daily goal!";
   else if (count >= 2) statusMessage = "Daily calcium target met! Amazing job!";
 
   return (
@@ -168,7 +192,9 @@ export default function MilkCounter() {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">Hydration & Nutrients</span>
+          <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">
+            Hydration & Nutrients
+          </span>
           <Drop size={20} weight="bold" className="text-sky-400" />
         </div>
 
@@ -178,12 +204,16 @@ export default function MilkCounter() {
           </h3>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-black text-sky-400">{count}</span>
-            <span className="text-xs text-slate-500 font-bold">/ {targetGoal} cups</span>
+            <span className="text-xs text-slate-500 font-bold">
+              / {targetGoal} cups
+            </span>
           </div>
         </div>
 
         {user && familyId && (
-          <p className="text-[10px] text-indigo-400 font-semibold mb-1">Shared with partner</p>
+          <p className="text-[10px] text-indigo-400 font-semibold mb-1">
+            Shared with partner
+          </p>
         )}
 
         <p className="text-xs text-slate-400 mb-5 leading-normal">
@@ -194,7 +224,9 @@ export default function MilkCounter() {
         <div className="w-full h-2 rounded-full bg-slate-900/60 overflow-hidden mb-6 border border-slate-800">
           <div
             className={`h-full rounded-full bg-gradient-to-r transition-all duration-500 ${
-              isGoalMet ? "from-sky-400 to-indigo-500 shadow-lg shadow-sky-500/25" : "from-sky-500 to-sky-400"
+              isGoalMet
+                ? "from-sky-400 to-indigo-500 shadow-lg shadow-sky-500/25"
+                : "from-sky-500 to-sky-400"
             }`}
             style={{ width: `${progressPercent}%` }}
           />
@@ -203,16 +235,29 @@ export default function MilkCounter() {
         {/* History Log */}
         {count > 0 && (
           <div className="mb-6">
-            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2">Today&apos;s Servings</span>
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2">
+              Today&apos;s Servings
+            </span>
             <div className="max-h-[88px] overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-              {milkLogs.slice().reverse().map((log, index) => (
-                <div key={log.id} className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-slate-900/40 border border-slate-850/50 text-[11px]">
-                  <span className="text-slate-300 font-medium">Cup #{count - index}</span>
-                  <span className="text-slate-500">
-                    {log.timestamp.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-              ))}
+              {milkLogs
+                .slice()
+                .reverse()
+                .map((log, index) => (
+                  <div
+                    key={log.id}
+                    className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-slate-900/40 border border-slate-850/50 text-[11px]"
+                  >
+                    <span className="text-slate-300 font-medium">
+                      Cup #{count - index}
+                    </span>
+                    <span className="text-slate-500">
+                      {log.timestamp.toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -239,9 +284,16 @@ export default function MilkCounter() {
 
       {!user && isClient && (
         <div className="mt-3 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
-          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <Warning
+            size={14}
+            weight="bold"
+            className="text-amber-500 shrink-0"
+          />
           <span>Guest Preview Session</span>
-          <button onClick={triggerAuthModal} className="underline font-bold text-sky-400 hover:text-sky-300 transition-colors">
+          <button
+            onClick={triggerAuthModal}
+            className="underline font-bold text-sky-400 hover:text-sky-300 transition-colors"
+          >
             Sync
           </button>
         </div>

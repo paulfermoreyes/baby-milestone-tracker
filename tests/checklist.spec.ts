@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { ChecklistPage } from "./pages/ChecklistPage";
 
 test.describe("Birth Preparation Checklist E2E UI Tests", () => {
-  test("should load checklist, create a custom category, and add items in guest preview mode", async ({ page }) => {
+  test("should load checklist, create a custom category, and add items in guest preview mode", async ({
+    page,
+  }) => {
     const checklistPage = new ChecklistPage(page);
     await checklistPage.goto();
 
@@ -14,7 +16,7 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
 
     // Locate the newly created category card
     const categoryContainer = page.locator("div.glass-card").filter({
-      has: page.locator("span", { hasText: "Shower Supplies" })
+      has: page.locator("span", { hasText: "Shower Supplies" }),
     });
     await expect(categoryContainer).toBeVisible();
 
@@ -27,17 +29,24 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
     await expect(categoryContainer).toContainText("Diaper Cake decoration");
   });
 
-  test("should adjust item quantity and specify item cost with total budget updates", async ({ page }) => {
+  test("should adjust item quantity and specify item cost with total budget updates", async ({
+    page,
+  }) => {
     const checklistPage = new ChecklistPage(page);
     await checklistPage.goto();
 
     // Verify overall progress card is visible
-    await expect(page.locator("text=Overall Progress & Inventory")).toBeVisible();
+    await expect(
+      page.locator("text=Overall Progress & Inventory"),
+    ).toBeVisible();
 
     // Find the first item container (e.g. Crib / bassinet)
-    const cribItem = page.locator("div.group").filter({
-      hasText: "Crib / bassinet"
-    }).first();
+    const cribItem = page
+      .locator("div.group")
+      .filter({
+        hasText: "Crib / bassinet",
+      })
+      .first();
 
     await expect(cribItem).toBeVisible();
 
@@ -67,7 +76,9 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
     await expect(page.getByText("$450.00", { exact: true })).toBeVisible();
   });
 
-  test("should persist custom categories and items across session reloads and support progress reset", async ({ page }) => {
+  test("should persist custom categories and items across session reloads and support progress reset", async ({
+    page,
+  }) => {
     const checklistPage = new ChecklistPage(page);
     await checklistPage.goto();
 
@@ -76,7 +87,7 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
     await checklistPage.addCustomCategory("Grooming");
 
     const groomingCard = page.locator("div.glass-card").filter({
-      has: page.locator("span", { hasText: "Grooming" })
+      has: page.locator("span", { hasText: "Grooming" }),
     });
     await expect(groomingCard).toBeVisible();
 
@@ -91,10 +102,10 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
 
     // Verify categories Consumables and Grooming and toothbrush still exist
     const consumablesCardAfterReload = page.locator("div.glass-card").filter({
-      has: page.locator("span", { hasText: "Consumables" })
+      has: page.locator("span", { hasText: "Consumables" }),
     });
     const groomingCardAfterReload = page.locator("div.glass-card").filter({
-      has: page.locator("span", { hasText: "Grooming" })
+      has: page.locator("span", { hasText: "Grooming" }),
     });
 
     await expect(consumablesCardAfterReload).toBeVisible();
@@ -106,7 +117,9 @@ test.describe("Birth Preparation Checklist E2E UI Tests", () => {
     await expect(page.getByText("Reset Checklist Session")).toBeVisible();
 
     // Click "Reset Progress Only"
-    await page.getByText("Reset Progress Only (Preserve Categories & Items)").click();
+    await page
+      .getByText("Reset Progress Only (Preserve Categories & Items)")
+      .click();
 
     // Ensure custom categories & toothbrush are still preserved
     await expect(consumablesCardAfterReload).toBeVisible();

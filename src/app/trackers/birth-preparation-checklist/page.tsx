@@ -29,9 +29,8 @@ export default function BirthChecklistPage() {
             Track everything you need before baby arrives. Drag items between
             <strong className="text-slate-200"> Not Ready</strong> and{" "}
             <strong className="text-slate-200"> Ready</strong>, and drop items
-            into the{" "}
-            <strong className="text-slate-200">Hospital Bag</strong> zone when
-            you&apos;re packing for birth day.
+            into the <strong className="text-slate-200">Hospital Bag</strong>{" "}
+            zone when you&apos;re packing for birth day.
           </p>
         </div>
 

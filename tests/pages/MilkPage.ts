@@ -19,7 +19,10 @@ export class MilkPage {
 
   async goto() {
     await this.page.goto("/trackers/milk", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 15000,
+    });
   }
 
   async logMilk() {

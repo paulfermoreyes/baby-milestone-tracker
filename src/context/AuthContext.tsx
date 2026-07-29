@@ -9,7 +9,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "firebase/auth";
 import {
   doc,
@@ -45,7 +45,14 @@ interface AuthContextType {
   familyId: string | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, displayName: string, role: UserRole, partnerCode?: string, pregnancyWeek?: number) => Promise<void>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+    displayName: string,
+    role: UserRole,
+    partnerCode?: string,
+    pregnancyWeek?: number,
+  ) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   generateInviteCode: () => Promise<string>;
@@ -105,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfileData = async (data: Partial<UserProfile>) => {
     if (!user) return;
     await updateDoc(doc(db, "users", user.uid), data);
-    setUserProfile((prev) => prev ? { ...prev, ...data } : prev);
+    setUserProfile((prev) => (prev ? { ...prev, ...data } : prev));
   };
 
   useEffect(() => {
@@ -139,32 +146,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     displayName: string,
     role: UserRole,
     partnerCode?: string,
-    pregnancyWeek?: number
+    pregnancyWeek?: number,
   ) => {
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const createdUser = userCredential.user;
 
       // Update Firebase Auth profile
       await updateProfile(createdUser, { displayName });
 
       let initialFamilyId: string | null = null;
-      
+
       if (partnerCode) {
         try {
           const trimmedCode = partnerCode.trim().toUpperCase();
           const q = query(
             collection(db, "families"),
-            where("inviteCode", "==", trimmedCode)
+            where("inviteCode", "==", trimmedCode),
           );
           const snap = await getDocs(q);
 
           if (!snap.empty) {
             const familyDoc = snap.docs[0];
             const familyData = familyDoc.data();
-            const expiresAt = (familyData.inviteCodeExpiresAt as Timestamp).toDate();
-            
+            const expiresAt = (
+              familyData.inviteCodeExpiresAt as Timestamp
+            ).toDate();
+
             if (new Date() <= expiresAt) {
               const members: string[] = familyData.members ?? [];
               if (members.length < 2) {
@@ -243,7 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ...(existing.exists() ? {} : { role: "wife", familyId: null }),
           lastLoginAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
     } finally {
       setLoading(false);
@@ -295,7 +308,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Update local profile state
       setUserProfile((prev) =>
-        prev ? { ...prev, familyId: targetFamilyId } : prev
+        prev ? { ...prev, familyId: targetFamilyId } : prev,
       );
     }
 
@@ -314,12 +327,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Find the family with this invite code
     const q = query(
       collection(db, "families"),
-      where("inviteCode", "==", trimmedCode)
+      where("inviteCode", "==", trimmedCode),
     );
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      throw new Error("Invalid invite code. Please double-check and try again.");
+      throw new Error(
+        "Invalid invite code. Please double-check and try again.",
+      );
     }
 
     const familyDoc = snap.docs[0];
@@ -329,7 +344,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const expiresAt = (familyData.inviteCodeExpiresAt as Timestamp).toDate();
     if (new Date() > expiresAt) {
       throw new Error(
-        "This invite code has expired. Ask your partner to generate a new one."
+        "This invite code has expired. Ask your partner to generate a new one.",
       );
     }
 
@@ -356,7 +371,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Update local state
     setUserProfile((prev) =>
-      prev ? { ...prev, familyId: targetFamilyId } : prev
+      prev ? { ...prev, familyId: targetFamilyId } : prev,
     );
   };
 

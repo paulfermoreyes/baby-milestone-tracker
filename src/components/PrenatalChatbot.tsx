@@ -1,10 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { collection, query, where, orderBy, onSnapshot, limit } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  limit,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { ChatCircle, Robot, Sparkle, ChartBar, Drop, ThermometerHot, X } from "@phosphor-icons/react";
+import {
+  ChatCircle,
+  Robot,
+  Sparkle,
+  ChartBar,
+  Drop,
+  ThermometerHot,
+  X,
+} from "@phosphor-icons/react";
 
 interface Message {
   id: string;
@@ -31,7 +46,9 @@ export default function PrenatalChatbot() {
   // Live Database Statistics State
   const [kickCount, setKickCount] = useState(0);
   const [milkCount, setMilkCount] = useState(0);
-  const [glucoseLogs, setGlucoseLogs] = useState<{ value: number; slot: string; date: string }[]>([]);
+  const [glucoseLogs, setGlucoseLogs] = useState<
+    { value: number; slot: string; date: string }[]
+  >([]);
 
   // Format Helper
   const getLocalDateString = (d: Date = new Date()) => {
@@ -52,9 +69,9 @@ export default function PrenatalChatbot() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    let unsubKicks = () => { };
-    let unsubMilk = () => { };
-    let unsubGlucose = () => { };
+    let unsubKicks = () => {};
+    let unsubMilk = () => {};
+    let unsubGlucose = () => {};
 
     if (user) {
       // 1. Subscribe to Kicks today
@@ -62,13 +79,13 @@ export default function PrenatalChatbot() {
       if (familyId) {
         qKicks = query(
           collection(db, "families", familyId, "kicks"),
-          where("createdAt", ">=", startOfDay)
+          where("createdAt", ">=", startOfDay),
         );
       } else {
         qKicks = query(
           collection(db, "kicks"),
           where("userId", "==", user.uid),
-          where("createdAt", ">=", startOfDay)
+          where("createdAt", ">=", startOfDay),
         );
       }
       unsubKicks = onSnapshot(qKicks, (snapshot) => {
@@ -80,13 +97,13 @@ export default function PrenatalChatbot() {
       if (familyId) {
         qMilk = query(
           collection(db, "families", familyId, "milk"),
-          where("createdAt", ">=", startOfDay)
+          where("createdAt", ">=", startOfDay),
         );
       } else {
         qMilk = query(
           collection(db, "milk"),
           where("userId", "==", user.uid),
-          where("createdAt", ">=", startOfDay)
+          where("createdAt", ">=", startOfDay),
         );
       }
       unsubMilk = onSnapshot(qMilk, (snapshot) => {
@@ -99,14 +116,14 @@ export default function PrenatalChatbot() {
         qGlucose = query(
           collection(db, "families", familyId, "bloodsugar"),
           orderBy("createdAt", "desc"),
-          limit(20)
+          limit(20),
         );
       } else {
         qGlucose = query(
           collection(db, "bloodsugar"),
           where("userId", "==", user.uid),
           orderBy("createdAt", "desc"),
-          limit(20)
+          limit(20),
         );
       }
       unsubGlucose = onSnapshot(qGlucose, (snapshot) => {
@@ -170,12 +187,22 @@ export default function PrenatalChatbot() {
     const text = userText.toLowerCase();
 
     // 1. Kick checks
-    if (text.includes("kick") || text.includes("movement") || text.includes("move")) {
+    if (
+      text.includes("kick") ||
+      text.includes("movement") ||
+      text.includes("move")
+    ) {
       return `According to my records, you have logged ${kickCount} fetal kick(s) today. Clinically, a kick count of 10 movements within a 2-hour window once or twice a day is a standard sign of a healthy, active baby. If your baby is sleeping, a glass of cold water or a light snack can help wake them up! 👣`;
     }
 
     // 2. Milk checks
-    if (text.includes("milk") || text.includes("calcium") || text.includes("drink") || text.includes("glass") || text.includes("cup")) {
+    if (
+      text.includes("milk") ||
+      text.includes("calcium") ||
+      text.includes("drink") ||
+      text.includes("glass") ||
+      text.includes("cup")
+    ) {
       const remaining = 2 - milkCount;
       if (milkCount >= 2) {
         return `Congratulations! You have met your daily prenatal calcium goal of at least 2 glasses of milk (logged: ${milkCount} servings today). Calcium is essential for your baby's skeletal development and protects your bone density. Brilliant job! 🥛🌟`;
@@ -185,21 +212,35 @@ export default function PrenatalChatbot() {
     }
 
     // 3. Blood sugar checks
-    if (text.includes("sugar") || text.includes("glucose") || text.includes("blood sugar") || text.includes("diabetes") || text.includes("fasting")) {
+    if (
+      text.includes("sugar") ||
+      text.includes("glucose") ||
+      text.includes("blood sugar") ||
+      text.includes("diabetes") ||
+      text.includes("fasting")
+    ) {
       const todayLogs = glucoseLogs.filter((l) => l.date === todayStr);
       const fasting = todayLogs.find((l) => l.slot === "fasting");
       const lunch = todayLogs.find((l) => l.slot === "post-lunch");
       const dinner = todayLogs.find((l) => l.slot === "post-dinner");
 
-      const latestFastingVal = fasting ? `${fasting.value} mg/dL` : "Not logged";
+      const latestFastingVal = fasting
+        ? `${fasting.value} mg/dL`
+        : "Not logged";
       const latestLunchVal = lunch ? `${lunch.value} mg/dL` : "Not logged";
       const latestDinnerVal = dinner ? `${dinner.value} mg/dL` : "Not logged";
 
       // Calculate averages from historical logs
-      const fastingReadings = glucoseLogs.filter((l) => l.slot === "fasting").map((l) => l.value);
-      const fastingAvg = fastingReadings.length > 0
-        ? Math.round(fastingReadings.reduce((a, b) => a + b, 0) / fastingReadings.length)
-        : null;
+      const fastingReadings = glucoseLogs
+        .filter((l) => l.slot === "fasting")
+        .map((l) => l.value);
+      const fastingAvg =
+        fastingReadings.length > 0
+          ? Math.round(
+              fastingReadings.reduce((a, b) => a + b, 0) /
+                fastingReadings.length,
+            )
+          : null;
 
       let response = `Here is your current Gestational Diabetes logs breakdown:\n`;
       response += `• Fasting: ${latestFastingVal} (Target: < 95)\n`;
@@ -221,18 +262,29 @@ export default function PrenatalChatbot() {
     }
 
     // 4. Summaries
-    if (text.includes("summary") || text.includes("status") || text.includes("progress") || text.includes("how is my day") || text.includes("stats")) {
+    if (
+      text.includes("summary") ||
+      text.includes("status") ||
+      text.includes("progress") ||
+      text.includes("how is my day") ||
+      text.includes("stats")
+    ) {
       const milkGoalMet = milkCount >= 2;
       return `📊 Here is your Lumina Prenatal Consolidated Status for today (${new Date().toLocaleDateString()}):
 • 👣 Fetal Kicks: ${kickCount} kicks recorded.
 • 🥛 Milk: ${milkCount}/2 cups logged (${milkGoalMet ? "Goal Met! 🎉" : "Pending 🥛"}).
-• 🩸 Blood Sugar today: ${glucoseLogs.filter(l => l.date === todayStr).length} of 3 slots filled.
+• 🩸 Blood Sugar today: ${glucoseLogs.filter((l) => l.date === todayStr).length} of 3 slots filled.
 
 Keep up the outstanding effort tracking your milestones! Let me know if you want to dive deeper into any of these statistics.`;
     }
 
     // 5. Nausea or common symptoms
-    if (text.includes("nausea") || text.includes("vomit") || text.includes("morning sickness") || text.includes("sick")) {
+    if (
+      text.includes("nausea") ||
+      text.includes("vomit") ||
+      text.includes("morning sickness") ||
+      text.includes("sick")
+    ) {
       return `Nausea and morning sickness are very common, especially in the 1st and early 2nd trimesters. 🤒 Pro-tips:
 1. Eat small, frequent meals rather than large ones.
 2. Keep ginger candies, ginger tea, or plain crackers near your bed.
@@ -241,7 +293,12 @@ Keep up the outstanding effort tracking your milestones! Let me know if you want
     }
 
     // 6. Contractions
-    if (text.includes("contraction") || text.includes("pain") || text.includes("cramp") || text.includes("labor")) {
+    if (
+      text.includes("contraction") ||
+      text.includes("pain") ||
+      text.includes("cramp") ||
+      text.includes("labor")
+    ) {
       return `Contractions can either be practice contractions (Braxton Hicks) or true labor. True labor contractions follow a pattern: they get closer together, last longer (usually 30-70 seconds), and strengthen over time. Remember the 5-1-1 rule: if contractions occur every 5 minutes, lasting 1 minute, for at least 1 hour, contact your health provider immediately! 🚨`;
     }
 
@@ -288,13 +345,16 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
     <>
       {/* Floating Chat Trigger Button in bottom right corner */}
       <div className="fixed bottom-24 right-6 lg:bottom-6 z-50">
-        {isOpen ? '' :
+        {isOpen ? (
+          ""
+        ) : (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 cursor-pointer relative group ${isOpen
-              ? "bg-slate-800 text-cyan-400 border border-cyan-800/40"
-              : "bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 shadow-cyan-500/20"
-              }`}
+            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 cursor-pointer relative group ${
+              isOpen
+                ? "bg-slate-800 text-cyan-400 border border-cyan-800/40"
+                : "bg-gradient-to-tr from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-950 shadow-cyan-500/20"
+            }`}
             title="Open Prenatal Chat Assistant"
           >
             <ChatCircle size={24} weight="bold" />
@@ -303,7 +363,7 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
               <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-slate-900 animate-pulse" />
             )}
           </button>
-        }
+        )}
       </div>
 
       {/* Chat Drawer Side Panel */}
@@ -322,10 +382,14 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
                 <Robot size={20} weight="bold" />
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-white">Lumina AI Companion</h3>
+                <h3 className="text-sm font-extrabold text-white">
+                  Lumina AI Companion
+                </h3>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Database Synced</span>
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">
+                    Database Synced
+                  </span>
                 </div>
               </div>
             </div>
@@ -342,8 +406,9 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3 max-w-[85%] ${msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-                  }`}
+                className={`flex gap-3 max-w-[85%] ${
+                  msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
+                }`}
               >
                 {msg.sender === "ai" && (
                   <div className="w-7 h-7 rounded-lg bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs text-cyan-400">
@@ -351,10 +416,11 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
                   </div>
                 )}
                 <div
-                  className={`p-3.5 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${msg.sender === "user"
-                    ? "bg-gradient-to-br from-cyan-600/90 to-indigo-600/90 text-white rounded-tr-none shadow-md shadow-cyan-900/10 border border-cyan-500/20"
-                    : "bg-slate-900/80 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm"
-                    }`}
+                  className={`p-3.5 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${
+                    msg.sender === "user"
+                      ? "bg-gradient-to-br from-cyan-600/90 to-indigo-600/90 text-white rounded-tr-none shadow-md shadow-cyan-900/10 border border-cyan-500/20"
+                      : "bg-slate-900/80 border border-slate-800 text-slate-200 rounded-tl-none shadow-sm"
+                  }`}
                 >
                   {msg.text}
                 </div>
@@ -367,9 +433,18 @@ Or share any symptoms (like nausea, fatigue, or contractions) for helpful guides
                   <Sparkle size={14} weight="fill" />
                 </div>
                 <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 rounded-tl-none text-slate-400 text-xs flex gap-1 items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
                 </div>
               </div>
             )}

@@ -56,7 +56,7 @@ export default function WeightTracker() {
             parsed.map((item) => ({
               ...item,
               timestamp: new Date(item.timestampStr),
-            }))
+            })),
           );
         } catch (e) {
           console.error("Failed to parse guest weight logs", e);
@@ -73,14 +73,14 @@ export default function WeightTracker() {
       q = query(
         collection(db, "families", familyId, "weight"),
         orderBy("createdAt", "desc"),
-        limit(10)
+        limit(10),
       );
     } else {
       q = query(
         collection(db, "weight"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(10)
+        limit(10),
       );
     }
 
@@ -90,8 +90,15 @@ export default function WeightTracker() {
         const logs: WeightLog[] = [];
         snapshot.forEach((d) => {
           const data = d.data();
-          const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
-          const dateStr = data.date || timestamp.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          const timestamp = data.createdAt
+            ? (data.createdAt as Timestamp).toDate()
+            : new Date();
+          const dateStr =
+            data.date ||
+            timestamp.toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            });
           logs.push({
             id: d.id,
             weight: Number(data.weight),
@@ -103,7 +110,7 @@ export default function WeightTracker() {
       },
       (err) => {
         console.error("Error reading weight logs from Firestore:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -117,7 +124,10 @@ export default function WeightTracker() {
     setLoading(true);
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    const dateStr = now.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
 
     if (!user) {
       const simulatedId = Math.random().toString(36).substring(7);
@@ -135,8 +145,8 @@ export default function WeightTracker() {
           updated.map((l) => ({
             ...l,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       setWeightInput("");
       setLoading(false);
@@ -153,7 +163,10 @@ export default function WeightTracker() {
       if (familyId) {
         await addDoc(collection(db, "families", familyId, "weight"), payload);
       } else {
-        await addDoc(collection(db, "weight"), { ...payload, userId: user.uid });
+        await addDoc(collection(db, "weight"), {
+          ...payload,
+          userId: user.uid,
+        });
       }
       setWeightInput("");
     } catch (err) {
@@ -174,8 +187,8 @@ export default function WeightTracker() {
           updated.map((l) => ({
             ...l,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       return;
     }
@@ -193,7 +206,9 @@ export default function WeightTracker() {
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
 
@@ -211,16 +226,27 @@ export default function WeightTracker() {
 
     const points = weightLogs
       .map((log, index) => {
-        const x = padding + (index / (weightLogs.length - 1)) * (width - padding * 2);
-        const y = height - padding - ((log.weight - minWeight) / weightRange) * (height - padding * 2);
+        const x =
+          padding + (index / (weightLogs.length - 1)) * (width - padding * 2);
+        const y =
+          height -
+          padding -
+          ((log.weight - minWeight) / weightRange) * (height - padding * 2);
         return `${x},${y}`;
       })
       .join(" ");
 
     return (
       <div className="w-full bg-slate-900/40 border border-slate-850/50 rounded-xl p-3 flex flex-col items-center">
-        <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2 self-start">Weight Trendline</span>
-        <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+        <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider mb-2 self-start">
+          Weight Trendline
+        </span>
+        <svg
+          width="100%"
+          height={height}
+          viewBox={`0 0 ${width} ${height}`}
+          className="overflow-visible"
+        >
           <defs>
             <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#818cf8" stopOpacity="0.3" />
@@ -240,11 +266,21 @@ export default function WeightTracker() {
             strokeLinejoin="round"
           />
           {weightLogs.map((log, index) => {
-            const x = padding + (index / (weightLogs.length - 1)) * (width - padding * 2);
-            const y = height - padding - ((log.weight - minWeight) / weightRange) * (height - padding * 2);
+            const x =
+              padding +
+              (index / (weightLogs.length - 1)) * (width - padding * 2);
+            const y =
+              height -
+              padding -
+              ((log.weight - minWeight) / weightRange) * (height - padding * 2);
             return (
               <g key={log.id} className="group/node">
-                <circle cx={x} cy={y} r="3.5" className="fill-indigo-500 stroke-slate-900 stroke-2 hover:r-5 transition-all" />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="3.5"
+                  className="fill-indigo-500 stroke-slate-900 stroke-2 hover:r-5 transition-all"
+                />
               </g>
             );
           })}
@@ -255,7 +291,9 @@ export default function WeightTracker() {
 
   const getLatestWeightDiff = () => {
     if (weightLogs.length < 2) return null;
-    const diff = weightLogs[weightLogs.length - 1].weight - weightLogs[weightLogs.length - 2].weight;
+    const diff =
+      weightLogs[weightLogs.length - 1].weight -
+      weightLogs[weightLogs.length - 2].weight;
     const sign = diff >= 0 ? "+" : "";
     return `${sign}${diff.toFixed(1)} kg`;
   };
@@ -266,7 +304,9 @@ export default function WeightTracker() {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Weight & Health</span>
+          <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+            Weight & Health
+          </span>
           <Scales size={20} weight="bold" className="text-indigo-400" />
         </div>
 
@@ -277,7 +317,8 @@ export default function WeightTracker() {
           {weightLogs.length > 0 && (
             <div className="text-right">
               <span className="text-2xl font-black text-indigo-400">
-                {weightLogs[weightLogs.length - 1].weight} <span className="text-xs text-slate-500 font-bold">kg</span>
+                {weightLogs[weightLogs.length - 1].weight}{" "}
+                <span className="text-xs text-slate-500 font-bold">kg</span>
               </span>
               {getLatestWeightDiff() && (
                 <span className="text-[10px] block font-bold text-slate-500">
@@ -289,7 +330,9 @@ export default function WeightTracker() {
         </div>
 
         {user && familyId && (
-          <p className="text-[10px] text-indigo-400 font-semibold mb-3">Shared with partner</p>
+          <p className="text-[10px] text-indigo-400 font-semibold mb-3">
+            Shared with partner
+          </p>
         )}
 
         {/* Input Form */}
@@ -314,34 +357,45 @@ export default function WeightTracker() {
           </button>
         </form>
 
-        {weightLogs.length >= 2 && <div className="mb-6">{renderSparkline()}</div>}
+        {weightLogs.length >= 2 && (
+          <div className="mb-6">{renderSparkline()}</div>
+        )}
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Historical Progress</span>
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">
+            Historical Progress
+          </span>
           {weightLogs.length === 0 ? (
             <div className="text-center py-6 rounded-xl bg-slate-900/30 border border-slate-850/50 text-[11px] text-slate-500">
               No weight logs recorded yet.
             </div>
           ) : (
             <div className="max-h-[110px] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-              {weightLogs.slice().reverse().map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/40 border border-slate-850/50 text-xs"
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-extrabold text-slate-200">{log.weight} kg</span>
-                    <span className="text-[9px] text-slate-500">{log.date}</span>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(log.id)}
-                    className="text-slate-650 hover:text-red-400 transition-colors cursor-pointer flex items-center justify-center"
-                    title="Delete record"
+              {weightLogs
+                .slice()
+                .reverse()
+                .map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/40 border border-slate-850/50 text-xs"
                   >
-                    <Trash size={14} weight="bold" />
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-extrabold text-slate-200">
+                        {log.weight} kg
+                      </span>
+                      <span className="text-[9px] text-slate-500">
+                        {log.date}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(log.id)}
+                      className="text-slate-650 hover:text-red-400 transition-colors cursor-pointer flex items-center justify-center"
+                      title="Delete record"
+                    >
+                      <Trash size={14} weight="bold" />
+                    </button>
+                  </div>
+                ))}
             </div>
           )}
         </div>
@@ -349,9 +403,16 @@ export default function WeightTracker() {
 
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
-          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <Warning
+            size={14}
+            weight="bold"
+            className="text-amber-500 shrink-0"
+          />
           <span>Guest Preview Session</span>
-          <button onClick={triggerAuthModal} className="underline font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+          <button
+            onClick={triggerAuthModal}
+            className="underline font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
             Sync
           </button>
         </div>

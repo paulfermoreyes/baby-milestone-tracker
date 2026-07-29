@@ -44,7 +44,10 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
           setVenueName(parsed.venueName || "");
           setInvitees(parsed.invitees || []);
         } catch (e) {
-          console.error("Failed to parse guest baptism data inside summary card", e);
+          console.error(
+            "Failed to parse guest baptism data inside summary card",
+            e,
+          );
         }
       }
       return;
@@ -66,7 +69,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
       },
       (err) => {
         console.error("Error reading baptism event in summary card:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -74,11 +77,18 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
 
   // Calculations
   const totalInvitees = invitees.length;
-  const confirmedCount = invitees.filter((inv) => inv.status === "confirmed").length;
-  const rsvpRate = totalInvitees > 0 ? Math.round((confirmedCount / totalInvitees) * 100) : 0;
+  const confirmedCount = invitees.filter(
+    (inv) => inv.status === "confirmed",
+  ).length;
+  const rsvpRate =
+    totalInvitees > 0 ? Math.round((confirmedCount / totalInvitees) * 100) : 0;
 
-  const godparents = invitees.filter((inv) => inv.role === "godfather" || inv.role === "godmother");
-  const godparentsConfirmed = godparents.filter((inv) => inv.status === "confirmed").length;
+  const godparents = invitees.filter(
+    (inv) => inv.role === "godfather" || inv.role === "godmother",
+  );
+  const godparentsConfirmed = godparents.filter(
+    (inv) => inv.status === "confirmed",
+  ).length;
   const godparentsTotal = godparents.length;
 
   const getCountdownText = () => {
@@ -106,7 +116,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
     return d.toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
@@ -148,19 +158,25 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-850/40 mt-4">
             <div>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">RSVP Rate</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+                RSVP Rate
+              </span>
               <span className="text-lg font-black text-white">{rsvpRate}%</span>
               <span className="text-[10px] text-slate-400 block mt-0.5">
                 {confirmedCount}/{totalInvitees} Guests
               </span>
             </div>
             <div>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Godparents</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+                Godparents
+              </span>
               <span className="text-lg font-black text-white flex items-center gap-1">
                 <Crown size={14} weight="fill" className="text-pink-400" />
                 {godparentsConfirmed}/{godparentsTotal}
               </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Confirmed RSVP</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                Confirmed RSVP
+              </span>
             </div>
           </div>
         </div>
@@ -187,7 +203,9 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
           <Calendar size={18} weight="bold" className="text-purple-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Baptism Event</h4>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Baptism Event
+          </h4>
           <span className="text-[10px] text-slate-500 font-bold block mt-0.5 truncate max-w-[130px] sm:max-w-none">
             {venueName || "Organizer"} • {getFormattedDateShort()}
           </span>
@@ -196,7 +214,9 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
       <div className="flex items-center gap-3">
         <div className="text-right">
           <span className="text-lg font-black text-white">{rsvpRate}%</span>
-          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">RSVP</span>
+          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+            RSVP
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-purple-450 group-hover:border-purple-500/30 transition-colors">
           <ArrowUpRight size={12} weight="bold" />

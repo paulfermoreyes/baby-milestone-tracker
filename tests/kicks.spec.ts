@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { KicksPage } from "./pages/KicksPage";
 
 test.describe("Kicks Tracker E2E UI Tests", () => {
-  test("should load, record a kick and undo last session locally", async ({ page }) => {
+  test("should load, record a kick and undo last session locally", async ({
+    page,
+  }) => {
     const kicksPage = new KicksPage(page);
     await kicksPage.goto();
 

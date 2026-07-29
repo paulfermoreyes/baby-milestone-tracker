@@ -8,7 +8,7 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -33,10 +33,25 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
     if (!user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogs([
-        { id: "1", weight: 142.5, date: "2026-05-01", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) },
-        { id: "2", weight: 144.2, date: "2026-05-15", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15) },
-        { id: "3", weight: 145.8, date: "2026-05-25", timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) },
-        { id: "4", weight: 146.5, date: "2026-06-02", timestamp: new Date() }
+        {
+          id: "1",
+          weight: 142.5,
+          date: "2026-05-01",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+        },
+        {
+          id: "2",
+          weight: 144.2,
+          date: "2026-05-15",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
+        },
+        {
+          id: "3",
+          weight: 145.8,
+          date: "2026-05-25",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+        },
+        { id: "4", weight: 146.5, date: "2026-06-02", timestamp: new Date() },
       ]);
       return;
     }
@@ -46,14 +61,14 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
       q = query(
         collection(db, "families", familyId, "weight"),
         orderBy("createdAt", "desc"),
-        limit(50)
+        limit(50),
       );
     } else {
       q = query(
         collection(db, "weight"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(50)
+        limit(50),
       );
     }
 
@@ -79,7 +94,8 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
 
   const latestLog = logs[logs.length - 1];
   const firstLog = logs[0];
-  const netGain = latestLog && firstLog ? latestLog.weight - firstLog.weight : 0;
+  const netGain =
+    latestLog && firstLog ? latestLog.weight - firstLog.weight : 0;
 
   // Large Detailed Card Render
   if (mode === "large") {
@@ -90,13 +106,23 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
     const weights = logs.map((l) => l.weight);
     const minW = Math.min(...weights, 100) - 2;
     const maxW = Math.max(...weights, 150) + 2;
-    const getX = (idx: number) => padding + (idx / (logs.length - 1)) * (chartWidth - padding * 2);
-    const getY = (val: number) => chartHeight - padding - ((val - minW) / (maxW - minW || 1)) * (chartHeight - padding * 2);
+    const getX = (idx: number) =>
+      padding + (idx / (logs.length - 1)) * (chartWidth - padding * 2);
+    const getY = (val: number) =>
+      chartHeight -
+      padding -
+      ((val - minW) / (maxW - minW || 1)) * (chartHeight - padding * 2);
 
-    const sparklinePoints = logs.map((val, idx) => ({ x: getX(idx), y: getY(val.weight) }));
-    const pathD = sparklinePoints.length > 1
-      ? sparklinePoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
-      : "";
+    const sparklinePoints = logs.map((val, idx) => ({
+      x: getX(idx),
+      y: getY(val.weight),
+    }));
+    const pathD =
+      sparklinePoints.length > 1
+        ? sparklinePoints
+            .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+            .join(" ")
+        : "";
 
     return (
       <div className="glass-card p-6 bg-slate-800/40 border border-slate-700/30 rounded-3xl relative overflow-hidden flex flex-col justify-between h-full group hover:border-amber-500/30 transition-all duration-300">
@@ -125,10 +151,15 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
                 <span className="text-4xl font-black bg-gradient-to-r from-amber-400 to-rose-400 bg-clip-text text-transparent">
                   {latestLog.weight.toFixed(1)}
                 </span>
-                <span className="text-xs font-black text-slate-400 uppercase">lbs</span>
+                <span className="text-xs font-black text-slate-400 uppercase">
+                  lbs
+                </span>
               </div>
               <span className="text-[10px] text-slate-500 font-bold block mt-1.5 uppercase tracking-wide">
-                {netGain >= 0 ? `+${netGain.toFixed(1)} lbs` : `${netGain.toFixed(1)} lbs`} since baseline
+                {netGain >= 0
+                  ? `+${netGain.toFixed(1)} lbs`
+                  : `${netGain.toFixed(1)} lbs`}{" "}
+                since baseline
               </span>
             </div>
           ) : (
@@ -140,8 +171,18 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
           {/* Sparkline chart */}
           {logs.length > 1 && (
             <div className="flex flex-col items-end">
-              <svg width={chartWidth} height={chartHeight} className="overflow-visible">
-                <path d={pathD} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+              <svg
+                width={chartWidth}
+                height={chartHeight}
+                className="overflow-visible"
+              >
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
                 {sparklinePoints.map((pt, idx) => (
                   <circle
                     key={idx}
@@ -152,7 +193,9 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
                   />
                 ))}
               </svg>
-              <span className="text-[8px] text-slate-500 font-extrabold uppercase mt-1 tracking-wider">Weight Trend</span>
+              <span className="text-[8px] text-slate-500 font-extrabold uppercase mt-1 tracking-wider">
+                Weight Trend
+              </span>
             </div>
           )}
         </div>
@@ -180,17 +223,25 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
           <Scales size={18} weight="bold" className="text-amber-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Weight Tracker</h4>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Weight Tracker
+          </h4>
           <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
-            {latestLog ? `Gain: ${netGain >= 0 ? `+${netGain.toFixed(1)} lbs` : `${netGain.toFixed(1)} lbs`}` : "No entries logged"}
+            {latestLog
+              ? `Gain: ${netGain >= 0 ? `+${netGain.toFixed(1)} lbs` : `${netGain.toFixed(1)} lbs`}`
+              : "No entries logged"}
           </span>
         </div>
       </div>
       <div className="flex items-center gap-3">
         {latestLog && (
           <div className="text-right">
-            <span className="text-lg font-black text-white">{latestLog.weight.toFixed(1)}</span>
-            <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">lbs</span>
+            <span className="text-lg font-black text-white">
+              {latestLog.weight.toFixed(1)}
+            </span>
+            <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+              lbs
+            </span>
           </div>
         )}
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-amber-450 group-hover:border-amber-500/30 transition-colors">

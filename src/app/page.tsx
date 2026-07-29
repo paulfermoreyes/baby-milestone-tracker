@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon, ThermometerHot, Footprints, Users } from "@phosphor-icons/react";
+import {
+  Sun,
+  Moon,
+  ThermometerHot,
+  Footprints,
+  Users,
+} from "@phosphor-icons/react";
 import AppShell from "@/components/AppShell";
 import KickSummaryCard from "@/components/dashboard/KickSummaryCard";
 import ContractionSummaryCard from "@/components/dashboard/ContractionSummaryCard";
@@ -15,7 +21,14 @@ import BaptismSummaryCard from "@/components/dashboard/BaptismSummaryCard";
 import BirthChecklistSummaryCard from "@/components/dashboard/BirthChecklistSummaryCard";
 
 export default function Home() {
-  const { user, userProfile, loading, signUpWithEmail, signInWithEmail, signInWithGoogle } = useAuth();
+  const {
+    user,
+    userProfile,
+    loading,
+    signUpWithEmail,
+    signInWithEmail,
+    signInWithGoogle,
+  } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   // Landing page interactive form state
@@ -43,13 +56,23 @@ export default function Home() {
         if (pregnancyWeek === "" || pregnancyWeek < 1 || pregnancyWeek > 42) {
           throw new Error("Please enter a valid pregnancy week (1-42).");
         }
-        await signUpWithEmail(email, password, displayName, role, partnerCode.trim(), Number(pregnancyWeek));
+        await signUpWithEmail(
+          email,
+          password,
+          displayName,
+          role,
+          partnerCode.trim(),
+          Number(pregnancyWeek),
+        );
       } else {
         await signInWithEmail(email, password);
       }
     } catch (err: unknown) {
       console.error(err);
-      let friendlyMessage = err instanceof Error ? err.message : "An authentication error occurred.";
+      let friendlyMessage =
+        err instanceof Error
+          ? err.message
+          : "An authentication error occurred.";
       const code = (err as { code?: string }).code;
       if (
         code === "auth/user-not-found" ||
@@ -60,7 +83,8 @@ export default function Home() {
       ) {
         friendlyMessage = "Invalid email or password. Please try again.";
       } else if (code === "auth/email-already-in-use") {
-        friendlyMessage = "This email is already in use. Try signing in instead.";
+        friendlyMessage =
+          "This email is already in use. Try signing in instead.";
       } else if (code === "auth/weak-password") {
         friendlyMessage = "Password must be at least 6 characters long.";
       } else if (code === "auth/invalid-email") {
@@ -81,7 +105,9 @@ export default function Home() {
       console.error(err);
       const code = (err as { code?: string }).code;
       if (code !== "auth/popup-closed-by-user") {
-        setFormError(err instanceof Error ? err.message : "Failed to sign in with Google.");
+        setFormError(
+          err instanceof Error ? err.message : "Failed to sign in with Google.",
+        );
       }
     } finally {
       setFormLoading(false);
@@ -93,18 +119,28 @@ export default function Home() {
   // LOADING STATE
   if (loading) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden ${isDark ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
-        }`}>
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden ${
+          isDark ? "bg-slate-900 text-slate-100" : "bg-[#f8f7f4] text-slate-800"
+        }`}
+      >
         <div className="flex flex-col items-center gap-4 z-10">
           <div className="w-16 h-16 animate-bounce">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
+            <img
+              src="/logo.svg"
+              alt="Lumina Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent animate-pulse">
             Lumina
           </h1>
-          <div className={`w-8 h-8 rounded-full border-4 border-t-rose-500 animate-spin ${isDark ? "border-slate-800" : "border-slate-200"
-            }`} />
+          <div
+            className={`w-8 h-8 rounded-full border-4 border-t-rose-500 animate-spin ${
+              isDark ? "border-slate-800" : "border-slate-200"
+            }`}
+          />
         </div>
       </div>
     );
@@ -113,15 +149,24 @@ export default function Home() {
   // LANDING / ONBOARDING PAGE (LOGGED OUT)
   if (!user) {
     return (
-      <div className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-12 ${isDark
-        ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
-        : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
-        }`}>
+      <div
+        className={`min-h-screen flex flex-col font-sans relative overflow-hidden pb-12 ${
+          isDark
+            ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
+            : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
+        }`}
+      >
         {/* Decorative background glow elements */}
-        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-rose-950/25" : "bg-rose-200/30"
-          }`} />
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${isDark ? "bg-amber-950/20" : "bg-amber-200/20"
-          }`} />
+        <div
+          className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
+            isDark ? "bg-rose-950/25" : "bg-rose-200/30"
+          }`}
+        />
+        <div
+          className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
+            isDark ? "bg-amber-950/20" : "bg-amber-200/20"
+          }`}
+        />
 
         {/* Header */}
         <header className="w-full backdrop-blur-sm border-b border-slate-850/60 relative z-30">
@@ -129,14 +174,21 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
+                <img
+                  src="/logo.svg"
+                  alt="Lumina Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
                   Lumina
                 </h1>
-                <p className={`text-[10px] uppercase tracking-widest font-semibold ${isDark ? "text-slate-400" : "text-slate-500"
-                  }`}>
+                <p
+                  className={`text-[10px] uppercase tracking-widest font-semibold ${
+                    isDark ? "text-slate-400" : "text-slate-500"
+                  }`}
+                >
                   Prenatal Suite
                 </p>
               </div>
@@ -166,11 +218,19 @@ export default function Home() {
           <div className="lg:col-span-7 flex flex-col gap-8 text-center lg:text-left">
             <div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mt-4 mb-6 leading-tight">
-                Simplify Your <span className="bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Prenatal Journey</span>
+                Simplify Your{" "}
+                <span className="bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+                  Prenatal Journey
+                </span>
               </h2>
-              <p className={`text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 ${isDark ? "text-slate-400" : "text-slate-600"
-                }`}>
-                Collaborative prenatal health tracking, real-time caregiver sync, and instant AI guidance designed to support your pregnancy milestones and connect parents.
+              <p
+                className={`text-sm md:text-base leading-relaxed max-w-xl mx-auto lg:mx-0 ${
+                  isDark ? "text-slate-400" : "text-slate-600"
+                }`}
+              >
+                Collaborative prenatal health tracking, real-time caregiver
+                sync, and instant AI guidance designed to support your pregnancy
+                milestones and connect parents.
               </p>
             </div>
 
@@ -179,12 +239,22 @@ export default function Home() {
               {/* Feature 1 */}
               <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex gap-4 text-left transition-all duration-300 hover:scale-[1.01]">
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                  <ThermometerHot size={20} weight="bold" className="text-cyan-400" />
+                  <ThermometerHot
+                    size={20}
+                    weight="bold"
+                    className="text-cyan-400"
+                  />
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-white mb-1">Symptom Logging & Weight Trends</h4>
-                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-650"}`}>
-                    Log daily symptoms, track physical changes, and maintain a detailed weight log with visual metrics to share with your healthcare provider.
+                  <h4 className="text-base font-bold text-white mb-1">
+                    Symptom Logging & Weight Trends
+                  </h4>
+                  <p
+                    className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-650"}`}
+                  >
+                    Log daily symptoms, track physical changes, and maintain a
+                    detailed weight log with visual metrics to share with your
+                    healthcare provider.
                   </p>
                 </div>
               </div>
@@ -192,12 +262,22 @@ export default function Home() {
               {/* Feature 2 */}
               <div className="glass-card p-5 bg-slate-800/30 border border-slate-700/30 rounded-2xl flex gap-4 text-left transition-all duration-300 hover:scale-[1.01]">
                 <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
-                  <Footprints size={20} weight="bold" className="text-rose-400" />
+                  <Footprints
+                    size={20}
+                    weight="bold"
+                    className="text-rose-400"
+                  />
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-white mb-1">Fetal Activity & Contraction Vitals</h4>
-                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-655"}`}>
-                    Count baby&apos;s daily kicks for fetal safety, track contraction frequency using our precise timing tool, and monitor vital signs like blood sugar levels.
+                  <h4 className="text-base font-bold text-white mb-1">
+                    Fetal Activity & Contraction Vitals
+                  </h4>
+                  <p
+                    className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-655"}`}
+                  >
+                    Count baby&apos;s daily kicks for fetal safety, track
+                    contraction frequency using our precise timing tool, and
+                    monitor vital signs like blood sugar levels.
                   </p>
                 </div>
               </div>
@@ -208,9 +288,15 @@ export default function Home() {
                   <Users size={20} weight="bold" className="text-indigo-400" />
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-white mb-1">Caregiver Syncing & AI Assistance</h4>
-                  <p className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-660"}`}>
-                    Link dashboards with your spouse to sync milestones and logs in real-time. Chat with our dedicated AI prenatal companion for instant, secure advice.
+                  <h4 className="text-base font-bold text-white mb-1">
+                    Caregiver Syncing & AI Assistance
+                  </h4>
+                  <p
+                    className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-660"}`}
+                  >
+                    Link dashboards with your spouse to sync milestones and logs
+                    in real-time. Chat with our dedicated AI prenatal companion
+                    for instant, secure advice.
                   </p>
                 </div>
               </div>
@@ -229,8 +315,12 @@ export default function Home() {
                 <h3 className="text-2xl font-extrabold tracking-tight text-white">
                   {isSignUp ? "Join Lumina" : "Welcome Back"}
                 </h3>
-                <p className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-                  {isSignUp ? "Connect with caregivers and sync milestones" : "Access your caregiver dashboard"}
+                <p
+                  className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}
+                >
+                  {isSignUp
+                    ? "Connect with caregivers and sync milestones"
+                    : "Access your caregiver dashboard"}
                 </p>
               </div>
 
@@ -238,17 +328,29 @@ export default function Home() {
               <div className="flex bg-slate-950/45 p-1 rounded-xl border border-slate-800/40 mb-6">
                 <button
                   type="button"
-                  onClick={() => { setIsSignUp(false); setFormError(null); }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${!isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
-                    }`}
+                  onClick={() => {
+                    setIsSignUp(false);
+                    setFormError(null);
+                  }}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
+                    !isSignUp
+                      ? "bg-slate-800 text-rose-400 shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
                 >
                   Sign In
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setIsSignUp(true); setFormError(null); }}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
-                    }`}
+                  onClick={() => {
+                    setIsSignUp(true);
+                    setFormError(null);
+                  }}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
+                    isSignUp
+                      ? "bg-slate-800 text-rose-400 shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
                 >
                   Register
                 </button>
@@ -261,10 +363,17 @@ export default function Home() {
                 </div>
               )}
 
-              <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
+              <form
+                onSubmit={handleFormSubmit}
+                className="space-y-4"
+                noValidate
+              >
                 {isSignUp && (
                   <div className="space-y-1.5">
-                    <label htmlFor="name-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    <label
+                      htmlFor="name-input-form"
+                      className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                    >
                       Full Name
                     </label>
                     <input
@@ -284,7 +393,10 @@ export default function Home() {
                 {isSignUp && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="week-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                      <label
+                        htmlFor="week-input-form"
+                        className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                      >
                         Current Week
                       </label>
                       <input
@@ -293,7 +405,11 @@ export default function Home() {
                         min="1"
                         max="42"
                         value={pregnancyWeek}
-                        onChange={(e) => setPregnancyWeek(e.target.value === "" ? "" : Number(e.target.value))}
+                        onChange={(e) =>
+                          setPregnancyWeek(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
+                        }
                         placeholder="e.g. 12"
                         className="auth-input"
                         required
@@ -301,14 +417,22 @@ export default function Home() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="partner-code-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
-                        Partner Code <span className="text-slate-500 font-normal">(opt)</span>
+                      <label
+                        htmlFor="partner-code-input-form"
+                        className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                      >
+                        Partner Code{" "}
+                        <span className="text-slate-500 font-normal">
+                          (opt)
+                        </span>
                       </label>
                       <input
                         id="partner-code-input-form"
                         type="text"
                         value={partnerCode}
-                        onChange={(e) => setPartnerCode(e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          setPartnerCode(e.target.value.toUpperCase())
+                        }
                         placeholder="CODE"
                         className="auth-input uppercase"
                         disabled={formLoading}
@@ -321,16 +445,21 @@ export default function Home() {
                 {/* Role Selector */}
                 {isSignUp && (
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>I am the…</label>
+                    <label
+                      className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                    >
+                      I am the…
+                    </label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setRole("husband")}
                         disabled={formLoading}
-                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${role === "husband"
-                          ? "bg-indigo-500/15 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/10"
-                          : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
-                          }`}
+                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
+                          role === "husband"
+                            ? "bg-indigo-500/15 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/10"
+                            : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                        }`}
                       >
                         <span className="text-xl">👨</span>
                         <span>Husband</span>
@@ -339,10 +468,11 @@ export default function Home() {
                         type="button"
                         onClick={() => setRole("wife")}
                         disabled={formLoading}
-                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${role === "wife"
-                          ? "bg-pink-500/15 border-pink-500/50 text-pink-300 shadow-sm shadow-pink-500/10"
-                          : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
-                          }`}
+                        className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-150 cursor-pointer flex flex-col items-center gap-1.5 ${
+                          role === "wife"
+                            ? "bg-pink-500/15 border-pink-500/50 text-pink-300 shadow-sm shadow-pink-500/10"
+                            : "bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300"
+                        }`}
                       >
                         <span className="text-xl">👩</span>
                         <span>Wife</span>
@@ -352,7 +482,10 @@ export default function Home() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="email-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  <label
+                    htmlFor="email-input-form"
+                    className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Email Address
                   </label>
                   <input
@@ -370,7 +503,10 @@ export default function Home() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label htmlFor="password-input-form" className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    <label
+                      htmlFor="password-input-form"
+                      className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                    >
                       Password
                     </label>
                   </div>
@@ -382,7 +518,9 @@ export default function Home() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       className="auth-input pr-12"
-                      autoComplete={isSignUp ? "new-password" : "current-password"}
+                      autoComplete={
+                        isSignUp ? "new-password" : "current-password"
+                      }
                       required
                       minLength={6}
                       disabled={formLoading}
@@ -392,16 +530,43 @@ export default function Home() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer"
                       disabled={formLoading}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                          />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
                         </svg>
                       )}
                     </button>
@@ -424,8 +589,11 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-800/80"></div>
                 </div>
-                <span className={`relative px-3 text-[10px] uppercase font-bold tracking-widest text-slate-500 ${isDark ? "bg-slate-900" : "bg-white"
-                  }`}>
+                <span
+                  className={`relative px-3 text-[10px] uppercase font-bold tracking-widest text-slate-500 ${
+                    isDark ? "bg-slate-900" : "bg-white"
+                  }`}
+                >
                   Or Sync With
                 </span>
               </div>
@@ -434,13 +602,18 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleGoogleFormSignIn}
-                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs border transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer ${isDark
-                  ? "bg-slate-900 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700/80"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-750 hover:text-slate-950 border-slate-350 hover:border-slate-400"
-                  }`}
+                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs border transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer ${
+                  isDark
+                    ? "bg-slate-900 hover:bg-slate-850 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700/80"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-750 hover:text-slate-950 border-slate-350 hover:border-slate-400"
+                }`}
                 disabled={formLoading}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                     fill="#4285F4"
@@ -465,9 +638,17 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
-          }`}>
-          <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
+        <footer
+          className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 ${
+            isDark
+              ? "border-slate-800/40 text-slate-500"
+              : "border-slate-200/40 text-slate-400"
+          }`}
+        >
+          <p>
+            &copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights
+            reserved.
+          </p>
         </footer>
       </div>
     );
@@ -477,13 +658,49 @@ export default function Home() {
   const week = userProfile?.pregnancyWeek || 0;
 
   // Dynamic priority ordering based on pregnancy week
-  let order: string[] = ["kicks", "contractions", "sugar", "milk", "symptoms", "weight", "checklist", "baptism"];
+  let order: string[] = [
+    "kicks",
+    "contractions",
+    "sugar",
+    "milk",
+    "symptoms",
+    "weight",
+    "checklist",
+    "baptism",
+  ];
   if (week > 0 && week <= 13) {
-    order = ["symptoms", "weight", "sugar", "milk", "kicks", "contractions", "checklist", "baptism"];
+    order = [
+      "symptoms",
+      "weight",
+      "sugar",
+      "milk",
+      "kicks",
+      "contractions",
+      "checklist",
+      "baptism",
+    ];
   } else if (week >= 14 && week <= 27) {
-    order = ["weight", "kicks", "symptoms", "sugar", "milk", "contractions", "checklist", "baptism"];
+    order = [
+      "weight",
+      "kicks",
+      "symptoms",
+      "sugar",
+      "milk",
+      "contractions",
+      "checklist",
+      "baptism",
+    ];
   } else if (week >= 28) {
-    order = ["contractions", "kicks", "checklist", "sugar", "weight", "symptoms", "milk", "baptism"];
+    order = [
+      "contractions",
+      "kicks",
+      "checklist",
+      "sugar",
+      "weight",
+      "symptoms",
+      "milk",
+      "baptism",
+    ];
   }
 
   const largeKeys = order.slice(0, 3);
@@ -516,22 +733,28 @@ export default function Home() {
     <AppShell>
       {/* Welcome & Info Section */}
       <div className="mb-10 text-center md:text-left">
-        <h2 className={`text-3xl md:text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+        <h2
+          className={`text-3xl md:text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}
+        >
           Welcome to Your Dashboard
           {userProfile?.pregnancyWeek ? (
-            <span className={`text-2xl md:text-3xl ml-3 ${isDark ? "text-rose-450" : "text-rose-600"}`}>
+            <span
+              className={`text-2xl md:text-3xl ml-3 ${isDark ? "text-rose-450" : "text-rose-600"}`}
+            >
               - Week {userProfile.pregnancyWeek}
             </span>
           ) : null}
         </h2>
-        <p className={`text-sm leading-relaxed max-w-2xl ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-          Track daily progress, log vital signs, and stay connected with other caregivers in real-time. Keep a close eye on key prenatal metrics.
+        <p
+          className={`text-sm leading-relaxed max-w-2xl ${isDark ? "text-slate-400" : "text-slate-500"}`}
+        >
+          Track daily progress, log vital signs, and stay connected with other
+          caregivers in real-time. Keep a close eye on key prenatal metrics.
         </p>
       </div>
 
       {/* Dynamic Grid Layout */}
       <div className="space-y-8 text-slate-200">
-
         {/* ROW 1: Active High-Priority Trackers (Large Detailed Views) */}
         <div>
           <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 text-left">

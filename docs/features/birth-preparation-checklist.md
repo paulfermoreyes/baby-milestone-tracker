@@ -41,22 +41,23 @@ interface ChecklistDocument {
 }
 
 interface Category {
-  id: string;           // UUID, stable identifier
-  name: string;         // e.g. "Nursery & Sleep"
-  emoji: string;        // decorative prefix e.g. "🛏️"
+  id: string; // UUID, stable identifier
+  name: string; // e.g. "Nursery & Sleep"
+  emoji: string; // decorative prefix e.g. "🛏️"
   items: ChecklistItem[];
 }
 
 interface ChecklistItem {
-  id: string;            // UUID
+  id: string; // UUID
   label: string;
-  status: 'pending' | 'ready' | 'in-bag';  // replaces simple boolean
-  addedBy?: string;      // uid of user who added it (family attribution)
-  note?: string;         // optional free-text note (deferred to v2)
+  status: "pending" | "ready" | "in-bag"; // replaces simple boolean
+  addedBy?: string; // uid of user who added it (family attribution)
+  note?: string; // optional free-text note (deferred to v2)
 }
 ```
 
 > `status` drives the drag-and-drop UX:
+>
 > - **`pending`** → appears in the "Not Ready" column
 > - **`ready`** → appears in the "Ready" column
 > - **`in-bag`** → appears in the Hospital Bag drop zone
@@ -65,14 +66,14 @@ interface ChecklistItem {
 
 The checklist is pre-populated with sensible defaults on first load. All items start with `status: 'pending'`.
 
-| Category | Emoji | Sample Items |
-|---|---|---|
-| Nursery & Sleep | 🛏️ | Crib/bassinet, Mattress, Bedding set, Baby monitor |
-| Feeding | 🍼 | Breast pump, Bottles, Burp cloths, Nursing pillow |
-| Clothing | 👕 | Onesies (newborn/0-3M), Sleepers, Socks, Hats |
-| Bath & Hygiene | 🛁 | Baby bathtub, Gentle shampoo/wash, Nail trimmer |
-| Health & Safety | 🏥 | Thermometer, Baby first-aid kit, Car seat, Baby-proofing kit |
-| Mom Recovery | 💊 | Postpartum pads, Nipple cream, Stool softener, Comfortable PJs |
+| Category        | Emoji | Sample Items                                                   |
+| --------------- | ----- | -------------------------------------------------------------- |
+| Nursery & Sleep | 🛏️    | Crib/bassinet, Mattress, Bedding set, Baby monitor             |
+| Feeding         | 🍼    | Breast pump, Bottles, Burp cloths, Nursing pillow              |
+| Clothing        | 👕    | Onesies (newborn/0-3M), Sleepers, Socks, Hats                  |
+| Bath & Hygiene  | 🛁    | Baby bathtub, Gentle shampoo/wash, Nail trimmer                |
+| Health & Safety | 🏥    | Thermometer, Baby first-aid kit, Car seat, Baby-proofing kit   |
+| Mom Recovery    | 💊    | Postpartum pads, Nipple cream, Stool softener, Comfortable PJs |
 
 > **Note:** "Hospital Bag" is no longer a regular category. It is the dedicated **drop zone** — a fixed area at the top/bottom of the page where any item from any category can be dragged to mark it as `in-bag`.
 
@@ -83,7 +84,9 @@ The checklist is pre-populated with sensible defaults on first load. All items s
 ### New Files
 
 #### [NEW] `src/components/BirthChecklist.tsx`
+
 The main feature component. Responsibilities:
+
 - Real-time Firestore sync via `onSnapshot` (or `localStorage` for guests)
 - Renders categories as collapsible accordion sections with **two column lanes**: "Not Ready" and "Ready"
 - **Drag-and-drop** between the two lanes and into the Hospital Bag zone (see UX detail below)
@@ -93,11 +96,13 @@ The main feature component. Responsibilities:
 - Shared-editing attribution: small badge showing "added by [partner name]"
 
 #### [NEW] `src/app/trackers/checklist/page.tsx`
+
 Thin route page that wraps `BirthChecklist` in `AppShell`, following the exact same pattern as all other tracker pages.
 
 ### Modified Files
 
 #### [MODIFY] `src/components/BottomNav.tsx`
+
 Add a new `checklist` entry to the `allItems` record.
 
 - **Icon**: `Baby` or `ListChecks` from `@phosphor-icons/react`
@@ -106,6 +111,7 @@ Add a new `checklist` entry to the `allItems` record.
 - **Mobile priority**: inject into the late-pregnancy priority list (week ≥ 28) alongside contractions
 
 #### [MODIFY] `firestore.rules`
+
 Add rules for the new paths:
 
 ```diff
@@ -198,6 +204,7 @@ BirthChecklist.tsx
 ### State Management
 
 All state is local to the component:
+
 - `categories: Category[]` — the full checklist state
 - `expandedCategories: Set<string>` — which accordions are open
 - `draggingItem: { itemId, categoryId } | null` — active drag payload
@@ -244,6 +251,7 @@ The entire `ChecklistDocument` is written as a **single `setDoc` with `{merge: t
 ## Verification Plan
 
 ### Manual Verification
+
 1. Visit `/trackers/checklist` — confirm the page loads with pre-seeded categories.
 2. Toggle checkboxes — confirm items persist across page refreshes.
 3. Add a new item to an existing category — verify it appears and persists.

@@ -14,15 +14,23 @@ import {
   List,
   X,
   Calendar,
-  ListChecks
+  ListChecks,
 } from "@phosphor-icons/react";
 
 interface TrackerItem {
   key: string;
   label: string;
   href: string;
-  icon: React.ComponentType<{ weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone"; size?: number; className?: string }>;
-  iconProps?: { weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone"; size?: number; className?: string };
+  icon: React.ComponentType<{
+    weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone";
+    size?: number;
+    className?: string;
+  }>;
+  iconProps?: {
+    weight?: "bold" | "fill" | "regular" | "thin" | "light" | "duotone";
+    size?: number;
+    className?: string;
+  };
   colorClass: string;
   activeColorClass: string;
 }
@@ -47,7 +55,7 @@ export default function BottomNav() {
       icon: House,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-rose-400",
-      activeColorClass: "text-rose-500 font-extrabold"
+      activeColorClass: "text-rose-500 font-extrabold",
     },
     kicks: {
       key: "kicks",
@@ -56,7 +64,7 @@ export default function BottomNav() {
       icon: Footprints,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-cyan-400",
-      activeColorClass: "text-cyan-400 font-extrabold"
+      activeColorClass: "text-cyan-400 font-extrabold",
     },
     contractions: {
       key: "contractions",
@@ -65,7 +73,7 @@ export default function BottomNav() {
       icon: Timer,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-rose-400",
-      activeColorClass: "text-rose-450 font-extrabold"
+      activeColorClass: "text-rose-450 font-extrabold",
     },
     sugar: {
       key: "sugar",
@@ -74,7 +82,7 @@ export default function BottomNav() {
       icon: Drop,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-indigo-400",
-      activeColorClass: "text-indigo-450 font-extrabold"
+      activeColorClass: "text-indigo-450 font-extrabold",
     },
     milk: {
       key: "milk",
@@ -83,7 +91,7 @@ export default function BottomNav() {
       icon: Drop,
       iconProps: { weight: "fill" },
       colorClass: "text-slate-400 hover:text-sky-400",
-      activeColorClass: "text-sky-400 font-extrabold"
+      activeColorClass: "text-sky-400 font-extrabold",
     },
     symptoms: {
       key: "symptoms",
@@ -92,7 +100,7 @@ export default function BottomNav() {
       icon: ThermometerHot,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-teal-400",
-      activeColorClass: "text-teal-400 font-extrabold"
+      activeColorClass: "text-teal-400 font-extrabold",
     },
     weight: {
       key: "weight",
@@ -101,7 +109,7 @@ export default function BottomNav() {
       icon: Scales,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-amber-400",
-      activeColorClass: "text-amber-500 font-extrabold"
+      activeColorClass: "text-amber-500 font-extrabold",
     },
     baptism: {
       key: "baptism",
@@ -110,7 +118,7 @@ export default function BottomNav() {
       icon: Calendar,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-purple-400",
-      activeColorClass: "text-purple-400 font-extrabold"
+      activeColorClass: "text-purple-400 font-extrabold",
     },
     checklist: {
       key: "checklist",
@@ -119,8 +127,8 @@ export default function BottomNav() {
       icon: ListChecks,
       iconProps: { weight: "bold" },
       colorClass: "text-slate-400 hover:text-emerald-400",
-      activeColorClass: "text-emerald-400 font-extrabold"
-    }
+      activeColorClass: "text-emerald-400 font-extrabold",
+    },
   };
 
   if (!mounted) return null;
@@ -138,7 +146,7 @@ export default function BottomNav() {
 
   const mobileDockKeys = ["home", ...mobilePriorityKeys];
   const mobileMoreKeys = Object.keys(allItems).filter(
-    (key) => !mobileDockKeys.includes(key)
+    (key) => !mobileDockKeys.includes(key),
   );
 
   const handleLinkClick = () => {
@@ -149,7 +157,6 @@ export default function BottomNav() {
     <>
       {/* Universal Floating Navigation Dock */}
       <div className="fixed bottom-4 left-4 right-4 z-40 max-w-5xl mx-auto py-3 px-4 md:px-6 flex items-center justify-between rounded-2xl liquid-glass-nav">
-        
         {/* DESKTOP NAV DOCK (lg & above) - Lists all 7 links */}
         <div className="hidden lg:flex items-center justify-around w-full">
           {Object.values(allItems).map((item) => {
@@ -207,7 +214,11 @@ export default function BottomNav() {
             }`}
             aria-label="Toggle all trackers menu"
           >
-            {isMoreOpen ? <X size={20} weight="bold" /> : <List size={20} weight="bold" />}
+            {isMoreOpen ? (
+              <X size={20} weight="bold" />
+            ) : (
+              <List size={20} weight="bold" />
+            )}
             <span className="text-[9px] font-bold uppercase tracking-wider select-none">
               More
             </span>
@@ -237,7 +248,7 @@ export default function BottomNav() {
                 <X size={14} weight="bold" />
               </button>
             </div>
-            
+
             {/* List of remaining trackers */}
             <div className="grid grid-cols-2 gap-3">
               {mobileMoreKeys.map((key) => {

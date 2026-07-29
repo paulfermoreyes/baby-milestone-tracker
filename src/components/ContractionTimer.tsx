@@ -15,7 +15,13 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Timer, BellRinging, Play, Square, Warning } from "@phosphor-icons/react";
+import {
+  Timer,
+  BellRinging,
+  Play,
+  Square,
+  Warning,
+} from "@phosphor-icons/react";
 
 interface ContractionLog {
   id: string;
@@ -62,7 +68,7 @@ export default function ContractionTimer() {
               startTime: new Date(item.startTimeStr),
               duration: item.duration,
               interval: item.interval,
-            }))
+            })),
           );
         } catch (e) {
           console.error("Failed to parse guest contractions logs", e);
@@ -79,14 +85,14 @@ export default function ContractionTimer() {
       q = query(
         collection(db, "families", familyId, "contractions"),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(20),
       );
     } else {
       q = query(
         collection(db, "contractions"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(20),
       );
     }
 
@@ -96,7 +102,9 @@ export default function ContractionTimer() {
         const tempLogs: ContractionLog[] = [];
         snapshot.forEach((d) => {
           const data = d.data();
-          const startTime = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
+          const startTime = data.createdAt
+            ? (data.createdAt as Timestamp).toDate()
+            : new Date();
           tempLogs.push({
             id: d.id,
             startTime,
@@ -108,7 +116,7 @@ export default function ContractionTimer() {
       },
       (err) => {
         console.error("Error reading contractions from Firestore:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -141,7 +149,9 @@ export default function ContractionTimer() {
       let intervalSec: number | undefined = undefined;
       if (logs.length > 0) {
         const lastStartTime = logs[logs.length - 1].startTime;
-        intervalSec = Math.round((finishedStartTime.getTime() - lastStartTime.getTime()) / 1000);
+        intervalSec = Math.round(
+          (finishedStartTime.getTime() - lastStartTime.getTime()) / 1000,
+        );
       }
 
       if (!user) {
@@ -162,8 +172,8 @@ export default function ContractionTimer() {
               startTimeStr: l.startTime.toISOString(),
               duration: l.duration,
               interval: l.interval,
-            }))
-          )
+            })),
+          ),
         );
         setStartTime(null);
         setTimerVal(0);
@@ -178,9 +188,15 @@ export default function ContractionTimer() {
           loggedBy: user.uid,
         };
         if (familyId) {
-          await addDoc(collection(db, "families", familyId, "contractions"), payload);
+          await addDoc(
+            collection(db, "families", familyId, "contractions"),
+            payload,
+          );
         } else {
-          await addDoc(collection(db, "contractions"), { ...payload, userId: user.uid });
+          await addDoc(collection(db, "contractions"), {
+            ...payload,
+            userId: user.uid,
+          });
         }
       } catch (err) {
         console.error("Failed to save contraction log:", err);
@@ -204,8 +220,8 @@ export default function ContractionTimer() {
             startTimeStr: l.startTime.toISOString(),
             duration: l.duration,
             interval: l.interval,
-          }))
-        )
+          })),
+        ),
       );
       return;
     }
@@ -239,17 +255,25 @@ export default function ContractionTimer() {
     if (logs.length < 3) return false;
     const lastHour = 60 * 60 * 1000;
     const now = new Date().getTime();
-    const recentLogs = logs.filter((l) => now - l.startTime.getTime() < lastHour);
+    const recentLogs = logs.filter(
+      (l) => now - l.startTime.getTime() < lastHour,
+    );
     if (recentLogs.length < 3) return false;
-    const avgDuration = recentLogs.reduce((acc, l) => acc + l.duration, 0) / recentLogs.length;
-    const validIntervals = recentLogs.map((l) => l.interval).filter((v): v is number => v !== undefined);
+    const avgDuration =
+      recentLogs.reduce((acc, l) => acc + l.duration, 0) / recentLogs.length;
+    const validIntervals = recentLogs
+      .map((l) => l.interval)
+      .filter((v): v is number => v !== undefined);
     if (validIntervals.length === 0) return false;
-    const avgInterval = validIntervals.reduce((acc, v) => acc + v, 0) / validIntervals.length;
+    const avgInterval =
+      validIntervals.reduce((acc, v) => acc + v, 0) / validIntervals.length;
     return avgInterval <= 300 && avgDuration >= 60;
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
 
@@ -259,7 +283,9 @@ export default function ContractionTimer() {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">Labor / Timing</span>
+          <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">
+            Labor / Timing
+          </span>
           <Timer size={20} weight="bold" className="text-rose-400" />
         </div>
 
@@ -275,11 +301,19 @@ export default function ContractionTimer() {
 
         {checkLaborAlert() && (
           <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-400 animate-pulse flex items-start gap-2.5">
-            <BellRinging size={18} weight="bold" className="text-rose-400 shrink-0 mt-0.5" />
+            <BellRinging
+              size={18}
+              weight="bold"
+              className="text-rose-400 shrink-0 mt-0.5"
+            />
             <div>
-              <p className="font-extrabold mb-0.5">5-1-1 Labor Guideline Met!</p>
+              <p className="font-extrabold mb-0.5">
+                5-1-1 Labor Guideline Met!
+              </p>
               <p className="text-[10px] text-slate-450 leading-normal font-medium">
-                Contractions are averaging less than 5 minutes apart, lasting 1 minute, for over an hour. Consider contacting your OB-GYN or health provider immediately.
+                Contractions are averaging less than 5 minutes apart, lasting 1
+                minute, for over an hour. Consider contacting your OB-GYN or
+                health provider immediately.
               </p>
             </div>
           </div>
@@ -292,11 +326,15 @@ export default function ContractionTimer() {
                 {Math.floor(timerVal / 60)}:
                 {String(timerVal % 60).padStart(2, "0")}
               </span>
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mt-1">Recording Contraction</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mt-1">
+                Recording Contraction
+              </span>
             </div>
           ) : (
             <div className="text-center">
-              <span className="text-sm font-semibold text-slate-400">Ready to log</span>
+              <span className="text-sm font-semibold text-slate-400">
+                Ready to log
+              </span>
             </div>
           )}
 
@@ -323,42 +361,58 @@ export default function ContractionTimer() {
         </div>
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Recent Timing Logs</span>
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">
+            Recent Timing Logs
+          </span>
           {logs.length === 0 ? (
             <div className="text-center py-6 rounded-xl bg-slate-900/30 border border-slate-850/50 text-[11px] text-slate-500">
               No contractions logged yet.
             </div>
           ) : (
             <div className="max-h-[140px] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-              {logs.slice().reverse().map((log, index) => (
-                <div
-                  key={log.id}
-                  className="p-3 rounded-xl bg-slate-900/40 border border-slate-850/50 flex flex-col gap-1 hover:border-slate-800 transition-all text-xs"
-                >
-                  <div className="flex items-center justify-between font-bold text-slate-300">
-                    <span>Contraction #{logs.length - index}</span>
-                    <button
-                      onClick={() => handleDelete(log.id)}
-                      className="text-slate-650 hover:text-red-400 transition-colors text-[10px] cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px] mt-1 pt-1.5 border-t border-slate-950/20 text-slate-400">
-                    <div>
-                      <span className="text-slate-550 block text-[9px] uppercase font-bold">Duration</span>
-                      <span className="font-extrabold text-slate-300">{formatDuration(log.duration)}</span>
+              {logs
+                .slice()
+                .reverse()
+                .map((log, index) => (
+                  <div
+                    key={log.id}
+                    className="p-3 rounded-xl bg-slate-900/40 border border-slate-850/50 flex flex-col gap-1 hover:border-slate-800 transition-all text-xs"
+                  >
+                    <div className="flex items-center justify-between font-bold text-slate-300">
+                      <span>Contraction #{logs.length - index}</span>
+                      <button
+                        onClick={() => handleDelete(log.id)}
+                        className="text-slate-650 hover:text-red-400 transition-colors text-[10px] cursor-pointer"
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <div>
-                      <span className="text-slate-550 block text-[9px] uppercase font-bold">Interval (Since prev)</span>
-                      <span className="font-extrabold text-slate-300">{formatInterval(log.interval)}</span>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] mt-1 pt-1.5 border-t border-slate-950/20 text-slate-400">
+                      <div>
+                        <span className="text-slate-550 block text-[9px] uppercase font-bold">
+                          Duration
+                        </span>
+                        <span className="font-extrabold text-slate-300">
+                          {formatDuration(log.duration)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-550 block text-[9px] uppercase font-bold">
+                          Interval (Since prev)
+                        </span>
+                        <span className="font-extrabold text-slate-300">
+                          {formatInterval(log.interval)}
+                        </span>
+                      </div>
                     </div>
+                    <span className="text-[9px] text-slate-600 block self-end mt-1">
+                      {log.startTime.toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
-                  <span className="text-[9px] text-slate-600 block self-end mt-1">
-                    {log.startTime.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -366,9 +420,16 @@ export default function ContractionTimer() {
 
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
-          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <Warning
+            size={14}
+            weight="bold"
+            className="text-amber-500 shrink-0"
+          />
           <span>Guest Preview Session</span>
-          <button onClick={triggerAuthModal} className="underline font-bold text-rose-400 hover:text-rose-300 transition-colors">
+          <button
+            onClick={triggerAuthModal}
+            className="underline font-bold text-rose-400 hover:text-rose-300 transition-colors"
+          >
             Sync
           </button>
         </div>

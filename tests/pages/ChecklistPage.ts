@@ -9,18 +9,30 @@ export class ChecklistPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole("heading", { name: "Birth Preparation Checklist" });
+    this.heading = page.getByRole("heading", {
+      name: "Birth Preparation Checklist",
+    });
     this.categoryNameInput = page.getByPlaceholder("Category name…");
-    this.addCategoryHeader = page.getByRole("heading", { name: "Add Custom Category" });
+    this.addCategoryHeader = page.getByRole("heading", {
+      name: "Add Custom Category",
+    });
     // Find button within the Add Custom Category container
-    this.addCategoryBtn = page.locator("div.glass-card").filter({
-      has: page.getByRole("heading", { name: "Add Custom Category" })
-    }).getByRole("button");
+    this.addCategoryBtn = page
+      .locator("div.glass-card")
+      .filter({
+        has: page.getByRole("heading", { name: "Add Custom Category" }),
+      })
+      .getByRole("button");
   }
 
   async goto() {
-    await this.page.goto("/trackers/birth-preparation-checklist", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 30000 });
+    await this.page.goto("/trackers/birth-preparation-checklist", {
+      waitUntil: "domcontentloaded",
+    });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 30000,
+    });
   }
 
   async addCustomCategory(name: string) {

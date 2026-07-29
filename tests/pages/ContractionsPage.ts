@@ -18,8 +18,13 @@ export class ContractionsPage {
   }
 
   async goto() {
-    await this.page.goto("/trackers/contractions", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.goto("/trackers/contractions", {
+      waitUntil: "domcontentloaded",
+    });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 15000,
+    });
   }
 
   async startContraction() {

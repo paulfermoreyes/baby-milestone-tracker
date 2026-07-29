@@ -5,6 +5,7 @@ This tracking list serves as a living document to track progress across developm
 ---
 
 ### 1. ⚙️ Project Initialization (100% Complete)
+
 - [x] Bootstrapped local Next.js environment with Tailwind, TypeScript, and ESLint configurations.
 - [x] Set up Git remote origin pointing to `git@github.com:paulfermoreyes/baby-milestone-tracker.git`.
 - [x] Initialized and configured Firestore and Authentication services inside the Firebase Console.
@@ -13,6 +14,7 @@ This tracking list serves as a living document to track progress across developm
 ---
 
 ### 2. 🎨 UI/UX Design System (100% Complete)
+
 - [x] Defined global design token variables (hsl primary palette, accents, custom blur gradients) inside `globals.css`.
 - [x] Created reusable `.glass-card` styling configurations.
 - [x] Removed Next.js boilerplate layouts and designed the **Lumina** deep dark dashboard theme.
@@ -20,6 +22,7 @@ This tracking list serves as a living document to track progress across developm
 ---
 
 ### 3. 🧠 Core Features (100% Complete)
+
 - [x] **Caregiver Authentication**: Built a secure global session provider (`AuthContext`) and interactive glassmorphic `<AuthModal>` dialog component.
 - [x] **Firestore Database Schema & Models**: Organized user-linked documents with atomic timestamps.
 - [x] **Fetal Kick Counter**:
@@ -51,6 +54,7 @@ This tracking list serves as a living document to track progress across developm
 ---
 
 ### 4. 🧪 Testing, Optimization & QA (0% Complete)
+
 - [ ] Write unit tests for vital calculations.
 - [ ] Conduct comprehensive accessibility (A11y) audits on form focus inputs.
 - [ ] Run Core Web Vitals checks and verify Largest Contentful Paint (LCP) budget (< 2.5s).
@@ -58,6 +62,7 @@ This tracking list serves as a living document to track progress across developm
 ---
 
 ### 5. 🚀 Production Deploy & Security Audit (0% Complete)
+
 - [ ] Deploy code to staging server (Firebase App Hosting / Vercel).
 - [ ] Draft and deploy robust Firestore Row-Level security rule policies.
 - [ ] Release production bundle.

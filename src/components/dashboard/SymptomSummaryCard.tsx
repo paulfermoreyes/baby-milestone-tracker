@@ -8,7 +8,7 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -44,8 +44,20 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
     if (!user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayLogs([
-        { id: "1", symptoms: ["Back Pain", "Mild Fatigue"], severity: "mild", date: todayStr, timestamp: new Date() },
-        { id: "2", symptoms: ["Nausea"], severity: "moderate", date: todayStr, timestamp: new Date() }
+        {
+          id: "1",
+          symptoms: ["Back Pain", "Mild Fatigue"],
+          severity: "mild",
+          date: todayStr,
+          timestamp: new Date(),
+        },
+        {
+          id: "2",
+          symptoms: ["Nausea"],
+          severity: "moderate",
+          date: todayStr,
+          timestamp: new Date(),
+        },
       ]);
       return;
     }
@@ -55,14 +67,14 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
       q = query(
         collection(db, "families", familyId, "symptoms"),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(20),
       );
     } else {
       q = query(
         collection(db, "symptoms"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(20)
+        limit(20),
       );
     }
 
@@ -140,20 +152,25 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
                 <span className="text-4xl font-black bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
                   {allLoggedSymptoms.length}
                 </span>
-                <span className="text-xs font-black text-slate-400 uppercase">Symptoms Today</span>
+                <span className="text-xs font-black text-slate-400 uppercase">
+                  Symptoms Today
+                </span>
               </div>
 
               {/* Symptom badges list */}
               <div className="flex flex-wrap gap-2 pt-1 max-h-[85px] overflow-y-auto scrollbar-thin">
-                {todayLogs.map((log) => 
+                {todayLogs.map((log) =>
                   log.symptoms.map((symptom) => (
                     <span
                       key={`${log.id}-${symptom}`}
                       className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${getSeverityBadgeClass(log.severity)}`}
                     >
-                      {symptom} <span className="text-[8px] font-bold opacity-60 ml-1.5">({getSeverityLabel(log.severity)})</span>
+                      {symptom}{" "}
+                      <span className="text-[8px] font-bold opacity-60 ml-1.5">
+                        ({getSeverityLabel(log.severity)})
+                      </span>
                     </span>
-                  ))
+                  )),
                 )}
               </div>
             </div>
@@ -187,16 +204,24 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
           <ThermometerHot size={18} weight="bold" className="text-teal-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Symptom Diary</h4>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Symptom Diary
+          </h4>
           <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
-            {allLoggedSymptoms.length > 0 ? `${allLoggedSymptoms.slice(0, 2).join(", ")}${allLoggedSymptoms.length > 2 ? "..." : ""}` : "No symptoms logged today"}
+            {allLoggedSymptoms.length > 0
+              ? `${allLoggedSymptoms.slice(0, 2).join(", ")}${allLoggedSymptoms.length > 2 ? "..." : ""}`
+              : "No symptoms logged today"}
           </span>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <span className="text-lg font-black text-white">{allLoggedSymptoms.length}</span>
-          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">Logged</span>
+          <span className="text-lg font-black text-white">
+            {allLoggedSymptoms.length}
+          </span>
+          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+            Logged
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-teal-450 group-hover:border-teal-500/30 transition-colors">
           <ArrowUpRight size={12} weight="bold" />

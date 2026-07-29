@@ -29,14 +29,21 @@ test.describe("Lumina Authentication Flow UI Tests", () => {
     await expect(landingPage.nameInput).not.toBeVisible();
   });
 
-  test("should show validation error alert with invalid credentials", async ({ page }) => {
+  test("should show validation error alert with invalid credentials", async ({
+    page,
+  }) => {
     const landingPage = new LandingPage(page);
 
-    await landingPage.fillSignInForm("nonexistent-test-user-playwright@example.com", "invalidpassword123");
+    await landingPage.fillSignInForm(
+      "nonexistent-test-user-playwright@example.com",
+      "invalidpassword123",
+    );
     await landingPage.submitForm();
 
     // Verify Firebase error message matches expected warning
     await expect(landingPage.errorAlert).toBeVisible({ timeout: 10000 });
-    await expect(landingPage.errorAlert).toContainText("Invalid email or password. Please try again.");
+    await expect(landingPage.errorAlert).toContainText(
+      "Invalid email or password. Please try again.",
+    );
   });
 });
