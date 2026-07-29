@@ -13,11 +13,26 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  Timestamp
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Warning, Trash, PencilSimple, BookOpen, SunHorizon, Sun, Moon, MoonIcon, SunHorizonIcon, SunIcon, ChartLineIcon, BookOpenIcon, DropIcon, DownloadSimple } from "@phosphor-icons/react";
+import {
+  Warning,
+  Trash,
+  PencilSimple,
+  BookOpen,
+  SunHorizon,
+  Sun,
+  Moon,
+  MoonIcon,
+  SunHorizonIcon,
+  SunIcon,
+  ChartLineIcon,
+  BookOpenIcon,
+  DropIcon,
+  DownloadSimple,
+} from "@phosphor-icons/react";
 
 interface BloodSugarLog {
   id: string;
@@ -33,16 +48,26 @@ export default function BloodSugarTracker() {
   const [isClient, setIsClient] = useState(false);
 
   // Form states
-  const [activeSlot, setActiveSlot] = useState<"fasting" | "post-lunch" | "post-dinner" | null>(null);
+  const [activeSlot, setActiveSlot] = useState<
+    "fasting" | "post-lunch" | "post-dinner" | null
+  >(null);
   const [editingLog, setEditingLog] = useState<BloodSugarLog | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Range and filter states
   const [chartRange, setChartRange] = useState<"7" | "14" | "30" | "all">("7");
-  const [historyFilter, setHistoryFilter] = useState<"all" | "fasting" | "post-lunch" | "post-dinner">("all");
-  const [hoveredDot, setHoveredDot] = useState<{ x: number; y: number; log: BloodSugarLog } | null>(null);
-  const [activeView, setActiveView] = useState<"record" | "chart" | "history">("record");
+  const [historyFilter, setHistoryFilter] = useState<
+    "all" | "fasting" | "post-lunch" | "post-dinner"
+  >("all");
+  const [hoveredDot, setHoveredDot] = useState<{
+    x: number;
+    y: number;
+    log: BloodSugarLog;
+  } | null>(null);
+  const [activeView, setActiveView] = useState<"record" | "chart" | "history">(
+    "record",
+  );
 
   const getLocalDateString = (d: Date = new Date()) => {
     const year = d.getFullYear();
@@ -53,14 +78,36 @@ export default function BloodSugarTracker() {
 
   const todayStr = getLocalDateString();
 
-  const renderSlotIcon = (slot: "fasting" | "post-lunch" | "post-dinner" | string, size = 14, className = "") => {
+  const renderSlotIcon = (
+    slot: "fasting" | "post-lunch" | "post-dinner" | string,
+    size = 14,
+    className = "",
+  ) => {
     switch (slot) {
       case "fasting":
-        return <SunHorizon size={size} weight="bold" className={className || "text-cyan-400"} />;
+        return (
+          <SunHorizon
+            size={size}
+            weight="bold"
+            className={className || "text-cyan-400"}
+          />
+        );
       case "post-lunch":
-        return <Sun size={size} weight="bold" className={className || "text-emerald-400"} />;
+        return (
+          <Sun
+            size={size}
+            weight="bold"
+            className={className || "text-emerald-400"}
+          />
+        );
       case "post-dinner":
-        return <Moon size={size} weight="bold" className={className || "text-rose-400"} />;
+        return (
+          <Moon
+            size={size}
+            weight="bold"
+            className={className || "text-rose-400"}
+          />
+        );
       default:
         return null;
     }
@@ -92,7 +139,7 @@ export default function BloodSugarTracker() {
             parsed.map((item) => ({
               ...item,
               timestamp: new Date(item.timestampStr),
-            }))
+            })),
           );
         } catch (e) {
           console.error("Failed to parse guest blood sugar logs", e);
@@ -110,14 +157,14 @@ export default function BloodSugarTracker() {
       q = query(
         collection(db, "families", familyId, "bloodsugar"),
         orderBy("createdAt", "desc"),
-        limit(150)
+        limit(150),
       );
     } else {
       q = query(
         collection(db, "bloodsugar"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(150)
+        limit(150),
       );
     }
 
@@ -127,7 +174,9 @@ export default function BloodSugarTracker() {
         const bsLogs: BloodSugarLog[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
-          const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
+          const timestamp = data.createdAt
+            ? (data.createdAt as Timestamp).toDate()
+            : new Date();
           bsLogs.push({
             id: doc.id,
             value: Number(data.value),
@@ -141,7 +190,7 @@ export default function BloodSugarTracker() {
       },
       (err) => {
         console.error("Error reading blood sugar from Firestore:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -172,7 +221,9 @@ export default function BloodSugarTracker() {
       };
 
       // Filter out pre-existing reading for the same slot on the same day
-      const filtered = logs.filter((l) => !(l.date === todayStr && l.slot === activeSlot));
+      const filtered = logs.filter(
+        (l) => !(l.date === todayStr && l.slot === activeSlot),
+      );
       const updated = [...filtered, newLog];
 
       setLogs(updated);
@@ -185,8 +236,8 @@ export default function BloodSugarTracker() {
             slot: l.slot,
             date: l.date,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
 
       setActiveSlot(null);
@@ -197,10 +248,14 @@ export default function BloodSugarTracker() {
 
     try {
       // Clean up previous entry for this slot today to keep entries unique per slot/day
-      const duplicate = logs.find((l) => l.date === todayStr && l.slot === activeSlot);
+      const duplicate = logs.find(
+        (l) => l.date === todayStr && l.slot === activeSlot,
+      );
       if (duplicate) {
         if (familyId) {
-          await deleteDoc(doc(db, "families", familyId, "bloodsugar", duplicate.id));
+          await deleteDoc(
+            doc(db, "families", familyId, "bloodsugar", duplicate.id),
+          );
         } else {
           await deleteDoc(doc(db, "bloodsugar", duplicate.id));
         }
@@ -214,9 +269,15 @@ export default function BloodSugarTracker() {
         createdAt: serverTimestamp(),
       };
       if (familyId) {
-        await addDoc(collection(db, "families", familyId, "bloodsugar"), payload);
+        await addDoc(
+          collection(db, "families", familyId, "bloodsugar"),
+          payload,
+        );
       } else {
-        await addDoc(collection(db, "bloodsugar"), { ...payload, userId: user.uid });
+        await addDoc(collection(db, "bloodsugar"), {
+          ...payload,
+          userId: user.uid,
+        });
       }
 
       setActiveSlot(null);
@@ -243,8 +304,8 @@ export default function BloodSugarTracker() {
             slot: l.slot,
             date: l.date,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       return;
     }
@@ -283,7 +344,9 @@ export default function BloodSugarTracker() {
 
     if (!user) {
       // Guest mode: update locally
-      const updated = logs.map((l) => (l.id === editingLog.id ? { ...l, value } : l));
+      const updated = logs.map((l) =>
+        l.id === editingLog.id ? { ...l, value } : l,
+      );
       setLogs(updated);
       localStorage.setItem(
         "lumina_guest_bloodsugar",
@@ -294,8 +357,8 @@ export default function BloodSugarTracker() {
             slot: l.slot,
             date: l.date,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       setEditingLog(null);
       setInputValue("");
@@ -305,10 +368,13 @@ export default function BloodSugarTracker() {
 
     try {
       if (familyId) {
-        await updateDoc(doc(db, "families", familyId, "bloodsugar", editingLog.id), {
-          value,
-          updatedAt: serverTimestamp(),
-        });
+        await updateDoc(
+          doc(db, "families", familyId, "bloodsugar", editingLog.id),
+          {
+            value,
+            updatedAt: serverTimestamp(),
+          },
+        );
       } else {
         await updateDoc(doc(db, "bloodsugar", editingLog.id), {
           value,
@@ -332,22 +398,44 @@ export default function BloodSugarTracker() {
   const dinnerReading = todayLogs.find((l) => l.slot === "post-dinner");
 
   // Threshold checkers
-  const getClassification = (value: number, slot: "fasting" | "post-lunch" | "post-dinner") => {
-    if (value < 70) return { label: "Low", color: "text-blue-900 bg-blue-100/40 border-blue-300/30 dark:text-blue-200 dark:bg-blue-900/40 dark:border-blue-700/30" };
+  const getClassification = (
+    value: number,
+    slot: "fasting" | "post-lunch" | "post-dinner",
+  ) => {
+    if (value < 70)
+      return {
+        label: "Low",
+        color:
+          "text-blue-900 bg-blue-100/40 border-blue-300/30 dark:text-blue-200 dark:bg-blue-900/40 dark:border-blue-700/30",
+      };
 
     if (slot === "fasting") {
       return value < 95
-        ? { label: "Normal", color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30" }
-        : { label: "Elevated", color: "text-rose-900 bg-rose-100/40 border-rose-300/30" };
+        ? {
+            label: "Normal",
+            color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30",
+          }
+        : {
+            label: "Elevated",
+            color: "text-rose-900 bg-rose-100/40 border-rose-300/30",
+          };
     } else {
       return value < 140
-        ? { label: "Normal", color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30" }
-        : { label: "Elevated", color: "text-rose-900 bg-rose-100/40 border-rose-300/30" };
+        ? {
+            label: "Normal",
+            color: "text-emerald-900 bg-emerald-100/40 border-emerald-300/30",
+          }
+        : {
+            label: "Elevated",
+            color: "text-rose-900 bg-rose-100/40 border-rose-300/30",
+          };
     }
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) {
       dialog.showModal();
     }
@@ -391,7 +479,7 @@ export default function BloodSugarTracker() {
     return new Date(dateStr + "T00:00:00").toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
@@ -399,7 +487,7 @@ export default function BloodSugarTracker() {
     return date.toLocaleTimeString(undefined, {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true
+      hour12: true,
     });
   };
 
@@ -407,25 +495,32 @@ export default function BloodSugarTracker() {
     if (logs.length === 0) return;
 
     const headers = ["Date", "Time", "Slot", "Blood Sugar (mg/dL)", "Status"];
-    const sortedLogs = [...logs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    const sortedLogs = [...logs].sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+    );
 
     const rows = sortedLogs.map((log) => [
       log.date,
       formatLogTime(log.timestamp),
       slotConfigs[log.slot]?.label || log.slot,
       log.value,
-      getClassification(log.value, log.slot).label
+      getClassification(log.value, log.slot).label,
     ]);
 
     const csvContent = [headers, ...rows]
-      .map((row) => row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(","))
+      .map((row) =>
+        row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(","),
+      )
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `blood_sugar_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute(
+      "download",
+      `blood_sugar_report_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -489,8 +584,13 @@ export default function BloodSugarTracker() {
 
   // X coordinate mapper
   const getX = (idx: number) => {
-    if (activeDates.length <= 1) return paddingLeft + (chartWidth - paddingLeft - paddingRight) / 2;
-    return paddingLeft + (idx / (activeDates.length - 1)) * (chartWidth - paddingLeft - paddingRight);
+    if (activeDates.length <= 1)
+      return paddingLeft + (chartWidth - paddingLeft - paddingRight) / 2;
+    return (
+      paddingLeft +
+      (idx / (activeDates.length - 1)) *
+        (chartWidth - paddingLeft - paddingRight)
+    );
   };
 
   // Y coordinate mapper
@@ -501,12 +601,21 @@ export default function BloodSugarTracker() {
 
   const getY = (val: number) => {
     const scale = (val - minVal) / (range || 1);
-    return chartHeight - paddingBottom - scale * (chartHeight - paddingTop - paddingBottom);
+    return (
+      chartHeight -
+      paddingBottom -
+      scale * (chartHeight - paddingTop - paddingBottom)
+    );
   };
 
   // Generate coordinate array for a slot
   const getSlotPoints = (slot: "fasting" | "post-lunch" | "post-dinner") => {
-    const points: { x: number; y: number; log: BloodSugarLog; dateIdx: number }[] = [];
+    const points: {
+      x: number;
+      y: number;
+      log: BloodSugarLog;
+      dateIdx: number;
+    }[] = [];
     activeDates.forEach((date, idx) => {
       const log = groupedLogs[date]?.[slot];
       if (log) {
@@ -527,7 +636,9 @@ export default function BloodSugarTracker() {
 
   const getPathD = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return "";
-    return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    return points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
   };
 
   // Check if grid tick labels should be rendered
@@ -544,7 +655,9 @@ export default function BloodSugarTracker() {
       return (
         <div className="flex flex-col items-center justify-center h-[180px] rounded-2xl bg-slate-900/30 border border-slate-850 border-dashed text-slate-500 text-xs p-4">
           <span>📉 Line chart trends will generate here.</span>
-          <span className="mt-1 opacity-70">Log some readings to start tracking patterns!</span>
+          <span className="mt-1 opacity-70">
+            Log some readings to start tracking patterns!
+          </span>
         </div>
       );
     }
@@ -567,13 +680,16 @@ export default function BloodSugarTracker() {
             {/* Custom Legend */}
             <div className="flex gap-2.5 text-[9px] font-bold">
               <span className="flex items-center gap-1 text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> Fasting
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />{" "}
+                Fasting
               </span>
               <span className="flex items-center gap-1 text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Post-Lunch
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{" "}
+                Post-Lunch
               </span>
               <span className="flex items-center gap-1 text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" /> Post-Dinner
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />{" "}
+                Post-Dinner
               </span>
             </div>
 
@@ -586,10 +702,11 @@ export default function BloodSugarTracker() {
                     setChartRange(r);
                     setHoveredDot(null);
                   }}
-                  className={`px-2 py-0.5 rounded text-[8.5px] font-extrabold transition-all cursor-pointer ${chartRange === r
-                    ? "bg-slate-800 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-300"
-                    }`}
+                  className={`px-2 py-0.5 rounded text-[8.5px] font-extrabold transition-all cursor-pointer ${
+                    chartRange === r
+                      ? "bg-slate-800 text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-300"
+                  }`}
                 >
                   {r === "all" ? "All" : `${r}D`}
                 </button>
@@ -617,7 +734,13 @@ export default function BloodSugarTracker() {
                     y1={y}
                     x2={chartWidth - paddingRight}
                     y2={y}
-                    stroke={tick === 95 ? "#06b6d4" : tick === 140 ? "#f43f5e" : "#334155"}
+                    stroke={
+                      tick === 95
+                        ? "#06b6d4"
+                        : tick === 140
+                          ? "#f43f5e"
+                          : "#334155"
+                    }
                     strokeWidth="1"
                     strokeDasharray={isTargetLine ? "2 3" : "1 5"}
                     opacity={isTargetLine ? 0.35 : 0.15}
@@ -635,10 +758,13 @@ export default function BloodSugarTracker() {
                       x={chartWidth - paddingRight}
                       y={y - 4}
                       textAnchor="end"
-                      className={`text-[6.5px] font-black tracking-widest select-none ${tick === 95 ? "fill-cyan-500/50" : "fill-rose-500/50"
-                        }`}
+                      className={`text-[6.5px] font-black tracking-widest select-none ${
+                        tick === 95 ? "fill-cyan-500/50" : "fill-rose-500/50"
+                      }`}
                     >
-                      {tick === 95 ? "FASTING TARGET < 95" : "POST-MEAL TARGET < 140"}
+                      {tick === 95
+                        ? "FASTING TARGET < 95"
+                        : "POST-MEAL TARGET < 140"}
                     </text>
                   )}
                 </g>
@@ -650,7 +776,10 @@ export default function BloodSugarTracker() {
               if (!shouldRenderLabel(idx)) return null;
               const x = getX(idx);
               const dateObj = new Date(date + "T00:00:00");
-              const labelStr = dateObj.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+              const labelStr = dateObj.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              });
 
               return (
                 <g key={date}>
@@ -679,24 +808,63 @@ export default function BloodSugarTracker() {
             {/* Fasting Line Path */}
             {fastingPoints.length > 1 && (
               <>
-                <path d={getPathD(fastingPoints)} fill="none" stroke="#06b6d4" strokeWidth="6" strokeLinecap="round" opacity="0.1" />
-                <path d={getPathD(fastingPoints)} fill="none" stroke="#06b6d4" strokeWidth="2.5" strokeLinecap="round" />
+                <path
+                  d={getPathD(fastingPoints)}
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  opacity="0.1"
+                />
+                <path
+                  d={getPathD(fastingPoints)}
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
               </>
             )}
 
             {/* Post-Lunch Line Path */}
             {lunchPoints.length > 1 && (
               <>
-                <path d={getPathD(lunchPoints)} fill="none" stroke="#10b981" strokeWidth="6" strokeLinecap="round" opacity="0.1" />
-                <path d={getPathD(lunchPoints)} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+                <path
+                  d={getPathD(lunchPoints)}
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  opacity="0.1"
+                />
+                <path
+                  d={getPathD(lunchPoints)}
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
               </>
             )}
 
             {/* Post-Dinner Line Path */}
             {dinnerPoints.length > 1 && (
               <>
-                <path d={getPathD(dinnerPoints)} fill="none" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" opacity="0.1" />
-                <path d={getPathD(dinnerPoints)} fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeLinecap="round" />
+                <path
+                  d={getPathD(dinnerPoints)}
+                  fill="none"
+                  stroke="#f43f5e"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  opacity="0.1"
+                />
+                <path
+                  d={getPathD(dinnerPoints)}
+                  fill="none"
+                  stroke="#f43f5e"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
               </>
             )}
 
@@ -706,11 +874,27 @@ export default function BloodSugarTracker() {
               <g
                 key={pt.log.id}
                 className="group/dot cursor-pointer"
-                onMouseEnter={() => setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })}
+                onMouseEnter={() =>
+                  setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })
+                }
                 onMouseLeave={() => setHoveredDot(null)}
               >
-                <circle cx={pt.x} cy={pt.y} r="4" fill="#0f172a" stroke="#06b6d4" strokeWidth="2" />
-                <circle cx={pt.x} cy={pt.y} r="9" fill="#06b6d4" opacity="0" className="hover:opacity-20 transition-opacity" />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="4"
+                  fill="#0f172a"
+                  stroke="#06b6d4"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="9"
+                  fill="#06b6d4"
+                  opacity="0"
+                  className="hover:opacity-20 transition-opacity"
+                />
               </g>
             ))}
 
@@ -719,11 +903,27 @@ export default function BloodSugarTracker() {
               <g
                 key={pt.log.id}
                 className="group/dot cursor-pointer"
-                onMouseEnter={() => setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })}
+                onMouseEnter={() =>
+                  setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })
+                }
                 onMouseLeave={() => setHoveredDot(null)}
               >
-                <circle cx={pt.x} cy={pt.y} r="4" fill="#0f172a" stroke="#10b981" strokeWidth="2" />
-                <circle cx={pt.x} cy={pt.y} r="9" fill="#10b981" opacity="0" className="hover:opacity-20 transition-opacity" />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="4"
+                  fill="#0f172a"
+                  stroke="#10b981"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="9"
+                  fill="#10b981"
+                  opacity="0"
+                  className="hover:opacity-20 transition-opacity"
+                />
               </g>
             ))}
 
@@ -732,11 +932,27 @@ export default function BloodSugarTracker() {
               <g
                 key={pt.log.id}
                 className="group/dot cursor-pointer"
-                onMouseEnter={() => setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })}
+                onMouseEnter={() =>
+                  setHoveredDot({ x: pt.x, y: pt.y, log: pt.log })
+                }
                 onMouseLeave={() => setHoveredDot(null)}
               >
-                <circle cx={pt.x} cy={pt.y} r="4" fill="#0f172a" stroke="#f43f5e" strokeWidth="2" />
-                <circle cx={pt.x} cy={pt.y} r="9" fill="#f43f5e" opacity="0" className="hover:opacity-20 transition-opacity" />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="4"
+                  fill="#0f172a"
+                  stroke="#f43f5e"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r="9"
+                  fill="#f43f5e"
+                  opacity="0"
+                  className="hover:opacity-20 transition-opacity"
+                />
               </g>
             ))}
           </svg>
@@ -753,19 +969,37 @@ export default function BloodSugarTracker() {
             >
               <div className="flex items-center gap-2 justify-between">
                 <span className="text-[8px] font-black text-slate-500 uppercase">
-                  {new Date(hoveredDot.log.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  {new Date(
+                    hoveredDot.log.date + "T00:00:00",
+                  ).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </span>
-                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${getClassification(hoveredDot.log.value, hoveredDot.log.slot).color}`}>
-                  {getClassification(hoveredDot.log.value, hoveredDot.log.slot).label}
+                <span
+                  className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${getClassification(hoveredDot.log.value, hoveredDot.log.slot).color}`}
+                >
+                  {
+                    getClassification(hoveredDot.log.value, hoveredDot.log.slot)
+                      .label
+                  }
                 </span>
               </div>
               <div className="flex items-center gap-0.5 text-slate-200 font-extrabold mt-0.5">
-                <span className="text-xs text-white font-black">{hoveredDot.log.value}</span>
-                <span className="text-[8.5px] text-slate-400 font-bold">mg/dL</span>
+                <span className="text-xs text-white font-black">
+                  {hoveredDot.log.value}
+                </span>
+                <span className="text-[8.5px] text-slate-400 font-bold">
+                  mg/dL
+                </span>
               </div>
               <div className="text-[8.5px] text-slate-400 flex items-center gap-1">
-                <span className="flex items-center">{renderSlotIcon(hoveredDot.log.slot, 12)}</span>
-                <span className="font-semibold text-slate-300">{slotConfigs[hoveredDot.log.slot].label}</span>
+                <span className="flex items-center">
+                  {renderSlotIcon(hoveredDot.log.slot, 12)}
+                </span>
+                <span className="font-semibold text-slate-300">
+                  {slotConfigs[hoveredDot.log.slot].label}
+                </span>
               </div>
             </div>
           )}
@@ -776,7 +1010,9 @@ export default function BloodSugarTracker() {
 
   // Handle detailed logbook rendering
   const getFilteredLogsForHistory = () => {
-    const sorted = [...logs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // newest first
+    const sorted = [...logs].sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+    ); // newest first
     if (historyFilter === "all") return sorted;
     return sorted.filter((l) => l.slot === historyFilter);
   };
@@ -794,7 +1030,9 @@ export default function BloodSugarTracker() {
           <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
             Gestational Diabetes Tracker
           </span>
-          <h2 className="text-2xl font-black text-white mt-1">Daily Blood Sugar Logs</h2>
+          <h2 className="text-2xl font-black text-white mt-1">
+            Daily Blood Sugar Logs
+          </h2>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-400">
           {logs.length > 0 && (
@@ -809,37 +1047,45 @@ export default function BloodSugarTracker() {
           )}
 
           <span className="hidden sm:inline px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-850 text-slate-300 font-semibold">
-            Today: {new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+            Today:{" "}
+            {new Date().toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </span>
 
           {/* Toggle buttons for record, chart, and logbook */}
           <div className="flex bg-slate-950/60 p-0.5 rounded-xl border border-slate-850 shadow-inner">
             <button
               onClick={() => setActiveView("record")}
-              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "record"
-                ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
-                : "text-slate-500 hover:text-slate-350"
-                }`}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeView === "record"
+                  ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
+                  : "text-slate-500 hover:text-slate-350"
+              }`}
               title="Record Blood Sugar"
             >
               <DropIcon size={12} weight="bold" /> <span>Record</span>
             </button>
             <button
               onClick={() => setActiveView("chart")}
-              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "chart"
-                ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
-                : "text-slate-500 hover:text-slate-350"
-                }`}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeView === "chart"
+                  ? "bg-slate-800 text-cyan-400 border border-cyan-500/10 shadow-sm"
+                  : "text-slate-500 hover:text-slate-350"
+              }`}
               title="Toggle Trend Chart"
             >
               <ChartLineIcon size={12} weight="bold" /> <span>Graph</span>
             </button>
             <button
               onClick={() => setActiveView("history")}
-              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${activeView === "history"
-                ? "bg-slate-800 text-emerald-400 border border-emerald-500/10 shadow-sm"
-                : "text-slate-500 hover:text-slate-350"
-                }`}
+              className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeView === "history"
+                  ? "bg-slate-800 text-emerald-400 border border-emerald-500/10 shadow-sm"
+                  : "text-slate-500 hover:text-slate-350"
+              }`}
               title="Toggle Historical Logbook"
             >
               <BookOpenIcon size={12} weight="bold" /> <span>Logbook</span>
@@ -854,7 +1100,8 @@ export default function BloodSugarTracker() {
           <form onSubmit={handleEditReading}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-                Edit {slotConfigs[editingLog.slot].label} Reading on {formatLogDate(editingLog.date)}
+                Edit {slotConfigs[editingLog.slot].label} Reading on{" "}
+                {formatLogDate(editingLog.date)}
               </span>
               <button
                 type="button"
@@ -881,7 +1128,9 @@ export default function BloodSugarTracker() {
                   autoFocus
                   required
                 />
-                <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">mg/dL</span>
+                <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">
+                  mg/dL
+                </span>
               </div>
               <button
                 type="submit"
@@ -892,7 +1141,8 @@ export default function BloodSugarTracker() {
               </button>
             </div>
             <p className="text-[10px] text-slate-500 mt-2">
-              Note: Healthy gestational threshold is {editingLog.slot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}.
+              Note: Healthy gestational threshold is{" "}
+              {editingLog.slot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}.
             </p>
           </form>
         </div>
@@ -907,22 +1157,36 @@ export default function BloodSugarTracker() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
-                    <SunHorizonIcon size={14} weight="bold" className="text-cyan-400" />
+                    <SunHorizonIcon
+                      size={14}
+                      weight="bold"
+                      className="text-cyan-400"
+                    />
                     <span>Fasting</span>
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-slate-200">Before Breakfast</h4>
-                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 95 mg/dL</p>
+                <h4 className="text-sm font-bold text-slate-200">
+                  Before Breakfast
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">
+                  Clinical Target: &lt; 95 mg/dL
+                </p>
               </div>
 
               {fastingReading ? (
                 <div className="mt-4 flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-black text-white">{fastingReading.value}</span>
-                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                    <span className="text-2xl font-black text-white">
+                      {fastingReading.value}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">
+                      mg/dL
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(fastingReading.value, "fasting").color}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(fastingReading.value, "fasting").color}`}
+                    >
                       {getClassification(fastingReading.value, "fasting").label}
                     </span>
                     <button
@@ -960,23 +1224,40 @@ export default function BloodSugarTracker() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
-                    <SunIcon size={14} weight="bold" className="text-emerald-400" />
+                    <SunIcon
+                      size={14}
+                      weight="bold"
+                      className="text-emerald-400"
+                    />
                     <span>Mid-day</span>
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-slate-200">1h Post-Lunch</h4>
-                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
+                <h4 className="text-sm font-bold text-slate-200">
+                  1h Post-Lunch
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">
+                  Clinical Target: &lt; 140 mg/dL
+                </p>
               </div>
 
               {lunchReading ? (
                 <div className="mt-4 flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-black text-white">{lunchReading.value}</span>
-                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                    <span className="text-2xl font-black text-white">
+                      {lunchReading.value}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">
+                      mg/dL
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(lunchReading.value, "post-lunch").color}`}>
-                      {getClassification(lunchReading.value, "post-lunch").label}
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(lunchReading.value, "post-lunch").color}`}
+                    >
+                      {
+                        getClassification(lunchReading.value, "post-lunch")
+                          .label
+                      }
                     </span>
                     <button
                       onClick={() => handleStartEdit(lunchReading)}
@@ -1013,23 +1294,40 @@ export default function BloodSugarTracker() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-slate-450 text-[11px] font-semibold flex items-center gap-1">
-                    <MoonIcon size={14} weight="bold" className="text-rose-400" />
+                    <MoonIcon
+                      size={14}
+                      weight="bold"
+                      className="text-rose-400"
+                    />
                     <span>Evening</span>
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-slate-200">1h Post-Dinner</h4>
-                <p className="text-[10px] text-slate-500 mt-1 leading-normal">Clinical Target: &lt; 140 mg/dL</p>
+                <h4 className="text-sm font-bold text-slate-200">
+                  1h Post-Dinner
+                </h4>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">
+                  Clinical Target: &lt; 140 mg/dL
+                </p>
               </div>
 
               {dinnerReading ? (
                 <div className="mt-4 flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-black text-white">{dinnerReading.value}</span>
-                    <span className="text-[10px] text-slate-500 font-bold ml-1">mg/dL</span>
+                    <span className="text-2xl font-black text-white">
+                      {dinnerReading.value}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold ml-1">
+                      mg/dL
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(dinnerReading.value, "post-dinner").color}`}>
-                      {getClassification(dinnerReading.value, "post-dinner").label}
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[9px] font-bold border ${getClassification(dinnerReading.value, "post-dinner").color}`}
+                    >
+                      {
+                        getClassification(dinnerReading.value, "post-dinner")
+                          .label
+                      }
                     </span>
                     <button
                       onClick={() => handleStartEdit(dinnerReading)}
@@ -1068,7 +1366,12 @@ export default function BloodSugarTracker() {
               <form onSubmit={handleLogReading}>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">
-                    Log Reading for {activeSlot === "fasting" ? "Fasting" : activeSlot === "post-lunch" ? "Post-Lunch" : "Post-Dinner"}
+                    Log Reading for{" "}
+                    {activeSlot === "fasting"
+                      ? "Fasting"
+                      : activeSlot === "post-lunch"
+                        ? "Post-Lunch"
+                        : "Post-Dinner"}
                   </span>
                   <button
                     type="button"
@@ -1092,7 +1395,9 @@ export default function BloodSugarTracker() {
                       autoFocus
                       required
                     />
-                    <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">mg/dL</span>
+                    <span className="absolute right-4 top-3.5 text-xs font-bold text-slate-500">
+                      mg/dL
+                    </span>
                   </div>
                   <button
                     type="submit"
@@ -1103,7 +1408,9 @@ export default function BloodSugarTracker() {
                   </button>
                 </div>
                 <p className="text-[10px] text-slate-500 mt-2">
-                  Note: Healthy gestational threshold is {activeSlot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}. Logs will immediately plot to your analysis trendline.
+                  Note: Healthy gestational threshold is{" "}
+                  {activeSlot === "fasting" ? "< 95 mg/dL" : "< 140 mg/dL"}.
+                  Logs will immediately plot to your analysis trendline.
                 </p>
               </form>
             </div>
@@ -1120,48 +1427,58 @@ export default function BloodSugarTracker() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2 pt-6 border-t border-slate-800/60">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <BookOpen size={16} weight="bold" className="text-emerald-400" />
+                <BookOpen
+                  size={16}
+                  weight="bold"
+                  className="text-emerald-400"
+                />
                 <span>Historical Logbook</span>
               </h3>
-              <p className="text-[10px] text-slate-500 mt-0.5">View and manage all historical records</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                View and manage all historical records
+              </p>
             </div>
 
             <div className="flex bg-slate-950/60 p-0.5 rounded-lg border border-slate-850 flex-wrap gap-0.5">
               <button
                 onClick={() => setHistoryFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer ${historyFilter === "all"
-                  ? "bg-slate-800 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-350"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer ${
+                  historyFilter === "all"
+                    ? "bg-slate-800 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
               >
                 All Logs
               </button>
               <button
                 onClick={() => setHistoryFilter("fasting")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "fasting"
-                  ? "bg-cyan-950/50 text-cyan-400 border border-cyan-800/30"
-                  : "text-slate-500 hover:text-slate-350"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  historyFilter === "fasting"
+                    ? "bg-cyan-950/50 text-cyan-400 border border-cyan-800/30"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
               >
                 <SunHorizon size={12} weight="bold" />
                 <span>Fasting</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-lunch")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "post-lunch"
-                  ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/30"
-                  : "text-slate-500 hover:text-slate-350"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  historyFilter === "post-lunch"
+                    ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/30"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
               >
                 <Sun size={12} weight="bold" />
                 <span>Lunch</span>
               </button>
               <button
                 onClick={() => setHistoryFilter("post-dinner")}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${historyFilter === "post-dinner"
-                  ? "bg-rose-950/50 text-rose-400 border border-rose-800/30"
-                  : "text-slate-500 hover:text-slate-350"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  historyFilter === "post-dinner"
+                    ? "bg-rose-950/50 text-rose-400 border border-rose-800/30"
+                    : "text-slate-500 hover:text-slate-350"
+                }`}
               >
                 <Moon size={12} weight="bold" />
                 <span>Dinner</span>
@@ -1172,8 +1489,12 @@ export default function BloodSugarTracker() {
           {/* Scrollable list of logs */}
           {filteredHistoryLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-900/20 border border-slate-850/50 border-dashed rounded-2xl text-slate-500 text-xs p-4">
-              <span>🔎 No historical readings matching this slot selection.</span>
-              <span className="mt-1 opacity-70">New readings logged will show up here.</span>
+              <span>
+                🔎 No historical readings matching this slot selection.
+              </span>
+              <span className="mt-1 opacity-70">
+                New readings logged will show up here.
+              </span>
             </div>
           ) : (
             <div className="max-h-[220px] overflow-y-auto scrollbar-thin pr-1.5 flex flex-col gap-2">
@@ -1186,12 +1507,16 @@ export default function BloodSugarTracker() {
                     className="flex items-center justify-between p-3 rounded-xl bg-slate-900/30 border border-slate-850/30 hover:bg-slate-900/60 hover:border-slate-800 transition-all group/row"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-slate-950 border ${config.borderClass}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center bg-slate-950 border ${config.borderClass}`}
+                      >
                         {renderSlotIcon(log.slot, 16)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-white capitalize">{config.label}</span>
+                          <span className="text-xs font-bold text-white capitalize">
+                            {config.label}
+                          </span>
                           <span className="text-[9px] text-slate-500 font-medium">
                             {formatLogTime(log.timestamp)}
                           </span>
@@ -1204,10 +1529,16 @@ export default function BloodSugarTracker() {
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <span className="text-sm font-black text-white">{log.value}</span>
-                        <span className="text-[9px] text-slate-500 font-bold ml-1">mg/dL</span>
+                        <span className="text-sm font-black text-white">
+                          {log.value}
+                        </span>
+                        <span className="text-[9px] text-slate-500 font-bold ml-1">
+                          mg/dL
+                        </span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold border ${classification.color}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[8px] font-extrabold border ${classification.color}`}
+                      >
                         {classification.label}
                       </span>
                       <button
@@ -1236,8 +1567,15 @@ export default function BloodSugarTracker() {
       {!user && isClient && (
         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 text-[10px] font-semibold text-amber-400 animate-pulse">
           <div className="flex items-center gap-2">
-            <Warning size={14} weight="bold" className="shrink-0 text-amber-400" />
-            <span>Guest Preview Mode: Blood sugar levels will remain locally inside this browser.</span>
+            <Warning
+              size={14}
+              weight="bold"
+              className="shrink-0 text-amber-400"
+            />
+            <span>
+              Guest Preview Mode: Blood sugar levels will remain locally inside
+              this browser.
+            </span>
           </div>
           <button
             onClick={triggerAuthModal}
@@ -1250,4 +1588,3 @@ export default function BloodSugarTracker() {
     </div>
   );
 }
-

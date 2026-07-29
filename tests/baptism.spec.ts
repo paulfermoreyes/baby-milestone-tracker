@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { BaptismPage } from "./pages/BaptismPage";
 
 test.describe("Baptism Organizer E2E UI Tests", () => {
-  test("should update ceremony details and manage guests list in preview mode", async ({ page }) => {
+  test("should update ceremony details and manage guests list in preview mode", async ({
+    page,
+  }) => {
     const baptismPage = new BaptismPage(page);
     await baptismPage.goto();
 
@@ -14,12 +16,16 @@ test.describe("Baptism Organizer E2E UI Tests", () => {
       "2026-08-15",
       "10:00",
       "St. John the Baptist Parish",
-      "789 Cathedral Way, Grace City"
+      "789 Cathedral Way, Grace City",
     );
 
     // Verify updated details display on screen
-    await expect(baptismPage.displayedVenueName).toHaveText("St. John the Baptist Parish");
-    await expect(page.locator("text=789 Cathedral Way, Grace City")).toBeVisible();
+    await expect(baptismPage.displayedVenueName).toHaveText(
+      "St. John the Baptist Parish",
+    );
+    await expect(
+      page.locator("text=789 Cathedral Way, Grace City"),
+    ).toBeVisible();
 
     // Add a Godfather invitee with confirmed status
     await baptismPage.addInvitee("Robert Smith", "godfather", "confirmed");
@@ -32,6 +38,8 @@ test.describe("Baptism Organizer E2E UI Tests", () => {
     await expect(page.locator("text=Sarah Davis")).toBeVisible();
 
     // Check that godfather role badge shows up
-    await expect(page.locator("span:has-text('Godfather')").first()).toBeVisible();
+    await expect(
+      page.locator("span:has-text('Godfather')").first(),
+    ).toBeVisible();
   });
 });

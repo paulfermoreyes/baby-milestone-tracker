@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { BloodSugarPage } from "./pages/BloodSugarPage";
 
 test.describe("Blood Sugar Tracker E2E UI Tests", () => {
-  test("should record a blood sugar reading and allow deletion in preview mode", async ({ page }) => {
+  test("should record a blood sugar reading and allow deletion in preview mode", async ({
+    page,
+  }) => {
     const bloodSugarPage = new BloodSugarPage(page);
     await bloodSugarPage.goto();
 
@@ -10,7 +12,9 @@ test.describe("Blood Sugar Tracker E2E UI Tests", () => {
     await expect(bloodSugarPage.heading).toBeVisible();
 
     // Export CSV button should not be visible when there are no logs
-    await expect(page.getByRole("button", { name: "Export CSV" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Export CSV" }),
+    ).not.toBeVisible();
 
     // Confirm that the view tab defaults to "Record" and "Fasting" slot exists
     await expect(bloodSugarPage.fastingLogBtn).toBeVisible();
@@ -44,7 +48,9 @@ test.describe("Blood Sugar Tracker E2E UI Tests", () => {
 
     // Click "Logbook" tab to verify it is recorded in historical data
     await bloodSugarPage.logbookViewBtn.click();
-    await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("Fasting");
+    await expect(page.locator("div.max-h-\\[220px\\]")).toContainText(
+      "Fasting",
+    );
     await expect(page.locator("div.max-h-\\[220px\\]")).toContainText("85");
 
     // Export CSV and verify the file download is triggered

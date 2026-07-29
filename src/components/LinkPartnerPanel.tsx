@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { LinkSimple, Copy, Check, Warning, Users, ArrowsClockwise } from "@phosphor-icons/react";
+import {
+  LinkSimple,
+  Copy,
+  Check,
+  Warning,
+  Users,
+  ArrowsClockwise,
+} from "@phosphor-icons/react";
 
 interface PartnerInfo {
   displayName: string | null;
@@ -13,7 +20,13 @@ interface PartnerInfo {
 }
 
 export default function LinkPartnerPanel() {
-  const { user, familyId, generateInviteCode, redeemInviteCode, refreshProfile } = useAuth();
+  const {
+    user,
+    familyId,
+    generateInviteCode,
+    redeemInviteCode,
+    refreshProfile,
+  } = useAuth();
 
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0); // seconds remaining
@@ -128,7 +141,8 @@ export default function LinkPartnerPanel() {
 
         {partnerLoading ? (
           <div className="flex items-center gap-2 text-xs text-slate-400">
-            <ArrowsClockwise size={14} className="animate-spin" /> Loading partner…
+            <ArrowsClockwise size={14} className="animate-spin" /> Loading
+            partner…
           </div>
         ) : (
           <div className="flex items-center gap-3">
@@ -136,59 +150,93 @@ export default function LinkPartnerPanel() {
               {/* Current user avatar */}
               {user?.photoURL ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.photoURL} alt="" className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900" />
+                <img
+                  src={user.photoURL}
+                  alt=""
+                  className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900"
+                />
               ) : (
                 <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-cyan-600 flex items-center justify-center text-xs font-bold text-white">
-                  {(user?.displayName || user?.email || "C").charAt(0).toUpperCase()}
+                  {(user?.displayName || user?.email || "C")
+                    .charAt(0)
+                    .toUpperCase()}
                 </div>
               )}
               {/* Partner avatar */}
               {partnerInfo ? (
                 partnerInfo.photoURL ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={partnerInfo.photoURL} alt="" className="inline-block h-8 w-8 bg-white rounded-full ring-2 ring-slate-900" />
+                  <img
+                    src={partnerInfo.photoURL}
+                    alt=""
+                    className="inline-block h-8 w-8 bg-white rounded-full ring-2 ring-slate-900"
+                  />
                 ) : (
                   <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-indigo-600 flex items-center justify-center text-xs font-bold text-white">
                     {(partnerInfo.displayName || "P").charAt(0).toUpperCase()}
                   </div>
                 )
               ) : (
-                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">?</div>
+                <div className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                  ?
+                </div>
               )}
             </div>
 
             <div>
               <span className="text-xs font-semibold text-slate-100 block">
-                {user?.displayName || "You"} & {partnerInfo?.displayName || "Partner"}
+                {user?.displayName || "You"} &{" "}
+                {partnerInfo?.displayName || "Partner"}
               </span>
               {partnerInfo && (
-                <span className="text-[10px] text-slate-400">{roleLabel(partnerInfo.role)}</span>
+                <span className="text-[10px] text-slate-400">
+                  {roleLabel(partnerInfo.role)}
+                </span>
               )}
             </div>
           </div>
         )}
 
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <Check size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Couple dashboard linked</span>
+          <Check
+            size={14}
+            weight="bold"
+            className="text-emerald-600 dark:text-emerald-400 shrink-0"
+          />
+          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            Couple dashboard linked
+          </span>
         </div>
 
         {/* Allow re-generating a code even when linked (e.g. link was reset) */}
         {mode === "generate" && generatedCode ? (
           <div className="mt-1 p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Invite Code</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+              New Invite Code
+            </span>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-[0.25em] text-slate-100 font-mono">{generatedCode}</span>
+              <span className="text-xl font-black tracking-[0.25em] text-slate-100 font-mono">
+                {generatedCode}
+              </span>
               <button
                 onClick={handleCopy}
                 className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition-colors cursor-pointer"
                 title="Copy code"
               >
-                {copied ? <Check size={14} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={14} />}
+                {copied ? (
+                  <Check
+                    size={14}
+                    className="text-emerald-600 dark:text-emerald-400"
+                  />
+                ) : (
+                  <Copy size={14} />
+                )}
               </button>
             </div>
             {countdown > 0 && (
-              <span className="text-[9px] text-slate-400">Expires in {formatCountdown(countdown)}</span>
+              <span className="text-[9px] text-slate-400">
+                Expires in {formatCountdown(countdown)}
+              </span>
             )}
           </div>
         ) : (
@@ -214,7 +262,11 @@ export default function LinkPartnerPanel() {
   return (
     <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-850/80 flex flex-col gap-3 text-slate-200">
       <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-        <LinkSimple size={16} weight="bold" className="text-indigo-600 dark:text-indigo-400" />
+        <LinkSimple
+          size={16}
+          weight="bold"
+          className="text-indigo-600 dark:text-indigo-400"
+        />
         Link Your Partner
       </h4>
       <p className="text-xs text-slate-400 leading-relaxed">
@@ -231,14 +283,20 @@ export default function LinkPartnerPanel() {
       {mode === "idle" && (
         <div className="grid grid-cols-1 gap-2">
           <button
-            onClick={() => { setMode("generate"); setError(null); }}
+            onClick={() => {
+              setMode("generate");
+              setError(null);
+            }}
             className="py-2.5 px-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/25 hover:border-indigo-300 dark:hover:bg-indigo-500/40 text-indigo-650 dark:text-indigo-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-2"
           >
             <Users size={14} weight="bold" />
             Generate Invite Code
           </button>
           <button
-            onClick={() => { setMode("enter"); setError(null); }}
+            onClick={() => {
+              setMode("enter");
+              setError(null);
+            }}
             className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-slate-200 font-bold text-xs border border-slate-750 hover:border-slate-700 transition-all cursor-pointer flex items-center gap-2"
           >
             <LinkSimple size={14} weight="bold" />
@@ -255,30 +313,51 @@ export default function LinkPartnerPanel() {
               disabled={loading}
               className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white dark:text-slate-950 font-extrabold text-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
             >
-              {loading ? <span className="w-3.5 h-3.5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" /> : <Users size={14} weight="bold" />}
+              {loading ? (
+                <span className="w-3.5 h-3.5 border-2 border-white dark:border-slate-950 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Users size={14} weight="bold" />
+              )}
               {loading ? "Generating…" : "Generate Code"}
             </button>
           ) : (
             <div className="p-4 rounded-xl bg-slate-950/60 border border-indigo-500/20 flex flex-col gap-3">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Share this code with your partner</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                Share this code with your partner
+              </span>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-black tracking-[0.3em] text-slate-100 font-mono">{generatedCode}</span>
+                <span className="text-2xl font-black tracking-[0.3em] text-slate-100 font-mono">
+                  {generatedCode}
+                </span>
                 <button
                   onClick={handleCopy}
                   className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
                 >
-                  {copied ? <Check size={14} className="text-emerald-650 dark:text-emerald-400" /> : <Copy size={14} />}
+                  {copied ? (
+                    <Check
+                      size={14}
+                      className="text-emerald-650 dark:text-emerald-400"
+                    />
+                  ) : (
+                    <Copy size={14} />
+                  )}
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
               {countdown > 0 && (
-                <span className="text-[9px] text-amber-600 dark:text-amber-500/80 font-medium">⏱ Expires in {formatCountdown(countdown)}</span>
+                <span className="text-[9px] text-amber-600 dark:text-amber-500/80 font-medium">
+                  ⏱ Expires in {formatCountdown(countdown)}
+                </span>
               )}
             </div>
           )}
 
           <button
-            onClick={() => { setMode("idle"); setGeneratedCode(null); setError(null); }}
+            onClick={() => {
+              setMode("idle");
+              setGeneratedCode(null);
+              setError(null);
+            }}
             className="text-[10px] text-slate-400 hover:text-slate-200 underline underline-offset-2 cursor-pointer transition-colors"
           >
             Cancel
@@ -302,11 +381,18 @@ export default function LinkPartnerPanel() {
               disabled={loading || enterCode.length < 6}
               className="px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs transition-all active:scale-[0.98] cursor-pointer"
             >
-              {loading ? <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin block" /> : "Link"}
+              {loading ? (
+                <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin block" />
+              ) : (
+                "Link"
+              )}
             </button>
           </div>
           <button
-            onClick={() => { setMode("idle"); setError(null); }}
+            onClick={() => {
+              setMode("idle");
+              setError(null);
+            }}
             className="text-[10px] text-slate-400 hover:text-slate-200 underline underline-offset-2 cursor-pointer transition-colors"
           >
             Cancel

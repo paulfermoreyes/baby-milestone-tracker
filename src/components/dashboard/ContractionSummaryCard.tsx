@@ -8,7 +8,7 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -25,17 +25,31 @@ interface ContractionRecord {
   createdAt: Date;
 }
 
-export default function ContractionSummaryCard({ mode }: ContractionSummaryCardProps) {
+export default function ContractionSummaryCard({
+  mode,
+}: ContractionSummaryCardProps) {
   const { user, familyId } = useAuth();
-  const [recentContractions, setRecentContractions] = useState<ContractionRecord[]>([]);
+  const [recentContractions, setRecentContractions] = useState<
+    ContractionRecord[]
+  >([]);
 
   useEffect(() => {
     if (!user) {
       // simulated preview
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecentContractions([
-        { id: "1", duration: 45, interval: 300, createdAt: new Date(Date.now() - 1000 * 60 * 12) },
-        { id: "2", duration: 55, interval: 280, createdAt: new Date(Date.now() - 1000 * 60 * 17) },
+        {
+          id: "1",
+          duration: 45,
+          interval: 300,
+          createdAt: new Date(Date.now() - 1000 * 60 * 12),
+        },
+        {
+          id: "2",
+          duration: 55,
+          interval: 280,
+          createdAt: new Date(Date.now() - 1000 * 60 * 17),
+        },
       ]);
       return;
     }
@@ -45,14 +59,14 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
       q = query(
         collection(db, "families", familyId, "contractions"),
         orderBy("createdAt", "desc"),
-        limit(5)
+        limit(5),
       );
     } else {
       q = query(
         collection(db, "contractions"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(5)
+        limit(5),
       );
     }
 
@@ -91,7 +105,10 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
-    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Large Detailed Card Render
@@ -103,7 +120,11 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-slate-450 dark:text-slate-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <Timer size={16} weight="bold" className="text-rose-450 animate-pulse" />
+            <Timer
+              size={16}
+              weight="bold"
+              className="text-rose-450 animate-pulse"
+            />
             <span>Contraction Vitals</span>
           </span>
           <Link
@@ -124,22 +145,30 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
                   <span className="text-4xl font-black bg-gradient-to-r from-rose-450 to-amber-500 bg-clip-text text-transparent">
                     {formatTimeAgo(lastContraction.createdAt)}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-500 block uppercase mt-0.5 tracking-wider">Last Contraction Logged</span>
+                  <span className="text-[10px] font-bold text-slate-500 block uppercase mt-0.5 tracking-wider">
+                    Last Contraction Logged
+                  </span>
                 </div>
               </div>
 
               {/* Contraction Metrics Grid */}
               <div className="grid grid-cols-2 gap-3 text-left">
                 <div className="p-3 rounded-2xl bg-slate-900/50 border border-slate-850">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Duration</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                    Duration
+                  </span>
                   <p className="text-lg font-black text-white mt-0.5">
                     {formatDuration(lastContraction.duration)}
                   </p>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-900/50 border border-slate-850">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Interval</span>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                    Interval
+                  </span>
                   <p className="text-lg font-black text-white mt-0.5">
-                    {lastContraction.interval ? formatDuration(lastContraction.interval) : "First entry"}
+                    {lastContraction.interval
+                      ? formatDuration(lastContraction.interval)
+                      : "First entry"}
                   </p>
                 </div>
               </div>
@@ -171,12 +200,20 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
     >
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-          <Timer size={18} weight="bold" className="text-rose-400 animate-pulse" />
+          <Timer
+            size={18}
+            weight="bold"
+            className="text-rose-400 animate-pulse"
+          />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Contraction Timer</h4>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Contraction Timer
+          </h4>
           <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
-            {lastContraction ? `Last entry: ${formatTimeAgo(lastContraction.createdAt)}` : "No sessions logged"}
+            {lastContraction
+              ? `Last entry: ${formatTimeAgo(lastContraction.createdAt)}`
+              : "No sessions logged"}
           </span>
         </div>
       </div>
@@ -186,7 +223,9 @@ export default function ContractionSummaryCard({ mode }: ContractionSummaryCardP
             <span className="text-base font-black text-white">
               {formatDuration(lastContraction.duration)}
             </span>
-            <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">Dur</span>
+            <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+              Dur
+            </span>
           </div>
         )}
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-rose-450 group-hover:border-rose-500/30 transition-colors">

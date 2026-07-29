@@ -6,7 +6,7 @@ export class BloodSugarPage {
   readonly recordViewBtn: Locator;
   readonly graphViewBtn: Locator;
   readonly logbookViewBtn: Locator;
-  
+
   // Fasting slot locators
   readonly fastingContainer: Locator;
   readonly fastingLogBtn: Locator;
@@ -20,23 +20,39 @@ export class BloodSugarPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole("heading", { name: "Daily Blood Sugar Logs" });
-    
+    this.heading = page.getByRole("heading", {
+      name: "Daily Blood Sugar Logs",
+    });
+
     // View tabs
-    this.recordViewBtn = page.getByRole("button", { name: "Record", exact: true });
-    this.graphViewBtn = page.getByRole("button", { name: "Graph", exact: true });
-    this.logbookViewBtn = page.getByRole("button", { name: "Logbook", exact: true });
+    this.recordViewBtn = page.getByRole("button", {
+      name: "Record",
+      exact: true,
+    });
+    this.graphViewBtn = page.getByRole("button", {
+      name: "Graph",
+      exact: true,
+    });
+    this.logbookViewBtn = page.getByRole("button", {
+      name: "Logbook",
+      exact: true,
+    });
 
     // Fasting card slot
-    this.fastingContainer = page.locator("div.rounded-2xl").filter({ has: page.locator("h4", { hasText: "Before Breakfast" }) }).first();
-    this.fastingLogBtn = this.fastingContainer.getByRole("button", { name: "+ Log Reading" });
-    
+    this.fastingContainer = page
+      .locator("div.rounded-2xl")
+      .filter({ has: page.locator("h4", { hasText: "Before Breakfast" }) })
+      .first();
+    this.fastingLogBtn = this.fastingContainer.getByRole("button", {
+      name: "+ Log Reading",
+    });
+
     // Entry Form Pop-up
     this.valueInput = page.getByPlaceholder("Blood sugar level (e.g. 95)");
     this.saveBtn = page.getByRole("button", { name: "Save Log" });
     this.updateBtn = page.getByRole("button", { name: "Update Log" });
     this.closeFormBtn = page.getByRole("button", { name: "Close" });
-    
+
     // Logged values in slot cards
     this.loggedValueText = this.fastingContainer.locator("span.text-2xl");
     this.editLogBtn = this.fastingContainer.getByTitle("Edit log");
@@ -44,8 +60,13 @@ export class BloodSugarPage {
   }
 
   async goto() {
-    await this.page.goto("/trackers/blood-sugar", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.goto("/trackers/blood-sugar", {
+      waitUntil: "domcontentloaded",
+    });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 15000,
+    });
   }
 
   async clickLogFasting() {

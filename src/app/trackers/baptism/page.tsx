@@ -26,7 +26,9 @@ export default function BaptismPage() {
             Baptismal Event Organizer
           </h2>
           <p className="text-sm leading-relaxed max-w-2xl text-slate-400">
-            Coordinate the baptism ceremony details and invitees. Set the date and venue, invite godfathers and godmothers, and track RSVPs in real time.
+            Coordinate the baptism ceremony details and invitees. Set the date
+            and venue, invite godfathers and godmothers, and track RSVPs in real
+            time.
           </p>
         </div>
 

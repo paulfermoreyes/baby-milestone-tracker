@@ -10,7 +10,7 @@ import {
   limit,
   onSnapshot,
   where,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -46,14 +46,14 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
       q = query(
         collection(db, "families", familyId, "milk"),
         orderBy("createdAt", "desc"),
-        limit(100)
+        limit(100),
       );
     } else {
       q = query(
         collection(db, "milk"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(100)
+        limit(100),
       );
     }
 
@@ -129,8 +129,12 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
             <span className="text-4xl font-black bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
               {todayTotal.toFixed(1)}
             </span>
-            <span className="text-xs font-black text-slate-400 uppercase">oz</span>
-            <span className="text-xs text-slate-500 font-bold ml-1">/ {target} oz target</span>
+            <span className="text-xs font-black text-slate-400 uppercase">
+              oz
+            </span>
+            <span className="text-xs text-slate-500 font-bold ml-1">
+              / {target} oz target
+            </span>
           </div>
 
           {/* Progress Slider */}
@@ -184,14 +188,22 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
           <Drop size={18} weight="fill" className="text-sky-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Breastmilk logged</h4>
-          <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Target: 32 oz daily</span>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Breastmilk logged
+          </h4>
+          <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
+            Target: 32 oz daily
+          </span>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <span className="text-lg font-black text-white">{todayTotal.toFixed(1)}</span>
-          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">oz</span>
+          <span className="text-lg font-black text-white">
+            {todayTotal.toFixed(1)}
+          </span>
+          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+            oz
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-sky-450 group-hover:border-sky-500/30 transition-colors">
           <ArrowUpRight size={12} weight="bold" />

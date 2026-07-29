@@ -15,12 +15,18 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { Warning, Footprints, ArrowCounterClockwise } from "@phosphor-icons/react";
+import {
+  Warning,
+  Footprints,
+  ArrowCounterClockwise,
+} from "@phosphor-icons/react";
 
 export default function KickCounter() {
   const { user, familyId } = useAuth();
   // Store kick records
-  const [sessionKicks, setSessionKicks] = useState<{ id: string; timestamp: Date }[]>([]);
+  const [sessionKicks, setSessionKicks] = useState<
+    { id: string; timestamp: Date }[]
+  >([]);
 
   // Synchronize with Firestore real-time snapshots
   useEffect(() => {
@@ -36,7 +42,7 @@ export default function KickCounter() {
       q = query(
         collection(db, "families", familyId, "kicks"),
         orderBy("createdAt", "desc"),
-        limit(50)
+        limit(50),
       );
     } else {
       // Fallback: personal collection while not yet linked
@@ -44,21 +50,27 @@ export default function KickCounter() {
         collection(db, "kicks"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(50)
+        limit(50),
       );
     }
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const kicks: { id: string; timestamp: Date }[] = [];
-      snapshot.forEach((d) => {
-        const data = d.data();
-        const timestamp = data.createdAt ? data.createdAt.toDate() : new Date();
-        kicks.push({ id: d.id, timestamp });
-      });
-      setSessionKicks(kicks.reverse());
-    }, (err) => {
-      console.error("Error reading kicks from Firestore:", err);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const kicks: { id: string; timestamp: Date }[] = [];
+        snapshot.forEach((d) => {
+          const data = d.data();
+          const timestamp = data.createdAt
+            ? data.createdAt.toDate()
+            : new Date();
+          kicks.push({ id: d.id, timestamp });
+        });
+        setSessionKicks(kicks.reverse());
+      },
+      (err) => {
+        console.error("Error reading kicks from Firestore:", err);
+      },
+    );
 
     return () => unsubscribe();
   }, [user, familyId]);
@@ -67,7 +79,10 @@ export default function KickCounter() {
     if (!user) {
       // Simulate locally in preview mode
       const simulatedId = Math.random().toString(36).substring(7);
-      setSessionKicks((prev) => [...prev, { id: simulatedId, timestamp: new Date() }]);
+      setSessionKicks((prev) => [
+        ...prev,
+        { id: simulatedId, timestamp: new Date() },
+      ]);
       return;
     }
 
@@ -111,7 +126,9 @@ export default function KickCounter() {
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
 
@@ -124,7 +141,11 @@ export default function KickCounter() {
       {!user && (
         <div className="mb-6 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/20 text-xs font-semibold text-amber-400 flex flex-col sm:flex-row items-center sm:justify-between gap-3 animate-pulse">
           <div className="flex items-center gap-2">
-            <Warning size={16} weight="bold" className="text-amber-400 shrink-0" />
+            <Warning
+              size={16}
+              weight="bold"
+              className="text-amber-400 shrink-0"
+            />
             <span>Guest Mode: Kicks are simulated and will reset.</span>
           </div>
           <button
@@ -139,15 +160,23 @@ export default function KickCounter() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-800/60">
         <div>
           <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
-            {user ? (familyId ? "Couple Shared Session" : "Cloud Synced Session") : "Guest Preview Session"}
+            {user
+              ? familyId
+                ? "Couple Shared Session"
+                : "Cloud Synced Session"
+              : "Guest Preview Session"}
           </span>
-          <h2 className="text-2xl font-black text-white mt-1">Fetal Kick Counter</h2>
+          <h2 className="text-2xl font-black text-white mt-1">
+            Fetal Kick Counter
+          </h2>
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
             {sessionKicks.length}
           </span>
-          <span className="text-sm font-semibold text-slate-400">Kicks Logged</span>
+          <span className="text-sm font-semibold text-slate-400">
+            Kicks Logged
+          </span>
         </div>
       </div>
 
@@ -179,26 +208,34 @@ export default function KickCounter() {
 
         {sessionKicks.length === 0 ? (
           <div className="text-center py-8 rounded-2xl bg-slate-900/40 border border-slate-850 text-slate-500 text-sm">
-            No kicks recorded in this session yet. Press &quot;Record a Kick&quot; to begin.
+            No kicks recorded in this session yet. Press &quot;Record a
+            Kick&quot; to begin.
           </div>
         ) : (
           <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-            {sessionKicks.slice().reverse().map((kick, index) => (
-              <div
-                key={kick.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-850 hover:border-slate-800/80 transition-all duration-150"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-sm font-bold text-slate-300">
-                    Kick #{sessionKicks.length - index}
+            {sessionKicks
+              .slice()
+              .reverse()
+              .map((kick, index) => (
+                <div
+                  key={kick.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-850 hover:border-slate-800/80 transition-all duration-150"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-sm font-bold text-slate-300">
+                      Kick #{sessionKicks.length - index}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500">
+                    {kick.timestamp.toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </span>
                 </div>
-                <span className="text-xs font-medium text-slate-500">
-                  {kick.timestamp.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </span>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>

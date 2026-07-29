@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 import { LandingPage } from "./pages/LandingPage";
 
 test.describe("Lumina Homepage E2E UI Tests", () => {
-  test("should display the homepage branding, headings, and details", async ({ page }) => {
+  test("should display the homepage branding, headings, and details", async ({
+    page,
+  }) => {
     const landingPage = new LandingPage(page);
     await landingPage.goto();
 
@@ -14,6 +16,8 @@ test.describe("Lumina Homepage E2E UI Tests", () => {
     await expect(landingPage.headerSubtitle).toContainText("Prenatal Suite");
 
     // Verify main hero title
-    await expect(landingPage.heroHeading).toContainText("Simplify Your Prenatal Journey");
+    await expect(landingPage.heroHeading).toContainText(
+      "Simplify Your Prenatal Journey",
+    );
   });
 });

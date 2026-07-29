@@ -15,7 +15,12 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { ThermometerHot, PencilSimpleLine, Warning, Trash } from "@phosphor-icons/react";
+import {
+  ThermometerHot,
+  PencilSimpleLine,
+  Warning,
+  Trash,
+} from "@phosphor-icons/react";
 
 interface SymptomLog {
   id: string;
@@ -38,7 +43,9 @@ export default function SymptomTracker() {
   const { user, familyId } = useAuth();
   const [symptomLogs, setSymptomLogs] = useState<SymptomLog[]>([]);
   const [symptom, setSymptom] = useState(SYMPTOM_OPTIONS[0].value);
-  const [severity, setSeverity] = useState<"Mild" | "Moderate" | "Severe">("Mild");
+  const [severity, setSeverity] = useState<"Mild" | "Moderate" | "Severe">(
+    "Mild",
+  );
   const [notes, setNotes] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,7 +75,7 @@ export default function SymptomTracker() {
             parsed.map((item) => ({
               ...item,
               timestamp: new Date(item.timestampStr),
-            }))
+            })),
           );
         } catch (e) {
           console.error("Failed to parse guest symptom logs", e);
@@ -88,14 +95,14 @@ export default function SymptomTracker() {
       q = query(
         collection(db, "families", familyId, "symptoms"),
         where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc")
+        orderBy("createdAt", "desc"),
       );
     } else {
       q = query(
         collection(db, "symptoms"),
         where("userId", "==", user.uid),
         where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc")
+        orderBy("createdAt", "desc"),
       );
     }
 
@@ -105,7 +112,9 @@ export default function SymptomTracker() {
         const logs: SymptomLog[] = [];
         snapshot.forEach((d) => {
           const data = d.data();
-          const timestamp = data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date();
+          const timestamp = data.createdAt
+            ? (data.createdAt as Timestamp).toDate()
+            : new Date();
           logs.push({
             id: d.id,
             symptom: data.symptom,
@@ -118,7 +127,7 @@ export default function SymptomTracker() {
       },
       (err) => {
         console.error("Error reading symptoms from Firestore:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -145,8 +154,8 @@ export default function SymptomTracker() {
           updated.map((l) => ({
             ...l,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       setNotes("");
       setLoading(false);
@@ -164,7 +173,10 @@ export default function SymptomTracker() {
       if (familyId) {
         await addDoc(collection(db, "families", familyId, "symptoms"), payload);
       } else {
-        await addDoc(collection(db, "symptoms"), { ...payload, userId: user.uid });
+        await addDoc(collection(db, "symptoms"), {
+          ...payload,
+          userId: user.uid,
+        });
       }
       setNotes("");
     } catch (err) {
@@ -185,8 +197,8 @@ export default function SymptomTracker() {
           updated.map((l) => ({
             ...l,
             timestampStr: l.timestamp.toISOString(),
-          }))
-        )
+          })),
+        ),
       );
       return;
     }
@@ -204,15 +216,20 @@ export default function SymptomTracker() {
   };
 
   const triggerAuthModal = () => {
-    const dialog = document.querySelector("dialog.auth-dialog") as HTMLDialogElement;
+    const dialog = document.querySelector(
+      "dialog.auth-dialog",
+    ) as HTMLDialogElement;
     if (dialog) dialog.showModal();
   };
 
   const getSeverityBadgeColor = (sev: "Mild" | "Moderate" | "Severe") => {
     switch (sev) {
-      case "Mild": return "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
-      case "Moderate": return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-      case "Severe": return "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+      case "Mild":
+        return "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
+      case "Moderate":
+        return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+      case "Severe":
+        return "bg-rose-500/10 text-rose-400 border border-rose-500/20";
     }
   };
 
@@ -222,7 +239,9 @@ export default function SymptomTracker() {
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">Well-being Logs</span>
+          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+            Well-being Logs
+          </span>
           <ThermometerHot size={20} weight="bold" className="text-cyan-400" />
         </div>
 
@@ -231,21 +250,29 @@ export default function SymptomTracker() {
         </h3>
 
         {user && familyId && (
-          <p className="text-[10px] text-indigo-400 font-semibold mb-3">Shared with partner</p>
+          <p className="text-[10px] text-indigo-400 font-semibold mb-3">
+            Shared with partner
+          </p>
         )}
 
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">Symptom</label>
+              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">
+                Symptom
+              </label>
               <select
                 value={symptom}
                 onChange={(e) => setSymptom(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-900/60 border border-slate-850 rounded-xl text-xs text-white outline-none focus:border-cyan-500"
               >
                 {SYMPTOM_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-slate-950 text-slate-100">
+                  <option
+                    key={opt.value}
+                    value={opt.value}
+                    className="bg-slate-950 text-slate-100"
+                  >
                     {opt.label}
                   </option>
                 ))}
@@ -253,21 +280,39 @@ export default function SymptomTracker() {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">Severity</label>
+              <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">
+                Severity
+              </label>
               <select
                 value={severity}
-                onChange={(e) => setSeverity(e.target.value as "Mild" | "Moderate" | "Severe")}
+                onChange={(e) =>
+                  setSeverity(e.target.value as "Mild" | "Moderate" | "Severe")
+                }
                 className="w-full px-3 py-2 bg-slate-900/60 border border-slate-850 rounded-xl text-xs text-white outline-none focus:border-cyan-500"
               >
-                <option value="Mild" className="bg-slate-950 text-slate-100"> Mild</option>
-                <option value="Moderate" className="bg-slate-950 text-slate-100"> Moderate</option>
-                <option value="Severe" className="bg-slate-950 text-slate-100"> Severe</option>
+                <option value="Mild" className="bg-slate-950 text-slate-100">
+                  {" "}
+                  Mild
+                </option>
+                <option
+                  value="Moderate"
+                  className="bg-slate-950 text-slate-100"
+                >
+                  {" "}
+                  Moderate
+                </option>
+                <option value="Severe" className="bg-slate-950 text-slate-100">
+                  {" "}
+                  Severe
+                </option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">Additional Notes</label>
+            <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-1">
+              Additional Notes
+            </label>
             <input
               type="text"
               placeholder="e.g. Occurred morning, helped with ginger tea..."
@@ -295,7 +340,9 @@ export default function SymptomTracker() {
 
         {/* History Panel */}
         <div>
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">Today&apos;s Logs</span>
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2.5">
+            Today&apos;s Logs
+          </span>
           {symptomLogs.length === 0 ? (
             <div className="text-center py-6 rounded-xl bg-slate-900/30 border border-slate-850/50 text-[11px] text-slate-500">
               No symptoms logged today.
@@ -309,10 +356,15 @@ export default function SymptomTracker() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-extrabold text-slate-200">
-                      {SYMPTOM_OPTIONS.find((opt) => opt.value === log.symptom)?.label.split(" ").slice(1).join(" ") || log.symptom}
+                      {SYMPTOM_OPTIONS.find((opt) => opt.value === log.symptom)
+                        ?.label.split(" ")
+                        .slice(1)
+                        .join(" ") || log.symptom}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${getSeverityBadgeColor(log.severity)}`}>
+                      <span
+                        className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${getSeverityBadgeColor(log.severity)}`}
+                      >
                         {log.severity}
                       </span>
                       <button
@@ -324,9 +376,16 @@ export default function SymptomTracker() {
                       </button>
                     </div>
                   </div>
-                  {log.notes && <p className="text-[11px] text-slate-400 leading-normal bg-slate-950/40 p-2 rounded-lg border border-slate-850/30">{log.notes}</p>}
+                  {log.notes && (
+                    <p className="text-[11px] text-slate-400 leading-normal bg-slate-950/40 p-2 rounded-lg border border-slate-850/30">
+                      {log.notes}
+                    </p>
+                  )}
                   <span className="text-[9px] text-slate-550 block self-end">
-                    {log.timestamp.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                    {log.timestamp.toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
               ))}
@@ -337,9 +396,16 @@ export default function SymptomTracker() {
 
       {!user && isClient && (
         <div className="mt-4 text-[10px] text-center text-amber-500/80 font-medium flex items-center justify-center gap-1.5">
-          <Warning size={14} weight="bold" className="text-amber-500 shrink-0" />
+          <Warning
+            size={14}
+            weight="bold"
+            className="text-amber-500 shrink-0"
+          />
           <span>Guest Preview Session</span>
-          <button onClick={triggerAuthModal} className="underline font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
+          <button
+            onClick={triggerAuthModal}
+            className="underline font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
             Sync
           </button>
         </div>

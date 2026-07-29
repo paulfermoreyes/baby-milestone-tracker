@@ -17,7 +17,7 @@ interface AppShellProps {
 export default function AppShell({ children }: AppShellProps) {
   const { user, userProfile, logout, loading, updateProfileData } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  
+
   const authModalRef = useRef<HTMLDialogElement | null>(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [showMissingInfoModal, setShowMissingInfoModal] = useState(false);
@@ -49,9 +49,20 @@ export default function AppShell({ children }: AppShellProps) {
 
   const isDark = theme === "dark";
 
-  const roleBadge = userProfile?.role === "husband"
-    ? { emoji: "👨", label: "Husband", classes: "bg-indigo-500/15 border-indigo-500/30 text-indigo-600 dark:text-indigo-300" }
-    : { emoji: "👩", label: "Wife", classes: "bg-pink-500/15 border-pink-500/30 text-pink-600 dark:text-pink-300" };
+  const roleBadge =
+    userProfile?.role === "husband"
+      ? {
+          emoji: "👨",
+          label: "Husband",
+          classes:
+            "bg-indigo-500/15 border-indigo-500/30 text-indigo-600 dark:text-indigo-300",
+        }
+      : {
+          emoji: "👩",
+          label: "Wife",
+          classes:
+            "bg-pink-500/15 border-pink-500/30 text-pink-600 dark:text-pink-300",
+        };
 
   if (!mounted) {
     return (
@@ -62,36 +73,53 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans relative overflow-x-hidden pb-32 md:pb-28 ${
-      isDark
-        ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
-        : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
-    }`}>
+    <div
+      className={`min-h-screen flex flex-col font-sans relative overflow-x-hidden pb-32 md:pb-28 ${
+        isDark
+          ? "bg-slate-900 text-slate-100 selection:bg-rose-500 selection:text-slate-900"
+          : "bg-[#f8f7f4] text-slate-800 selection:bg-rose-500 selection:text-white"
+      }`}
+    >
       {/* Decorative background glow elements */}
-      <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-        isDark ? "bg-rose-950/25" : "bg-rose-200/30"
-      }`} />
-      <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
-        isDark ? "bg-amber-950/20" : "bg-amber-200/20"
-      }`} />
+      <div
+        className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
+          isDark ? "bg-rose-950/25" : "bg-rose-200/30"
+        }`}
+      />
+      <div
+        className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] pointer-events-none ${
+          isDark ? "bg-amber-950/20" : "bg-amber-200/20"
+        }`}
+      />
 
       {/* Header */}
-      <header className={`w-full backdrop-blur-sm border-b border-slate-850/60 relative transition-all ${
-        isProfileDropdownOpen ? "z-[110]" : "z-30"
-      }`}>
+      <header
+        className={`w-full backdrop-blur-sm border-b border-slate-850/60 relative transition-all ${
+          isProfileDropdownOpen ? "z-[110]" : "z-30"
+        }`}
+      >
         <div className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
+          <Link
+            href="/"
+            className="flex items-center gap-3 cursor-pointer group"
+          >
             <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
+              <img
+                src="/logo.svg"
+                alt="Lumina Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
                 Lumina
               </h1>
-              <p className={`text-[10px] uppercase tracking-widest font-semibold ${
-                isDark ? "text-slate-400" : "text-slate-500"
-              }`}>
+              <p
+                className={`text-[10px] uppercase tracking-widest font-semibold ${
+                  isDark ? "text-slate-400" : "text-slate-500"
+                }`}
+              >
                 Prenatal Suite
               </p>
             </div>
@@ -116,15 +144,21 @@ export default function AppShell({ children }: AppShellProps) {
             </button>
 
             {loading ? (
-              <div className={`w-6 h-6 rounded-full border-2 animate-spin ${
-                isDark ? "border-slate-700 border-t-rose-500" : "border-slate-300 border-t-rose-500"
-              }`} />
+              <div
+                className={`w-6 h-6 rounded-full border-2 animate-spin ${
+                  isDark
+                    ? "border-slate-700 border-t-rose-500"
+                    : "border-slate-300 border-t-rose-500"
+                }`}
+              />
             ) : user ? (
               <div className="flex items-center gap-3">
                 {/* User profile dropdown trigger */}
                 <div className="relative">
                   <button
-                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    onClick={() =>
+                      setIsProfileDropdownOpen(!isProfileDropdownOpen)
+                    }
                     className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden ${
                       isDark
                         ? "bg-slate-800/60 border-slate-700/40 hover:bg-slate-800"
@@ -134,10 +168,16 @@ export default function AppShell({ children }: AppShellProps) {
                   >
                     {user.photoURL ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={user.photoURL} alt="" className="w-full h-full object-cover rounded-full" />
+                      <img
+                        src={user.photoURL}
+                        alt=""
+                        className="w-full h-full object-cover rounded-full"
+                      />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-950 text-xs font-extrabold">
-                        {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
+                        {(user.displayName || user.email || "C")
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
                   </button>
@@ -155,10 +195,16 @@ export default function AppShell({ children }: AppShellProps) {
                         <div className="flex items-center gap-3 pb-3 border-b border-slate-850/60">
                           {user.photoURL ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={user.photoURL} alt="" className="w-9 h-9 rounded-full" />
+                            <img
+                              src={user.photoURL}
+                              alt=""
+                              className="w-9 h-9 rounded-full"
+                            />
                           ) : (
                             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-slate-100 text-xs font-extrabold">
-                              {(user.displayName || user.email || "C").charAt(0).toUpperCase()}
+                              {(user.displayName || user.email || "C")
+                                .charAt(0)
+                                .toUpperCase()}
                             </div>
                           )}
                           <div className="overflow-hidden text-left">
@@ -170,7 +216,9 @@ export default function AppShell({ children }: AppShellProps) {
                             </span>
                             {/* Role badge */}
                             {userProfile?.role && (
-                              <div className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${roleBadge.classes}`}>
+                              <div
+                                className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${roleBadge.classes}`}
+                              >
                                 <span>{roleBadge.emoji}</span>
                                 <span>{roleBadge.label}</span>
                               </div>
@@ -202,11 +250,13 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
-                  isDark
-                    ? "bg-slate-800/80 border border-slate-700/50 text-slate-400"
-                    : "bg-amber-50 border border-amber-200 text-amber-700"
-                }`}>
+                <div
+                  className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+                    isDark
+                      ? "bg-slate-800/80 border border-slate-700/50 text-slate-400"
+                      : "bg-amber-50 border border-amber-200 text-amber-700"
+                  }`}
+                >
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
                   Offline Preview Mode
                 </div>
@@ -232,10 +282,17 @@ export default function AppShell({ children }: AppShellProps) {
       </main>
 
       {/* Footer */}
-      <footer className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 mt-auto ${
-        isDark ? "border-slate-800/40 text-slate-500" : "border-slate-200/40 text-slate-400"
-      }`}>
-        <p>&copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights reserved.</p>
+      <footer
+        className={`w-full max-w-7xl mx-auto px-6 py-8 border-t text-center text-xs z-5 mt-auto ${
+          isDark
+            ? "border-slate-800/40 text-slate-500"
+            : "border-slate-200/40 text-slate-400"
+        }`}
+      >
+        <p>
+          &copy; {new Date().getFullYear()} Lumina Prenatal Suite. All rights
+          reserved.
+        </p>
       </footer>
 
       {/* Universal Floating Navigation Dock */}
@@ -250,18 +307,28 @@ export default function AppShell({ children }: AppShellProps) {
       {/* Missing Info Modal */}
       {showMissingInfoModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md">
-          <div className={`w-full max-w-md p-6 rounded-2xl shadow-2xl border ${
-            isDark ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-200 text-slate-900"
-          }`}>
+          <div
+            className={`w-full max-w-md p-6 rounded-2xl shadow-2xl border ${
+              isDark
+                ? "bg-slate-900 border-slate-700 text-white"
+                : "bg-white border-slate-200 text-slate-900"
+            }`}
+          >
             <h3 className="text-xl font-extrabold mb-2">Almost there!</h3>
-            <p className={`text-sm mb-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-              Please provide your Expected Labor Date (EDD) so we can tailor your experience.
+            <p
+              className={`text-sm mb-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+            >
+              Please provide your Expected Labor Date (EDD) so we can tailor
+              your experience.
             </p>
             <form onSubmit={handleSaveMissingInfo} className="space-y-4">
               <div className="space-y-1.5 text-left">
-                <label htmlFor="edd-input-shell" className={`text-xs font-bold ${
-                  isDark ? "text-slate-300" : "text-slate-700"
-                }`}>
+                <label
+                  htmlFor="edd-input-shell"
+                  className={`text-xs font-bold ${
+                    isDark ? "text-slate-300" : "text-slate-700"
+                  }`}
+                >
                   Expected Labor Date
                 </label>
                 <input

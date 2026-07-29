@@ -9,7 +9,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ dialogRef }: AuthModalProps) {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
-  
+
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +18,7 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [pregnancyWeek, setPregnancyWeek] = useState<number | "">("");
   const [partnerCode, setPartnerCode] = useState("");
-  
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -63,12 +63,11 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       if (event.target !== dialog) return;
 
       const rect = dialog.getBoundingClientRect();
-      const isInside = (
+      const isInside =
         rect.top <= event.clientY &&
         event.clientY <= rect.top + rect.height &&
         rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width
-      );
+        event.clientX <= rect.left + rect.width;
 
       if (!isInside) {
         handleCloseWithAnimation();
@@ -92,14 +91,24 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         if (pregnancyWeek === "" || pregnancyWeek < 1 || pregnancyWeek > 42) {
           throw new Error("Please enter a valid pregnancy week (1-42).");
         }
-        await signUpWithEmail(email, password, displayName, role, partnerCode.trim(), Number(pregnancyWeek));
+        await signUpWithEmail(
+          email,
+          password,
+          displayName,
+          role,
+          partnerCode.trim(),
+          Number(pregnancyWeek),
+        );
       } else {
         await signInWithEmail(email, password);
       }
       handleCloseWithAnimation();
     } catch (err: unknown) {
       console.error(err);
-      let friendlyMessage = err instanceof Error ? err.message : "An authentication error occurred.";
+      let friendlyMessage =
+        err instanceof Error
+          ? err.message
+          : "An authentication error occurred.";
       const code = (err as { code?: string }).code;
       if (
         code === "auth/user-not-found" ||
@@ -110,7 +119,8 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       ) {
         friendlyMessage = "Invalid email or password. Please try again.";
       } else if (code === "auth/email-already-in-use") {
-        friendlyMessage = "This email is already in use. Try signing in instead.";
+        friendlyMessage =
+          "This email is already in use. Try signing in instead.";
       } else if (code === "auth/weak-password") {
         friendlyMessage = "Password must be at least 6 characters long.";
       } else if (code === "auth/invalid-email") {
@@ -132,7 +142,9 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
       console.error(err);
       const code = (err as { code?: string }).code;
       if (code !== "auth/popup-closed-by-user") {
-        setError(err instanceof Error ? err.message : "Failed to sign in with Google.");
+        setError(
+          err instanceof Error ? err.message : "Failed to sign in with Google.",
+        );
       }
     } finally {
       setLoading(false);
@@ -153,8 +165,18 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
           className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/50 transition-colors cursor-pointer"
           aria-label="Close modal"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2.5}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
@@ -162,13 +184,22 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         <div className="text-center mb-6">
           <div className="inline-flex w-12 h-12 items-center justify-center mb-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Lumina Logo" className="w-full h-full object-contain" />
+            <img
+              src="/logo.svg"
+              alt="Lumina Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h2 id="authModalTitle" className="text-2xl font-extrabold tracking-tight text-white">
+          <h2
+            id="authModalTitle"
+            className="text-2xl font-extrabold tracking-tight text-white"
+          >
             {isSignUp ? "Join Lumina Prenatal" : "Welcome Back"}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            {isSignUp ? "Connect with caregivers and sync milestones" : "Access your caregiver dashboard"}
+            {isSignUp
+              ? "Connect with caregivers and sync milestones"
+              : "Access your caregiver dashboard"}
           </p>
         </div>
 
@@ -176,18 +207,28 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         <div className="flex bg-slate-950/45 p-1 rounded-xl border border-slate-800/40 mb-6">
           <button
             type="button"
-            onClick={() => { setIsSignUp(false); setError(null); }}
+            onClick={() => {
+              setIsSignUp(false);
+              setError(null);
+            }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-              !isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              !isSignUp
+                ? "bg-slate-800 text-rose-400 shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Sign In
           </button>
           <button
             type="button"
-            onClick={() => { setIsSignUp(true); setError(null); }}
+            onClick={() => {
+              setIsSignUp(true);
+              setError(null);
+            }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-              isSignUp ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              isSignUp
+                ? "bg-slate-800 text-rose-400 shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Register
@@ -204,7 +245,10 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {isSignUp && (
             <div className="space-y-1.5">
-              <label htmlFor="name-input" className="text-xs font-bold text-slate-300">
+              <label
+                htmlFor="name-input"
+                className="text-xs font-bold text-slate-300"
+              >
                 Full Name
               </label>
               <input
@@ -224,7 +268,10 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
           {isSignUp && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="week-input" className="text-xs font-bold text-slate-300">
+                <label
+                  htmlFor="week-input"
+                  className="text-xs font-bold text-slate-300"
+                >
                   Current Week
                 </label>
                 <input
@@ -233,7 +280,11 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
                   min="1"
                   max="42"
                   value={pregnancyWeek}
-                  onChange={(e) => setPregnancyWeek(e.target.value === "" ? "" : Number(e.target.value))}
+                  onChange={(e) =>
+                    setPregnancyWeek(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
                   placeholder="e.g. 12"
                   className="auth-input"
                   required
@@ -241,8 +292,12 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="partner-code-input" className="text-xs font-bold text-slate-300">
-                  Partner Code <span className="text-slate-500 font-normal">(optional)</span>
+                <label
+                  htmlFor="partner-code-input"
+                  className="text-xs font-bold text-slate-300"
+                >
+                  Partner Code{" "}
+                  <span className="text-slate-500 font-normal">(optional)</span>
                 </label>
                 <input
                   id="partner-code-input"
@@ -261,7 +316,9 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
           {/* Role Selector — shown only on Sign Up */}
           {isSignUp && (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300">I am the…</label>
+              <label className="text-xs font-bold text-slate-300">
+                I am the…
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -294,7 +351,10 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
           )}
 
           <div className="space-y-1.5">
-            <label htmlFor="email-input" className="text-xs font-bold text-slate-300">
+            <label
+              htmlFor="email-input"
+              className="text-xs font-bold text-slate-300"
+            >
               Email Address
             </label>
             <input
@@ -312,7 +372,10 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
 
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label htmlFor="password-input" className="text-xs font-bold text-slate-300">
+              <label
+                htmlFor="password-input"
+                className="text-xs font-bold text-slate-300"
+              >
                 Password
               </label>
             </div>
@@ -337,13 +400,38 @@ export default function AuthModal({ dialogRef }: AuthModalProps) {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
                   </svg>
                 )}
               </button>

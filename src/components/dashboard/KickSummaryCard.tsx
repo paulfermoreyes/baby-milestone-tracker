@@ -10,7 +10,7 @@ import {
   limit,
   onSnapshot,
   where,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -23,7 +23,9 @@ interface KickSummaryCardProps {
 export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
   const { user, familyId } = useAuth();
   const [todayKicksCount, setTodayKicksCount] = useState(0);
-  const [recentCountHistory, setRecentCountHistory] = useState<number[]>([4, 6, 8, 10, 7]); // default fallback
+  const [recentCountHistory, setRecentCountHistory] = useState<number[]>([
+    4, 6, 8, 10, 7,
+  ]); // default fallback
   const [justLogged, setJustLogged] = useState(false);
 
   const getLocalDateString = (d: Date = new Date()) => {
@@ -49,14 +51,14 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
       q = query(
         collection(db, "families", familyId, "kicks"),
         orderBy("createdAt", "desc"),
-        limit(150)
+        limit(150),
       );
     } else {
       q = query(
         collection(db, "kicks"),
         where("userId", "==", user.uid),
         orderBy("createdAt", "desc"),
-        limit(150)
+        limit(150),
       );
     }
 
@@ -68,7 +70,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
         const data = doc.data();
         const timestamp = data.createdAt ? data.createdAt.toDate() : new Date();
         const dateStr = getLocalDateString(timestamp);
-        
+
         countsByDate[dateStr] = (countsByDate[dateStr] || 0) + 1;
         if (dateStr === todayStr) {
           countToday += 1;
@@ -126,18 +128,27 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
     const chartWidth = 140;
     const padding = 5;
     const maxVal = Math.max(...recentCountHistory, 10);
-    const getX = (idx: number) => padding + (idx / (recentCountHistory.length - 1)) * (chartWidth - padding * 2);
-    const getY = (val: number) => chartHeight - padding - (val / maxVal) * (chartHeight - padding * 2);
-    
-    const sparklinePoints = recentCountHistory.map((val, idx) => ({ x: getX(idx), y: getY(val) }));
-    const pathD = sparklinePoints.length > 1
-      ? sparklinePoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
-      : "";
+    const getX = (idx: number) =>
+      padding +
+      (idx / (recentCountHistory.length - 1)) * (chartWidth - padding * 2);
+    const getY = (val: number) =>
+      chartHeight - padding - (val / maxVal) * (chartHeight - padding * 2);
+
+    const sparklinePoints = recentCountHistory.map((val, idx) => ({
+      x: getX(idx),
+      y: getY(val),
+    }));
+    const pathD =
+      sparklinePoints.length > 1
+        ? sparklinePoints
+            .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+            .join(" ")
+        : "";
 
     return (
       <div className="glass-card p-6 bg-slate-800/40 border border-slate-700/30 rounded-3xl relative overflow-hidden flex flex-col justify-between h-full group hover:border-cyan-500/30 transition-all duration-300">
         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
-        
+
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-slate-450 dark:text-slate-400 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
@@ -159,25 +170,43 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
             <span className="text-5xl font-black bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
               {todayKicksCount}
             </span>
-            <span className="text-xs font-bold text-slate-400 ml-2 uppercase tracking-wide">Kicks Today</span>
+            <span className="text-xs font-bold text-slate-400 ml-2 uppercase tracking-wide">
+              Kicks Today
+            </span>
           </div>
-          
+
           {/* Sparkline chart */}
           {recentCountHistory.length > 1 && (
             <div className="flex flex-col items-end">
-              <svg width={chartWidth} height={chartHeight} className="overflow-visible">
-                <path d={pathD} fill="none" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" />
+              <svg
+                width={chartWidth}
+                height={chartHeight}
+                className="overflow-visible"
+              >
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="#22d3ee"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
                 {sparklinePoints.map((pt, idx) => (
                   <circle
                     key={idx}
                     cx={pt.x}
                     cy={pt.y}
                     r={idx === recentCountHistory.length - 1 ? "3" : "1.5"}
-                    fill={idx === recentCountHistory.length - 1 ? "#22d3ee" : "#475569"}
+                    fill={
+                      idx === recentCountHistory.length - 1
+                        ? "#22d3ee"
+                        : "#475569"
+                    }
                   />
                 ))}
               </svg>
-              <span className="text-[8px] text-slate-500 font-extrabold uppercase mt-1 tracking-wider">5D Kick Trend</span>
+              <span className="text-[8px] text-slate-500 font-extrabold uppercase mt-1 tracking-wider">
+                5D Kick Trend
+              </span>
             </div>
           )}
         </div>
@@ -232,14 +261,22 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
           <Footprints size={18} weight="bold" className="text-cyan-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Kicks Logged</h4>
-          <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Target: 10 kicks daily</span>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Kicks Logged
+          </h4>
+          <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
+            Target: 10 kicks daily
+          </span>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <span className="text-lg font-black text-white">{todayKicksCount}</span>
-          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">Logged</span>
+          <span className="text-lg font-black text-white">
+            {todayKicksCount}
+          </span>
+          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+            Logged
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-cyan-400 group-hover:border-cyan-500/30 transition-colors">
           <ArrowUpRight size={12} weight="bold" />

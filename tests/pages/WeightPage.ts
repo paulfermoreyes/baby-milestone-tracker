@@ -19,7 +19,10 @@ export class WeightPage {
 
   async goto() {
     await this.page.goto("/trackers/weight", { waitUntil: "domcontentloaded" });
-    await this.page.waitForSelector("header", { state: "visible", timeout: 15000 });
+    await this.page.waitForSelector("header", {
+      state: "visible",
+      timeout: 15000,
+    });
   }
 
   async logWeight(weight: number) {

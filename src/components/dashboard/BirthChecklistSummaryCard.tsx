@@ -5,7 +5,12 @@ import Link from "next/link";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
-import { ListChecks, ArrowUpRight, BagSimple, Sparkle } from "@phosphor-icons/react";
+import {
+  ListChecks,
+  ArrowUpRight,
+  BagSimple,
+  Sparkle,
+} from "@phosphor-icons/react";
 
 interface BirthChecklistSummaryCardProps {
   mode: "large" | "small";
@@ -23,7 +28,9 @@ interface Category {
   items: ChecklistItem[];
 }
 
-export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummaryCardProps) {
+export default function BirthChecklistSummaryCard({
+  mode,
+}: BirthChecklistSummaryCardProps) {
   const { user, familyId } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isClient, setIsClient] = useState(false);
@@ -45,7 +52,10 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setCategories(parsed.categories || []);
         } catch (e) {
-          console.error("Failed to parse guest checklist data inside summary card", e);
+          console.error(
+            "Failed to parse guest checklist data inside summary card",
+            e,
+          );
         }
       }
       return;
@@ -65,7 +75,7 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
       },
       (err) => {
         console.error("Error reading checklist in summary card:", err);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -74,9 +84,12 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
   // Calculations
   const allItems = categories.flatMap((c) => c.items || []);
   const totalItems = allItems.length;
-  const readyItems = allItems.filter((i) => i.status === "ready" || i.status === "in-bag").length;
+  const readyItems = allItems.filter(
+    (i) => i.status === "ready" || i.status === "in-bag",
+  ).length;
   const packedItems = allItems.filter((i) => i.status === "in-bag").length;
-  const progressPct = totalItems > 0 ? Math.round((readyItems / totalItems) * 100) : 0;
+  const progressPct =
+    totalItems > 0 ? Math.round((readyItems / totalItems) * 100) : 0;
 
   // Large Detailed Card Render
   if (mode === "large") {
@@ -109,7 +122,9 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
               {progressPct}% Done
             </span>
           </div>
-          <p className="text-xs text-slate-400">{readyItems} of {totalItems} items prepared</p>
+          <p className="text-xs text-slate-400">
+            {readyItems} of {totalItems} items prepared
+          </p>
 
           {/* Progress Bar */}
           <div className="w-full h-1.5 rounded-full bg-slate-900/70 mt-3 overflow-hidden">
@@ -122,19 +137,31 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-850/40 mt-4">
             <div>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Categories</span>
-              <span className="text-lg font-black text-white">{categories.length}</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+                Categories
+              </span>
+              <span className="text-lg font-black text-white">
+                {categories.length}
+              </span>
               <span className="text-[10px] text-slate-400 block mt-0.5">
                 Sections active
               </span>
             </div>
             <div>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">Hospital Bag</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+                Hospital Bag
+              </span>
               <span className="text-lg font-black text-white flex items-center gap-1">
-                <BagSimple size={14} weight="fill" className="text-violet-400" />
+                <BagSimple
+                  size={14}
+                  weight="fill"
+                  className="text-violet-400"
+                />
                 {packedItems}
               </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Items packed</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                Items packed
+              </span>
             </div>
           </div>
         </div>
@@ -161,7 +188,9 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
           <ListChecks size={18} weight="bold" className="text-emerald-400" />
         </div>
         <div className="text-left">
-          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">Birth Checklist</h4>
+          <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest">
+            Birth Checklist
+          </h4>
           <span className="text-[10px] text-slate-500 font-bold block mt-0.5 truncate max-w-[130px] sm:max-w-none">
             {readyItems}/{totalItems} items ready • {packedItems} packed
           </span>
@@ -170,7 +199,9 @@ export default function BirthChecklistSummaryCard({ mode }: BirthChecklistSummar
       <div className="flex items-center gap-3">
         <div className="text-right">
           <span className="text-lg font-black text-white">{progressPct}%</span>
-          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">Ready</span>
+          <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase">
+            Ready
+          </span>
         </div>
         <div className="w-6 h-6 rounded-full border border-slate-800 flex items-center justify-center text-slate-500 group-hover:text-emerald-450 group-hover:border-emerald-500/30 transition-colors">
           <ArrowUpRight size={12} weight="bold" />
