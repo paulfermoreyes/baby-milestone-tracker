@@ -1,41 +1,24 @@
 {
-  "name": "baby-milestone-app",
+  "name": "baby-milestone-app-monorepo",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "vitest",
-    "test:ui": "playwright test"
-  },
-  "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
-    "firebase": "^12.13.0",
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "dev": "npm run dev --workspace=apps/web",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:mobile": "npm run start --workspace=apps/mobile",
+    "ios": "npm run ios --workspace=apps/mobile",
+    "android": "npm run android --workspace=apps/mobile",
+    "build": "npm run build --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web",
+    "test:ui": "npm run test:ui --workspace=apps/web"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.0",
-    "@playwright/test": "^1.61.1",
-    "@tailwindcss/postcss": "^4",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.2",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^6.0.4",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.6",
-    "jsdom": "^30.0.1",
-    "lint-staged": "^17.2.0",
-    "prettier": "3.9.6",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.10"
+    "turbo": "^2.4.0"
   }
 }
