@@ -37,6 +37,7 @@ export interface CareLog {
   feedingMethod?: "breast" | "bottle_milk" | "bottle_formula" | "solids";
   leftBreastMinutes?: number;
   rightBreastMinutes?: number;
+  lastBreastSide?: "left" | "right";
   amountMl?: number;
   // Diaper details
   diaperType?: "wet" | "dirty" | "both" | "dry";
@@ -272,15 +273,27 @@ export async function addCareLog(
   userId: string,
   babyId: string,
   log: Omit<CareLog, "id" | "babyId" | "loggedBy">,
-): Promise<void> {
+): Promise<string> {
   const basePath = getBabyCollectionPath(familyId, userId);
   const logsRef = collection(db, `${basePath}/${babyId}/careLogs`);
-  await addDoc(logsRef, {
+  const docRef = await addDoc(logsRef, {
     ...log,
     babyId,
     loggedBy: userId,
     createdAt: serverTimestamp(),
   });
+  return docRef.id;
+}
+
+export async function deleteCareLog(
+  familyId: string | null,
+  userId: string,
+  babyId: string,
+  logId: string,
+): Promise<void> {
+  const basePath = getBabyCollectionPath(familyId, userId);
+  const logRef = doc(db, `${basePath}/${babyId}/careLogs`, logId);
+  await deleteDoc(logRef);
 }
 
 export function subscribeCareLogs(
@@ -366,4 +379,249 @@ export function subscribeMilestones(
     });
     callback(map);
   });
+}
+
+export interface CareSummary24h {
+  totalFeeds: number;
+  nursingFeeds: number;
+  bottleFeeds: number;
+  totalNursingMinutes: number;
+  totalBottleMl: number;
+  wetDiapers: number;
+  dirtyDiapers: number;
+  bothDiapers: number;
+  totalDiapers: number;
+  latestFeed?: CareLog;
+  latestDiaper?: CareLog;
+  latestSleep?: CareLog;
+  nextBreastSide?: "left" | "right";
+  timeSinceLastFeedMinutes: number | null;
+  timeSinceLastDiaperMinutes: number | null;
+}
+
+export function calculateCareSummary24h(
+  logs: CareLog[],
+  referenceTime: Date = new Date(),
+): CareSummary24h {
+  const past24hMs = referenceTime.getTime() - 24 * 60 * 60 * 1000;
+  const recentLogs = logs.filter((l) => {
+    const t = new Date(l.timestamp).getTime();
+    return t >= past24hMs && t <= referenceTime.getTime();
+  });
+
+  let totalFeeds = 0;
+  let nursingFeeds = 0;
+  let bottleFeeds = 0;
+  let totalNursingMinutes = 0;
+  let totalBottleMl = 0;
+  let wetDiapers = 0;
+  let dirtyDiapers = 0;
+  let bothDiapers = 0;
+
+  recentLogs.forEach((l) => {
+    if (l.type === "feeding") {
+      totalFeeds++;
+      if (l.feedingMethod === "breast") {
+        nursingFeeds++;
+        totalNursingMinutes +=
+          (l.leftBreastMinutes || 0) + (l.rightBreastMinutes || 0);
+      } else {
+        bottleFeeds++;
+        totalBottleMl += l.amountMl || 0;
+      }
+    } else if (l.type === "diaper") {
+      if (l.diaperType === "wet") {
+        wetDiapers++;
+      } else if (l.diaperType === "dirty") {
+        dirtyDiapers++;
+      } else if (l.diaperType === "both") {
+        bothDiapers++;
+        wetDiapers++;
+        dirtyDiapers++;
+      }
+    }
+  });
+
+  const latestFeed = logs.find((l) => l.type === "feeding");
+  const latestDiaper = logs.find((l) => l.type === "diaper");
+  const latestSleep = logs.find((l) => l.type === "sleep");
+
+  let nextBreastSide: "left" | "right" | undefined;
+  if (latestFeed?.feedingMethod === "breast") {
+    if (latestFeed.lastBreastSide) {
+      nextBreastSide = latestFeed.lastBreastSide === "left" ? "right" : "left";
+    } else if (
+      (latestFeed.rightBreastMinutes || 0) > 0 &&
+      (latestFeed.leftBreastMinutes || 0) === 0
+    ) {
+      nextBreastSide = "left";
+    } else if (
+      (latestFeed.leftBreastMinutes || 0) > 0 &&
+      (latestFeed.rightBreastMinutes || 0) === 0
+    ) {
+      nextBreastSide = "right";
+    }
+  }
+
+  const timeSinceLastFeedMinutes = latestFeed
+    ? Math.max(
+        0,
+        Math.floor(
+          (referenceTime.getTime() - new Date(latestFeed.timestamp).getTime()) /
+            (60 * 1000),
+        ),
+      )
+    : null;
+
+  const timeSinceLastDiaperMinutes = latestDiaper
+    ? Math.max(
+        0,
+        Math.floor(
+          (referenceTime.getTime() - new Date(latestDiaper.timestamp).getTime()) /
+            (60 * 1000),
+        ),
+      )
+    : null;
+
+  return {
+    totalFeeds,
+    nursingFeeds,
+    bottleFeeds,
+    totalNursingMinutes,
+    totalBottleMl,
+    wetDiapers,
+    dirtyDiapers,
+    bothDiapers,
+    totalDiapers: wetDiapers + dirtyDiapers - bothDiapers,
+    latestFeed,
+    latestDiaper,
+    latestSleep,
+    nextBreastSide,
+    timeSinceLastFeedMinutes,
+    timeSinceLastDiaperMinutes,
+  };
+}
+
+export interface DayOfLifeClinicalInfo {
+  dayNumber: number;
+  phaseTitle: string;
+  stomachSizeName: string;
+  stomachCapacityMl: string;
+  targetWetDiapers: string;
+  targetDirtyDiapers: string;
+  stoolAppearance: string;
+  clinicalTip: string;
+  quickQuestions: string[];
+}
+
+export function getDayOfLifeClinicalInfo(
+  birthDateStr: string,
+  currentDate: Date = new Date(),
+): DayOfLifeClinicalInfo {
+  const birth = new Date(birthDateStr);
+  // Reset times to compare calendar days
+  const d0 = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate());
+  const d1 = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate(),
+  );
+  const diffDays = Math.max(
+    1,
+    Math.floor((d1.getTime() - d0.getTime()) / (1000 * 60 * 60 * 24)) + 1,
+  );
+
+  if (diffDays === 1) {
+    return {
+      dayNumber: 1,
+      phaseTitle: "Day 1 of Life (Birth Day)",
+      stomachSizeName: "Size of a cherry / marble",
+      stomachCapacityMl: "5 - 7 ml per feed (1 - 1.4 tsp)",
+      targetWetDiapers: "At least 1 wet diaper",
+      targetDirtyDiapers: "At least 1 meconium diaper",
+      stoolAppearance: "Thick, sticky, black or dark greenish-black (meconium)",
+      clinicalTip:
+        "Newborns are often very sleepy during the first 12-24 hours. Colostrum is liquid gold: concentrated in antibodies and perfectly matches baby's tiny cherry-sized stomach.",
+      quickQuestions: [
+        "Is sticky black meconium normal on Day 1?",
+        "How often should our newborn nurse on Day 1?",
+        "How do we wake a sleepy newborn to feed?",
+      ],
+    };
+  }
+
+  if (diffDays === 2) {
+    return {
+      dayNumber: 2,
+      phaseTitle: "Day 2 of Life (Night 2 Cluster Feeding)",
+      stomachSizeName: "Size of a walnut",
+      stomachCapacityMl: "10 - 15 ml per feed (2 - 3 tsp)",
+      targetWetDiapers: "At least 2 wet diapers",
+      targetDirtyDiapers: "At least 2 transitional diapers",
+      stoolAppearance: "Dark greenish-brown transitional stool",
+      clinicalTip:
+        "Night 2 is famously 'cluster feeding night'. Baby wakes up from the birth slumber and wants to nurse frequently to stimulate mom's mature milk production. This is completely normal!",
+      quickQuestions: [
+        "Why is baby nursing every 30-45 minutes tonight (Night 2)?",
+        "How can parents survive the Night 2 cluster feed?",
+        "What does transitional green poop look like?",
+      ],
+    };
+  }
+
+  if (diffDays === 3) {
+    return {
+      dayNumber: 3,
+      phaseTitle: "Day 3 of Life (Milk Transition)",
+      stomachSizeName: "Size of an apricot",
+      stomachCapacityMl: "22 - 27 ml per feed (~0.75 - 1 oz)",
+      targetWetDiapers: "At least 3 wet diapers",
+      targetDirtyDiapers: "At least 3 greenish-yellow diapers",
+      stoolAppearance: "Brownish-green transitioning to yellow",
+      clinicalTip:
+        "Mother's mature milk usually begins 'coming in' between Days 3 and 5. Breasts may feel fuller and warmer. Keep baby feeding every 2 to 3 hours.",
+      quickQuestions: [
+        "How do I know if mature breast milk is coming in?",
+        "How much formula or pumped milk per bottle on Day 3?",
+        "What are early hunger cues vs late hunger crying?",
+      ],
+    };
+  }
+
+  if (diffDays === 4) {
+    return {
+      dayNumber: 4,
+      phaseTitle: "Day 4 of Life (Hydration Ramp-Up)",
+      stomachSizeName: "Size of a large apricot",
+      stomachCapacityMl: "30 - 45 ml per feed (1 - 1.5 oz)",
+      targetWetDiapers: "At least 4 - 5 wet diapers",
+      targetDirtyDiapers: "At least 3 - 4 yellow/seedy stools",
+      stoolAppearance: "Yellowish, starting to show seedy texture",
+      clinicalTip:
+        "Diapers should be getting noticeably heavier and clearer. Stools should lose all black/brown traces and turn yellow.",
+      quickQuestions: [
+        "What should normal yellow seedy newborn poop look like?",
+        "Signs baby is getting enough milk on Day 4",
+        "How to care for the umbilical cord stump?",
+      ],
+    };
+  }
+
+  // Day 5+
+  return {
+    dayNumber: diffDays,
+    phaseTitle: `Day ${diffDays} of Life (First Weeks)`,
+    stomachSizeName: "Size of a large hen egg",
+    stomachCapacityMl: "45 - 60+ ml per feed (1.5 - 2+ oz)",
+    targetWetDiapers: "6+ heavy pale/clear wet diapers daily",
+    targetDirtyDiapers: "3 - 4+ mustard-yellow seedy stools daily",
+    stoolAppearance: "Mustard yellow, loose with seedy curds",
+    clinicalTip:
+      "Babies normally lose up to 7-10% of birth weight initially and regain it by day 10-14. 6+ heavy wet diapers per 24 hours confirms healthy hydration.",
+    quickQuestions: [
+      "When should baby regain their birth weight?",
+      "How to tell if baby has jaundice?",
+      "Safe sleep ABCs for newborn at home",
+    ],
+  };
 }

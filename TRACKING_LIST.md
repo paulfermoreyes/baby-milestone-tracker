@@ -48,8 +48,14 @@ This tracking list serves as a living document to track progress across developm
 - [x] **Mobile Floating Panel Navigation**: Built a floating action dock that maps interactive buttons directly to target element sections via smooth scroll offsets on small mobile viewports.
 - [x] **Birth Preparation Checklist**:
   - [x] Designed responsive Kanban DropLanes for sorting tasks between "Not Ready" and "Ready".
-  - [x] Added drag-and-drop integration for packing hospital bag with real-time reactive chips.
-  - [x] Implemented a premium glassmorphic dashboard summary card for progress monitoring.
+- [x] **Newborn Care & 3 AM Command Center (Day 0+ Suite)**:
+  - [x] 1-Tap Ultra-Minimalist Diaper Logger (`+1 Wet`, `+1 Dirty`, `+1 Both`) with instant Firestore sync.
+  - [x] 5-Second Floating Undo Toast with countdown timer and instant Firestore deletion rollback.
+  - [x] Hybrid/Dynamic Feeding Hub: Dual Left/Right Breast stopwatches, automatic Next-Breast indicator, and 1-tap bottle volume presets (10ml, 15ml, 30ml, 45ml, 60ml, 90ml).
+  - [x] Glanceable Shift Status Bar: real-time counters for time since last feed, time since last diaper, and last nursed side.
+  - [x] 1-Tap "Doctor Rounds View" Modal: 24-hour intake/output totals, weight delta calculation, and copyable clinical report for pediatrician rounds.
+  - [x] Nursery / OLED Ultra-Dark Mode: Pure black low-lumen theme for nighttime nursery care.
+  - [x] Day-of-Life Clinical Guidance Card & AI Pediatric Assistant: Context-aware stomach capacity, diaper targets, and 1-tap clinical Q&A.
 
 ---
 
