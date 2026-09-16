@@ -31,7 +31,20 @@ export function BabyProvider({ children }: { children: React.ReactNode }) {
     if (!user) {
       Promise.resolve().then(() => {
         if (!isMounted) return;
-        setBaby(null);
+        if (typeof window !== "undefined") {
+          const guestBaby = localStorage.getItem("lumina_guest_baby");
+          if (guestBaby) {
+            try {
+              const parsed = JSON.parse(guestBaby);
+              setBaby(parsed);
+              setActiveMode("newborn");
+            } catch {
+              setBaby(null);
+            }
+          } else {
+            setBaby(null);
+          }
+        }
         setLoading(false);
       });
       return;
@@ -56,7 +69,19 @@ export function BabyProvider({ children }: { children: React.ReactNode }) {
   }, [user, familyId]);
 
   const updateBabyProfile = async (profileData: Omit<BabyProfile, "id">) => {
-    if (!user) return;
+    if (!user) {
+      const guestBaby: BabyProfile = {
+        id: "guest-baby-" + Date.now(),
+        ...profileData,
+        createdAt: new Date().toISOString(),
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("lumina_guest_baby", JSON.stringify(guestBaby));
+      }
+      setBaby(guestBaby);
+      setActiveMode("newborn");
+      return;
+    }
     const saved = await saveBabyProfile(familyId, user.uid, profileData);
     setBaby(saved);
     setActiveMode("newborn");

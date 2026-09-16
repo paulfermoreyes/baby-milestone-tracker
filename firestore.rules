@@ -110,15 +110,7 @@ service cloud.firestore {
       match /babies/{babyId} {
         allow read, write: if isFamilyMember(familyId);
 
-        match /careLogs/{logId} {
-          allow read, write, delete: if isFamilyMember(familyId);
-        }
-
-        match /growthLogs/{logId} {
-          allow read, write, delete: if isFamilyMember(familyId);
-        }
-
-        match /milestones/{milestoneId} {
+        match /{allSubcollections=**} {
           allow read, write, delete: if isFamilyMember(familyId);
         }
       }

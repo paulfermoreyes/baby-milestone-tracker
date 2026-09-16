@@ -31,28 +31,37 @@ export default function BabyProfileModal({
     number | ""
   >(baby?.birthHeadCircumferenceCm || "");
   const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setErrorMessage("Please enter your baby's name.");
+      return;
+    }
     setSubmitting(true);
+    setErrorMessage(null);
     try {
       const data: Omit<BabyProfile, "id"> = {
         name: name.trim(),
         gender,
         birthDate,
-        birthWeightGram: birthWeightGram ? Number(birthWeightGram) : undefined,
-        birthLengthCm: birthLengthCm ? Number(birthLengthCm) : undefined,
-        birthHeadCircumferenceCm: birthHeadCircumferenceCm
-          ? Number(birthHeadCircumferenceCm)
-          : undefined,
+        birthWeightGram: birthWeightGram !== "" ? Number(birthWeightGram) : undefined,
+        birthLengthCm: birthLengthCm !== "" ? Number(birthLengthCm) : undefined,
+        birthHeadCircumferenceCm:
+          birthHeadCircumferenceCm !== ""
+            ? Number(birthHeadCircumferenceCm)
+            : undefined,
       };
       await updateBabyProfile(data);
       onClose();
-    } catch (e) {
-      console.error("Failed to save baby profile", e);
+    } catch (err: unknown) {
+      console.error("Failed to save baby profile", err);
+      const msg =
+        err instanceof Error ? err.message : "Failed to save baby profile. Please try again.";
+      setErrorMessage(msg);
     } finally {
       setSubmitting(false);
     }
@@ -77,6 +86,13 @@ export default function BabyProfileModal({
             </p>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-300 font-semibold flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">

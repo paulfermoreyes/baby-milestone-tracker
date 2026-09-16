@@ -239,15 +239,40 @@ function getBabyCollectionPath(familyId: string | null, userId: string): string 
   return `users/${userId}/babies`;
 }
 
+function cleanUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) {
+      result[k] = v;
+    }
+  }
+  return result as Partial<T>;
+}
+
 export async function fetchBabyProfile(
   familyId: string | null,
   userId: string,
 ): Promise<BabyProfile | null> {
-  const basePath = getBabyCollectionPath(familyId, userId);
-  const snap = await getDocs(collection(db, basePath));
-  if (snap.empty) return null;
-  const docData = snap.docs[0];
-  return { id: docData.id, ...docData.data() } as BabyProfile;
+  try {
+    const basePath = getBabyCollectionPath(familyId, userId);
+    const snap = await getDocs(collection(db, basePath));
+    if (!snap.empty) {
+      const docData = snap.docs[0];
+      return { id: docData.id, ...docData.data() } as BabyProfile;
+    }
+    // Fallback: if familyId was specified but nothing found, check personal user collection
+    if (familyId) {
+      const userSnap = await getDocs(collection(db, `users/${userId}/babies`));
+      if (!userSnap.empty) {
+        const docData = userSnap.docs[0];
+        return { id: docData.id, ...docData.data() } as BabyProfile;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error("fetchBabyProfile error:", err);
+    return null;
+  }
 }
 
 export async function saveBabyProfile(
@@ -257,13 +282,18 @@ export async function saveBabyProfile(
 ): Promise<BabyProfile> {
   const basePath = getBabyCollectionPath(familyId, userId);
   const snap = await getDocs(collection(db, basePath));
+  const cleaned = cleanUndefined(profile);
   let refDoc;
   if (!snap.empty) {
     refDoc = doc(db, basePath, snap.docs[0].id);
-    await setDoc(refDoc, { ...profile, updatedAt: new Date().toISOString() }, { merge: true });
+    await setDoc(
+      refDoc,
+      { ...cleaned, updatedAt: new Date().toISOString() },
+      { merge: true },
+    );
   } else {
     refDoc = doc(collection(db, basePath));
-    await setDoc(refDoc, { ...profile, createdAt: new Date().toISOString() });
+    await setDoc(refDoc, { ...cleaned, createdAt: new Date().toISOString() });
   }
   return { id: refDoc.id, ...profile };
 }
@@ -276,8 +306,9 @@ export async function addCareLog(
 ): Promise<string> {
   const basePath = getBabyCollectionPath(familyId, userId);
   const logsRef = collection(db, `${basePath}/${babyId}/careLogs`);
+  const cleaned = cleanUndefined(log);
   const docRef = await addDoc(logsRef, {
-    ...log,
+    ...cleaned,
     babyId,
     loggedBy: userId,
     createdAt: serverTimestamp(),
@@ -319,8 +350,9 @@ export async function addGrowthLog(
 ): Promise<void> {
   const basePath = getBabyCollectionPath(familyId, userId);
   const growthRef = collection(db, `${basePath}/${babyId}/growthLogs`);
+  const cleaned = cleanUndefined(growth);
   await addDoc(growthRef, {
-    ...growth,
+    ...cleaned,
     babyId,
     loggedBy: userId,
     timestamp: Date.now(),
