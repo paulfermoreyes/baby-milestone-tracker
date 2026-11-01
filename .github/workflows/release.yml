@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -11,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # needed for tags
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -21,9 +25,10 @@ jobs:
         run: npm ci
       - name: Ensure a changeset exists
         run: |
-          # If no changeset files exist, generate a generic one
-          if [ -z "$(ls .changeset/*.md 2>/dev/null)" ]; then
-            npx changeset add --empty --summary "Automated changeset based on recent commits"
+          # If no changeset files exist (excluding README.md), generate an empty one
+          CHANGESETS=$(find .changeset -maxdepth 1 -name "*.md" ! -name "README.md" 2>/dev/null)
+          if [ -z "$CHANGESETS" ]; then
+            npx changeset add --empty --message "Automated changeset based on recent commits"
           fi
       - name: Version packages
         id: version
@@ -35,11 +40,17 @@ jobs:
       - name: Publish to npm
         run: npx changeset publish
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           npm_config_auth_token: ${{ secrets.NPM_TOKEN }}
       - name: Push version commit and tags
         run: |
-          git push
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
+            git push
+          fi
           git push --tags
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -47,4 +58,4 @@ jobs:
           tag_name: v${{ steps.version.outputs.new_version }}
           name: Release v${{ steps.version.outputs.new_version }}
           generate_release_notes: true
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
