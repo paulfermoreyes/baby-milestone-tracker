@@ -17,10 +17,8 @@ import {
   getDoc,
   serverTimestamp,
   collection,
-  query,
-  where,
-  getDocs,
   updateDoc,
+  writeBatch,
   arrayUnion,
   Timestamp,
 } from "firebase/firestore";
@@ -63,14 +61,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/** Generate a random 6-char alphanumeric invite code */
-function makeCode(length = 6): string {
+/** Generate a cryptographically random 8-char alphanumeric invite code */
+function makeCode(length = 8): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
   let result = "";
   for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars.charAt(bytes[i] % chars.length);
   }
   return result;
+}
+
+/**
+ * Joins the family referenced by an invite code (invites/{code}).
+ * The family update and invite deletion are committed atomically; Firestore
+ * rules verify the invite is valid, unexpired and that only the caller is appended.
+ * Returns the joined family id.
+ */
+async function joinFamilyWithCode(uid: string, rawCode: string): Promise<string> {
+  const code = rawCode.trim().toUpperCase();
+  const inviteSnap = code ? await getDoc(doc(db, "invites", code)) : null;
+  if (!inviteSnap || !inviteSnap.exists()) {
+    throw new Error("Invalid invite code. Please double-check and try again.");
+  }
+  const invite = inviteSnap.data();
+  if (new Date() > (invite.expiresAt as Timestamp).toDate()) {
+    throw new Error(
+      "This invite code has expired. Ask your partner to generate a new one.",
+    );
+  }
+  const familyRef = doc(db, "families", invite.familyId as string);
+  // Security rules do not allow non-members to read the family, so rely on rules for capacity.
+  const batch = writeBatch(db);
+  batch.update(familyRef, {
+    members: arrayUnion(uid),
+    joinedWithCode: code,
+  });
+  batch.delete(inviteSnap.ref);
+  await batch.commit();
+  return invite.familyId as string;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -164,31 +194,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (partnerCode) {
         try {
-          const trimmedCode = partnerCode.trim().toUpperCase();
-          const q = query(
-            collection(db, "families"),
-            where("inviteCode", "==", trimmedCode),
+          initialFamilyId = await joinFamilyWithCode(
+            createdUser.uid,
+            partnerCode,
           );
-          const snap = await getDocs(q);
-
-          if (!snap.empty) {
-            const familyDoc = snap.docs[0];
-            const familyData = familyDoc.data();
-            const expiresAt = (
-              familyData.inviteCodeExpiresAt as Timestamp
-            ).toDate();
-
-            if (new Date() <= expiresAt) {
-              const members: string[] = familyData.members ?? [];
-              if (members.length < 2) {
-                initialFamilyId = familyDoc.id;
-                await updateDoc(doc(db, "families", initialFamilyId), {
-                  members: arrayUnion(createdUser.uid),
-                  inviteCode: null,
-                });
-              }
-            }
-          }
         } catch (e) {
           console.error("Failed to link partner code during sign up:", e);
         }
@@ -274,102 +283,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Creates or refreshes a families document with a new invite code.
-   * Returns the generated 6-char code.
+   * Creates a families document if needed and a short-lived invite document
+   * (invites/{code}). Returns the generated invite code.
    */
   const generateInviteCode = async (): Promise<string> => {
     if (!user) throw new Error("Must be signed in to generate an invite code.");
 
-    const code = makeCode();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
     let targetFamilyId = familyId;
 
-    if (targetFamilyId) {
-      // Update existing family document
-      await updateDoc(doc(db, "families", targetFamilyId), {
-        inviteCode: code,
-        inviteCodeExpiresAt: Timestamp.fromDate(expiresAt),
-      });
-    } else {
-      // Create a new family document
+    if (!targetFamilyId) {
       const newFamilyRef = doc(collection(db, "families"));
       await setDoc(newFamilyRef, {
         createdBy: user.uid,
         members: [user.uid],
-        inviteCode: code,
-        inviteCodeExpiresAt: Timestamp.fromDate(expiresAt),
         createdAt: serverTimestamp(),
       });
       targetFamilyId = newFamilyRef.id;
 
       // Link the user to this family
       await updateDoc(doc(db, "users", user.uid), { familyId: targetFamilyId });
-
-      // Update local profile state
       setUserProfile((prev) =>
         prev ? { ...prev, familyId: targetFamilyId } : prev,
       );
     }
 
+    const code = makeCode();
+    await setDoc(doc(db, "invites", code), {
+      familyId: targetFamilyId,
+      createdBy: user.uid,
+      expiresAt: Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 24 hours
+      createdAt: serverTimestamp(),
+    });
+
     return code;
   };
 
   /**
-   * Looks up a families document by invite code, validates it,
-   * adds the current user to the family, and links their profile.
+   * Redeems an invite code, adds the current user to the family
+   * and links their profile.
    */
   const redeemInviteCode = async (code: string): Promise<void> => {
     if (!user) throw new Error("Must be signed in to redeem an invite code.");
 
-    const trimmedCode = code.trim().toUpperCase();
-
-    // Find the family with this invite code
-    const q = query(
-      collection(db, "families"),
-      where("inviteCode", "==", trimmedCode),
-    );
-    const snap = await getDocs(q);
-
-    if (snap.empty) {
-      throw new Error(
-        "Invalid invite code. Please double-check and try again.",
-      );
+    let targetFamilyId: string;
+    try {
+      targetFamilyId = await joinFamilyWithCode(user.uid, code);
+    } catch (e) {
+      if ((e as { code?: string }).code === "permission-denied") {
+        throw new Error(
+          "Unable to join: the code is invalid, expired, or the family is already full.",
+        );
+      }
+      throw e;
     }
 
-    const familyDoc = snap.docs[0];
-    const familyData = familyDoc.data();
-
-    // Validate expiry
-    const expiresAt = (familyData.inviteCodeExpiresAt as Timestamp).toDate();
-    if (new Date() > expiresAt) {
-      throw new Error(
-        "This invite code has expired. Ask your partner to generate a new one.",
-      );
-    }
-
-    // Check capacity (max 2 members)
-    const members: string[] = familyData.members ?? [];
-    if (members.includes(user.uid)) {
-      throw new Error("You are already linked to this family.");
-    }
-    if (members.length >= 2) {
-      throw new Error("This family already has two members linked.");
-    }
-
-    const targetFamilyId = familyDoc.id;
-
-    // Add user to family members
-    await updateDoc(doc(db, "families", targetFamilyId), {
-      members: arrayUnion(user.uid),
-      // Clear invite code so it can't be reused
-      inviteCode: null,
-    });
-
-    // Link user profile
     await updateDoc(doc(db, "users", user.uid), { familyId: targetFamilyId });
-
-    // Update local state
     setUserProfile((prev) =>
       prev ? { ...prev, familyId: targetFamilyId } : prev,
     );
