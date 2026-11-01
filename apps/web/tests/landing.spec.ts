@@ -13,11 +13,13 @@ test.describe("Lumina Homepage E2E UI Tests", () => {
 
     // Verify main header elements
     await expect(landingPage.headerTitle).toContainText("Lumina");
-    await expect(landingPage.headerSubtitle).toContainText("Prenatal Suite");
+    await expect(landingPage.headerSubtitle).toContainText(
+      "Prenatal & Newborn Suite",
+    );
 
     // Verify main hero title
     await expect(landingPage.heroHeading).toContainText(
-      "Simplify Your Prenatal Journey",
+      "Simplify Your Prenatal & Newborn Journey",
     );
   });
 });

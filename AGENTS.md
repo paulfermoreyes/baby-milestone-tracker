@@ -14,13 +14,17 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 1. Project Overview & Architecture
 This project is a **Baby Milestone Tracker** application built with modern web technologies and Firebase for backend services.
 
-### Directory Structure (`src/`)
-- `src/app/`: Next.js App Router pages and API routes.
-- `src/components/`: Modular React components.
-- `src/context/`: React context providers (e.g., AuthContext).
-- `src/lib/`: Library initialization (e.g., Firebase client setup, helpers).
-- `src/__tests__/`: Unit/integration tests powered by Vitest.
-- `tests/`: End-to-end (E2E) testing powered by Playwright.
+### Monorepo Structure
+- `apps/web/`: Next.js web application
+  - `src/app/`: Next.js App Router pages and API routes.
+  - `src/components/`: Modular React components.
+  - `src/context/`: React context providers (e.g., AuthContext, BabyContext, ThemeContext).
+  - `src/lib/`: Library initialization (e.g., Firebase client setup, helpers).
+  - `src/__tests__/`: Unit/integration tests powered by Vitest.
+  - `tests/`: End-to-end (E2E) testing powered by Playwright.
+- `apps/mobile/`: React Native / Expo mobile application.
+- `packages/shared-firebase/`: Shared Firebase configuration and helpers.
+- `packages/shared-types/`: Shared TypeScript interfaces and domain types.
 
 ---
 
@@ -51,9 +55,9 @@ This project is a **Baby Milestone Tracker** application built with modern web t
 - **State & Context**: Wrap components that depend on Auth/Global context inside their respective providers (or mock `useAuth` when unit testing).
 - **Styling**: Use utility classes from Tailwind CSS v4; maintain consistent spacing and responsive design.
 - **Testing**:
-  - Keep unit tests inside `src/__tests__/`.
+  - Keep unit tests inside `apps/web/src/__tests__/`.
   - Ensure component tests wrap renders with necessary Context Providers (e.g., `AuthProvider`).
-  - Keep E2E tests inside `tests/`.
+  - Keep E2E tests inside `apps/web/tests/`.
 
 ---
 

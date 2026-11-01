@@ -37,9 +37,9 @@ export default defineConfig({
 
   /* Run local dev server before starting the tests */
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    command: process.env.CI ? "npm run start" : "npm run dev",
+    url: process.env.BASE_URL || "http://localhost:3000",
+    reuseExistingServer: !process.env.CI || !!process.env.BASE_URL,
     timeout: 120000,
   },
 });
