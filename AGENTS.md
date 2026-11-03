@@ -19,7 +19,7 @@ This project is a **Baby Milestone Tracker** application built with modern web t
   - `src/app/`: Next.js App Router pages and API routes.
   - `src/components/`: Modular React components.
   - `src/context/`: React context providers (e.g., AuthContext, BabyContext, ThemeContext).
-  - `src/lib/`: Library initialization (e.g., Firebase client setup, WHO growth calculators, gestational calculations, baby helpers).
+  - `src/lib/`: Library initialization (e.g., Firebase client setup with multi-tab persistent cache, WHO growth calculators, gestational calculations, pediatric export engine, baby helpers).
   - `src/__tests__/`: Unit/integration tests powered by Vitest.
   - `tests/`: End-to-end (E2E) testing powered by Playwright.
 - `apps/mobile/`: React Native / Expo mobile application.

@@ -22,10 +22,12 @@ import {
   Heart,
   Sparkle,
   CheckCircle,
+  DownloadSimple,
 } from "@phosphor-icons/react";
 import { addCareLog } from "@/lib/baby";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import ExportDataModal from "@/components/ExportDataModal";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -36,6 +38,7 @@ export default function BottomNav() {
   const [mounted, setMounted] = useState(false);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -707,9 +710,37 @@ export default function BottomNav() {
                 </button>
               </div>
             </div>
+
+            {/* Data Export & Backup Section */}
+            <div className="pt-4 border-t border-slate-800 mt-4">
+              <button
+                onClick={() => {
+                  setIsMoreOpen(false);
+                  setIsExportOpen(true);
+                }}
+                className="w-full p-3 rounded-2xl bg-gradient-to-r from-purple-500/15 to-cyan-500/15 hover:from-purple-500/25 hover:to-cyan-500/25 border border-purple-500/30 text-left transition-all cursor-pointer flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2.5">
+                  <DownloadSimple size={20} className="text-purple-400" />
+                  <div>
+                    <span className="text-xs font-black text-white block">Export Health Records</span>
+                    <span className="text-[10px] text-slate-400">Download CSV for pediatrician or full JSON backup</span>
+                  </div>
+                </div>
+                <span className="text-[10px] uppercase font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md">
+                  Export
+                </span>
+              </button>
+            </div>
           </div>
         </>
       )}
+
+      {/* ── Pediatric Data Export Modal ────────────────────────────────────── */}
+      <ExportDataModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+      />
     </>
   );
 }

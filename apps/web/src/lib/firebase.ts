@@ -1,7 +1,12 @@
 // src/lib/firebase.ts
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey:
@@ -19,8 +24,21 @@ const firebaseConfig = {
     process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:1234567890:web:dummyappid",
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
+let firestoreInstance;
+try {
+  // Enable persistent local cache with multi-tab coordination for offline resilience
+  firestoreInstance = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  });
+} catch {
+  firestoreInstance = getFirestore(app);
+}
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = firestoreInstance;
 
 export default app;
