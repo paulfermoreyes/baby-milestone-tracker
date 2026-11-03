@@ -43,7 +43,7 @@ export default function BirthChecklistSummaryCard({
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       // Guest local storage fallback
       const localData = localStorage.getItem("lumina_guest_checklist");
       if (localData) {
@@ -61,9 +61,7 @@ export default function BirthChecklistSummaryCard({
       return;
     }
 
-    const docRef = familyId
-      ? doc(db, "families", familyId, "checklist", "data")
-      : doc(db, "users", user.uid, "checklist", "data");
+    const docRef = doc(db, "families", familyId, "checklist", "data");
 
     const unsubscribe = onSnapshot(
       docRef,

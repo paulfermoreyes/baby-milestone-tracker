@@ -76,7 +76,7 @@ export default function BaptismOrganizer() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       // Guest mode
       const localData = localStorage.getItem("lumina_guest_baptism");
       if (localData) {
@@ -96,9 +96,7 @@ export default function BaptismOrganizer() {
     }
 
     // Authenticated Firestore sync
-    const docRef = familyId
-      ? doc(db, "families", familyId, "baptism", "event")
-      : doc(db, "baptism", user.uid);
+    const docRef = doc(db, "families", familyId, "baptism", "event");
 
     const unsubscribe = onSnapshot(
       docRef,
@@ -132,7 +130,7 @@ export default function BaptismOrganizer() {
   const handleSaveEventDetails = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
+    if (!user || !familyId) {
       // Local storage guest mode
       const guestData = {
         date: editDate,
@@ -151,9 +149,7 @@ export default function BaptismOrganizer() {
     }
 
     try {
-      const docRef = familyId
-        ? doc(db, "families", familyId, "baptism", "event")
-        : doc(db, "baptism", user.uid);
+      const docRef = doc(db, "families", familyId, "baptism", "event");
 
       await setDoc(
         docRef,
@@ -181,7 +177,7 @@ export default function BaptismOrganizer() {
   };
 
   const saveInvitees = async (updatedInvitees: Invitee[]) => {
-    if (!user) {
+    if (!user || !familyId) {
       const guestData = {
         date,
         time,
@@ -195,9 +191,7 @@ export default function BaptismOrganizer() {
     }
 
     try {
-      const docRef = familyId
-        ? doc(db, "families", familyId, "baptism", "event")
-        : doc(db, "baptism", user.uid);
+      const docRef = doc(db, "families", familyId, "baptism", "event");
 
       await setDoc(
         docRef,

@@ -8,7 +8,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -48,7 +47,7 @@ export default function BloodSugarSummaryCard({
   const todayStr = getLocalDateString();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // offline preview mode
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogs([
@@ -70,21 +69,11 @@ export default function BloodSugarSummaryCard({
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "bloodsugar"),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    } else {
-      q = query(
-        collection(db, "bloodsugar"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "bloodsugar"),
+      orderBy("createdAt", "desc"),
+      limit(20),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bsLogs: BloodSugarLog[] = [];

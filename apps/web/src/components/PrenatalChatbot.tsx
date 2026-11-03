@@ -85,59 +85,31 @@ export default function PrenatalChatbot() {
     let unsubMilk = () => {};
     let unsubGlucose = () => {};
 
-    if (user) {
+    if (user && familyId) {
       // 1. Subscribe to Kicks today
-      let qKicks;
-      if (familyId) {
-        qKicks = query(
-          collection(db, "families", familyId, "kicks"),
-          where("createdAt", ">=", startOfDay),
-        );
-      } else {
-        qKicks = query(
-          collection(db, "kicks"),
-          where("userId", "==", user.uid),
-          where("createdAt", ">=", startOfDay),
-        );
-      }
+      const qKicks = query(
+        collection(db, "families", familyId, "kicks"),
+        where("createdAt", ">=", startOfDay),
+      );
       unsubKicks = onSnapshot(qKicks, (snapshot) => {
         setKickCount(snapshot.size);
       });
 
       // 2. Subscribe to Milk today
-      let qMilk;
-      if (familyId) {
-        qMilk = query(
-          collection(db, "families", familyId, "milk"),
-          where("createdAt", ">=", startOfDay),
-        );
-      } else {
-        qMilk = query(
-          collection(db, "milk"),
-          where("userId", "==", user.uid),
-          where("createdAt", ">=", startOfDay),
-        );
-      }
+      const qMilk = query(
+        collection(db, "families", familyId, "milk"),
+        where("createdAt", ">=", startOfDay),
+      );
       unsubMilk = onSnapshot(qMilk, (snapshot) => {
         setMilkCount(snapshot.size);
       });
 
       // 3. Subscribe to Blood Sugar records
-      let qGlucose;
-      if (familyId) {
-        qGlucose = query(
-          collection(db, "families", familyId, "bloodsugar"),
-          orderBy("createdAt", "desc"),
-          limit(20),
-        );
-      } else {
-        qGlucose = query(
-          collection(db, "bloodsugar"),
-          where("userId", "==", user.uid),
-          orderBy("createdAt", "desc"),
-          limit(20),
-        );
-      }
+      const qGlucose = query(
+        collection(db, "families", familyId, "bloodsugar"),
+        orderBy("createdAt", "desc"),
+        limit(20),
+      );
       unsubGlucose = onSnapshot(qGlucose, (snapshot) => {
         const temp: { value: number; slot: string; date: string }[] = [];
         snapshot.forEach((doc) => {

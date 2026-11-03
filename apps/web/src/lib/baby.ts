@@ -232,11 +232,9 @@ export const PREDEFINED_MILESTONES: MilestoneCategory[] = [
 ];
 
 // Firestore Helpers
-function getBabyCollectionPath(familyId: string | null, userId: string): string {
-  if (familyId) {
-    return `families/${familyId}/babies`;
-  }
-  return `users/${userId}/babies`;
+export function getBabyCollectionPath(familyId: string | null, userId: string): string {
+  const fid = familyId || userId;
+  return `families/${fid}/babies`;
 }
 
 function cleanUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
@@ -260,12 +258,23 @@ export async function fetchBabyProfile(
       const docData = snap.docs[0];
       return { id: docData.id, ...docData.data() } as BabyProfile;
     }
-    // Fallback: if familyId was specified but nothing found, check personal user collection
+    // Fallback & automatic migration: if not in family collection, check legacy solo user collection
     if (familyId) {
       const userSnap = await getDocs(collection(db, `users/${userId}/babies`));
       if (!userSnap.empty) {
         const docData = userSnap.docs[0];
-        return { id: docData.id, ...docData.data() } as BabyProfile;
+        const data = docData.data();
+        const profile = { id: docData.id, ...data } as BabyProfile;
+        // Auto-migrate to family collection so partner can see it
+        try {
+          await setDoc(doc(db, basePath, docData.id), {
+            ...cleanUndefined(data),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true });
+        } catch (migrateErr) {
+          console.warn("Could not auto-migrate solo baby to family:", migrateErr);
+        }
+        return profile;
       }
     }
     return null;

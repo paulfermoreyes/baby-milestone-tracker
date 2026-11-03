@@ -7,7 +7,6 @@ import {
   deleteDoc,
   doc,
   query,
-  where,
   orderBy,
   onSnapshot,
   Timestamp,
@@ -51,7 +50,7 @@ export default function ContractionTimer() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       const localData = localStorage.getItem("lumina_guest_contractions");
       if (localData) {
         try {
@@ -80,21 +79,11 @@ export default function ContractionTimer() {
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "contractions"),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    } else {
-      q = query(
-        collection(db, "contractions"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "contractions"),
+      orderBy("createdAt", "desc"),
+      limit(20),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -154,7 +143,7 @@ export default function ContractionTimer() {
         );
       }
 
-      if (!user) {
+      if (!user || !familyId) {
         const simulatedId = Math.random().toString(36).substring(7);
         const newLog: ContractionLog = {
           id: simulatedId,
@@ -187,17 +176,10 @@ export default function ContractionTimer() {
           createdAt: finishedStartTime,
           loggedBy: user.uid,
         };
-        if (familyId) {
-          await addDoc(
-            collection(db, "families", familyId, "contractions"),
-            payload,
-          );
-        } else {
-          await addDoc(collection(db, "contractions"), {
-            ...payload,
-            userId: user.uid,
-          });
-        }
+        await addDoc(
+          collection(db, "families", familyId, "contractions"),
+          payload,
+        );
       } catch (err) {
         console.error("Failed to save contraction log:", err);
         alert("Failed to sync contraction log to the cloud.");
@@ -209,7 +191,7 @@ export default function ContractionTimer() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!user) {
+    if (!user || !familyId) {
       const updated = logs.filter((log) => log.id !== id);
       setLogs(updated);
       localStorage.setItem(
@@ -227,11 +209,7 @@ export default function ContractionTimer() {
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "contractions", id));
-      } else {
-        await deleteDoc(doc(db, "contractions", id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "contractions", id));
     } catch (err) {
       console.error("Failed to delete contraction:", err);
       alert("Failed to delete contraction record.");

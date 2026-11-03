@@ -190,8 +190,8 @@ function sanitizeForFirestore(categories: Category[]): Category[] {
 
 function getDocRef(user: { uid: string } | null, familyId: string | null) {
   if (!user) return null;
-  if (familyId) return doc(db, "families", familyId, "checklist", "data");
-  return doc(db, "users", user.uid, "checklist", "data");
+  const fid = familyId || user.uid;
+  return doc(db, "families", fid, "checklist", "data");
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────

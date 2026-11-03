@@ -19,7 +19,7 @@ This project is a **Baby Milestone Tracker** application built with modern web t
   - `src/app/`: Next.js App Router pages and API routes.
   - `src/components/`: Modular React components.
   - `src/context/`: React context providers (e.g., AuthContext, BabyContext, ThemeContext).
-  - `src/lib/`: Library initialization (e.g., Firebase client setup, helpers).
+  - `src/lib/`: Library initialization (e.g., Firebase client setup, WHO growth calculators, gestational calculations, baby helpers).
   - `src/__tests__/`: Unit/integration tests powered by Vitest.
   - `tests/`: End-to-end (E2E) testing powered by Playwright.
 - `apps/mobile/`: React Native / Expo mobile application.
@@ -34,7 +34,7 @@ This project is a **Baby Milestone Tracker** application built with modern web t
 - **Backend / Services**: Firebase SDK v12 (Auth, Firestore, Cloud Storage)
 - **Icons**: `@phosphor-icons/react`
 - **Unit Testing**: Vitest, React Testing Library, `jsdom`
-- **E2E Testing**: Playwright (`@playwright/test`)
+- **E2E Testing**: Playwright (`@playwright/test`) with Allure report (`allure-playwright`), published to GitHub Pages at `/playwright/report` by `.github/workflows/playwright.yml`
 - **Linting & Formatting**: ESLint, Prettier, `lint-staged`
 - **CI/CD**: GitHub Actions (workflows for Vitest unit tests and Playwright E2E tests)
 

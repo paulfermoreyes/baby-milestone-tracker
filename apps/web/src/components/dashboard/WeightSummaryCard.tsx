@@ -8,7 +8,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -30,7 +29,7 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
   const [logs, setLogs] = useState<WeightLog[]>([]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogs([
         {
@@ -56,21 +55,11 @@ export default function WeightSummaryCard({ mode }: WeightSummaryCardProps) {
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "weight"),
-        orderBy("createdAt", "desc"),
-        limit(50),
-      );
-    } else {
-      q = query(
-        collection(db, "weight"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(50),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "weight"),
+      orderBy("createdAt", "desc"),
+      limit(50),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const wLogs: WeightLog[] = [];

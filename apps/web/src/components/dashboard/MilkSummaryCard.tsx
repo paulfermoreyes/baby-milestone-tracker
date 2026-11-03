@@ -9,7 +9,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -35,27 +34,17 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
   const todayStr = getLocalDateString();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayTotal(12.5);
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "milk"),
-        orderBy("createdAt", "desc"),
-        limit(100),
-      );
-    } else {
-      q = query(
-        collection(db, "milk"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(100),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "milk"),
+      orderBy("createdAt", "desc"),
+      limit(100),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let sum = 0;
@@ -72,7 +61,7 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
   }, [user, familyId, todayStr]);
 
   const handleQuickLog = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       setTodayTotal((prev) => prev + 1);
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);
@@ -87,11 +76,7 @@ export default function MilkSummaryCard({ mode }: MilkSummaryCardProps) {
         createdAt: serverTimestamp(),
       };
 
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "milk"), payload);
-      } else {
-        await addDoc(collection(db, "milk"), { ...payload, userId: user.uid });
-      }
+      await addDoc(collection(db, "families", familyId, "milk"), payload);
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);
     } catch (err) {

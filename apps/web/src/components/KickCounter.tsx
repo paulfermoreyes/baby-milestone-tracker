@@ -11,7 +11,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -30,29 +29,17 @@ export default function KickCounter() {
 
   // Synchronize with Firestore real-time snapshots
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionKicks([]);
       return;
     }
 
-    let q;
-    if (familyId) {
-      // Shared family collection
-      q = query(
-        collection(db, "families", familyId, "kicks"),
-        orderBy("createdAt", "desc"),
-        limit(50),
-      );
-    } else {
-      // Fallback: personal collection while not yet linked
-      q = query(
-        collection(db, "kicks"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(50),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "kicks"),
+      orderBy("createdAt", "desc"),
+      limit(50),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -76,7 +63,7 @@ export default function KickCounter() {
   }, [user, familyId]);
 
   const handleKick = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       // Simulate locally in preview mode
       const simulatedId = Math.random().toString(36).substring(7);
       setSessionKicks((prev) => [
@@ -87,17 +74,10 @@ export default function KickCounter() {
     }
 
     try {
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "kicks"), {
-          loggedBy: user.uid,
-          createdAt: serverTimestamp(),
-        });
-      } else {
-        await addDoc(collection(db, "kicks"), {
-          userId: user.uid,
-          createdAt: serverTimestamp(),
-        });
-      }
+      await addDoc(collection(db, "families", familyId, "kicks"), {
+        loggedBy: user.uid,
+        createdAt: serverTimestamp(),
+      });
     } catch (err) {
       console.error(err);
       alert("Failed to save kick to the cloud.");
@@ -108,17 +88,13 @@ export default function KickCounter() {
     if (sessionKicks.length === 0) return;
     const lastKick = sessionKicks[sessionKicks.length - 1];
 
-    if (!user) {
+    if (!user || !familyId) {
       setSessionKicks((prev) => prev.slice(0, -1));
       return;
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "kicks", lastKick.id));
-      } else {
-        await deleteDoc(doc(db, "kicks", lastKick.id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "kicks", lastKick.id));
     } catch (err) {
       console.error(err);
       alert("Failed to delete kick record.");

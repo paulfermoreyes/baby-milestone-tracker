@@ -9,7 +9,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -38,7 +37,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
   const todayStr = getLocalDateString();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // Offline simulated preview data
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayKicksCount(8);
@@ -46,21 +45,11 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "kicks"),
-        orderBy("createdAt", "desc"),
-        limit(150),
-      );
-    } else {
-      q = query(
-        collection(db, "kicks"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(150),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "kicks"),
+      orderBy("createdAt", "desc"),
+      limit(150),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let countToday = 0;
@@ -94,7 +83,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
   }, [user, familyId, todayStr]);
 
   const handleQuickLog = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       setTodayKicksCount((prev) => prev + 1);
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);
@@ -106,11 +95,7 @@ export default function KickSummaryCard({ mode }: KickSummaryCardProps) {
         loggedBy: user.uid,
         createdAt: serverTimestamp(),
       };
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "kicks"), payload);
-      } else {
-        await addDoc(collection(db, "kicks"), { ...payload, userId: user.uid });
-      }
+      await addDoc(collection(db, "families", familyId, "kicks"), payload);
       setJustLogged(true);
       setTimeout(() => setJustLogged(false), 2000);
     } catch (err) {

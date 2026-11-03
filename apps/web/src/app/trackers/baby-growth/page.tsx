@@ -9,6 +9,12 @@ import {
   addGrowthLog,
   subscribeGrowthLogs,
 } from "@/lib/baby";
+import {
+  assessWeight,
+  assessLength,
+  assessHeadCircumference,
+  calculateAgeInMonths,
+} from "@/lib/whoGrowth";
 import { Scales, Ruler, Plus, Baby } from "@phosphor-icons/react";
 import BabyProfileModal from "@/components/baby/BabyProfileModal";
 
@@ -87,9 +93,31 @@ export default function BabyGrowthPage() {
     }
   };
 
-  const latestWeight = logs.filter(l => l.weightKg).pop()?.weightKg || (baby.birthWeightGram ? baby.birthWeightGram / 1000 : null);
-  const latestLength = logs.filter(l => l.lengthCm).pop()?.lengthCm || baby.birthLengthCm;
-  const latestHead = logs.filter(l => l.headCircumferenceCm).pop()?.headCircumferenceCm || baby.birthHeadCircumferenceCm;
+  const latestWeightLog = logs.filter(l => l.weightKg).pop();
+  const latestWeight = latestWeightLog?.weightKg || (baby.birthWeightGram ? baby.birthWeightGram / 1000 : null);
+  const latestWeightDate = latestWeightLog?.date || baby.birthDate;
+
+  const latestLengthLog = logs.filter(l => l.lengthCm).pop();
+  const latestLength = latestLengthLog?.lengthCm || baby.birthLengthCm;
+  const latestLengthDate = latestLengthLog?.date || baby.birthDate;
+
+  const latestHeadLog = logs.filter(l => l.headCircumferenceCm).pop();
+  const latestHead = latestHeadLog?.headCircumferenceCm || baby.birthHeadCircumferenceCm;
+  const latestHeadDate = latestHeadLog?.date || baby.birthDate;
+
+  const gender = baby.gender === "boy" || baby.gender === "girl" ? baby.gender : "boy";
+
+  const weightAssessment = latestWeight && baby.birthDate
+    ? assessWeight(gender, calculateAgeInMonths(baby.birthDate, latestWeightDate), latestWeight)
+    : null;
+
+  const lengthAssessment = latestLength && baby.birthDate
+    ? assessLength(gender, calculateAgeInMonths(baby.birthDate, latestLengthDate), latestLength)
+    : null;
+
+  const headAssessment = latestHead && baby.birthDate
+    ? assessHeadCircumference(gender, calculateAgeInMonths(baby.birthDate, latestHeadDate), latestHead)
+    : null;
 
   return (
     <AppShell>
@@ -106,7 +134,7 @@ export default function BabyGrowthPage() {
               </h2>
             </div>
             <p className="text-xs text-slate-400 mt-2">
-              Track weight, crown-to-heel length, and head circumference for pediatric checkups.
+              Track weight, crown-to-heel length, and head circumference evaluated against WHO Child Growth Standards.
             </p>
           </div>
 
@@ -129,9 +157,25 @@ export default function BabyGrowthPage() {
             <span className="text-2xl font-black text-white">
               {latestWeight ? `${latestWeight} kg` : "--"}
             </span>
-            <span className="text-[10px] text-slate-400">
-              Target percentile: WHO Standard
-            </span>
+            {weightAssessment ? (
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold ${
+                    weightAssessment.status === "typical"
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  }`}>
+                    {weightAssessment.percentile}th %tile
+                  </span>
+                  <span className="text-[10px] text-slate-400">WHO MGRS</span>
+                </div>
+                <span className="text-[10px] text-slate-400 truncate">{weightAssessment.statusText}</span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-slate-400">
+                Target percentile: WHO Standard
+              </span>
+            )}
           </div>
 
           <div className="glass-card p-5 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2">
@@ -142,9 +186,25 @@ export default function BabyGrowthPage() {
             <span className="text-2xl font-black text-white">
               {latestLength ? `${latestLength} cm` : "--"}
             </span>
-            <span className="text-[10px] text-slate-400">
-              Crown to heel measurement
-            </span>
+            {lengthAssessment ? (
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold ${
+                    lengthAssessment.status === "typical"
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  }`}>
+                    {lengthAssessment.percentile}th %tile
+                  </span>
+                  <span className="text-[10px] text-slate-400">WHO MGRS</span>
+                </div>
+                <span className="text-[10px] text-slate-400 truncate">{lengthAssessment.statusText}</span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-slate-400">
+                Crown to heel measurement
+              </span>
+            )}
           </div>
 
           <div className="glass-card p-5 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2">
@@ -155,9 +215,25 @@ export default function BabyGrowthPage() {
             <span className="text-2xl font-black text-white">
               {latestHead ? `${latestHead} cm` : "--"}
             </span>
-            <span className="text-[10px] text-slate-400">
-              Cranial circumference
-            </span>
+            {headAssessment ? (
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold ${
+                    headAssessment.status === "typical"
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  }`}>
+                    {headAssessment.percentile}th %tile
+                  </span>
+                  <span className="text-[10px] text-slate-400">WHO MGRS</span>
+                </div>
+                <span className="text-[10px] text-slate-400 truncate">{headAssessment.statusText}</span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-slate-400">
+                Cranial circumference
+              </span>
+            )}
           </div>
         </div>
 
@@ -173,21 +249,62 @@ export default function BabyGrowthPage() {
             </p>
           ) : (
             <div className="divide-y divide-slate-850">
-              {logs.map((log) => (
-                <div key={log.id} className="py-3 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-extrabold text-white block">{log.date}</span>
-                    {log.notes && (
-                      <span className="text-slate-400 block mt-0.5">{log.notes}</span>
-                    )}
+              {logs.map((log) => {
+                const ageMonths = baby.birthDate ? calculateAgeInMonths(baby.birthDate, log.date) : 0;
+                const wAssess = log.weightKg && baby.birthDate ? assessWeight(gender, ageMonths, log.weightKg) : null;
+                const lAssess = log.lengthCm && baby.birthDate ? assessLength(gender, ageMonths, log.lengthCm) : null;
+                const hAssess = log.headCircumferenceCm && baby.birthDate ? assessHeadCircumference(gender, ageMonths, log.headCircumferenceCm) : null;
+
+                return (
+                  <div key={log.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-white">{log.date}</span>
+                        {baby.birthDate && (
+                          <span className="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-full font-medium">
+                            {ageMonths} mo
+                          </span>
+                        )}
+                      </div>
+                      {log.notes && (
+                        <span className="text-slate-400 block mt-0.5">{log.notes}</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-slate-300">
+                      {log.weightKg && (
+                        <span className="inline-flex items-center gap-1.5">
+                          🏋️ {log.weightKg} kg
+                          {wAssess && (
+                            <span className="text-[10px] text-purple-300 bg-purple-500/15 border border-purple-500/25 px-1.5 py-0.5 rounded font-bold">
+                              {wAssess.percentile}%
+                            </span>
+                          )}
+                        </span>
+                      )}
+                      {log.lengthCm && (
+                        <span className="inline-flex items-center gap-1.5">
+                          📏 {log.lengthCm} cm
+                          {lAssess && (
+                            <span className="text-[10px] text-cyan-300 bg-cyan-500/15 border border-cyan-500/25 px-1.5 py-0.5 rounded font-bold">
+                              {lAssess.percentile}%
+                            </span>
+                          )}
+                        </span>
+                      )}
+                      {log.headCircumferenceCm && (
+                        <span className="inline-flex items-center gap-1.5">
+                          👶 {log.headCircumferenceCm} cm
+                          {hAssess && (
+                            <span className="text-[10px] text-amber-300 bg-amber-500/15 border border-amber-500/25 px-1.5 py-0.5 rounded font-bold">
+                              {hAssess.percentile}%
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-slate-300">
-                    {log.weightKg && <span>🏋️ {log.weightKg} kg</span>}
-                    {log.lengthCm && <span>📏 {log.lengthCm} cm</span>}
-                    {log.headCircumferenceCm && <span>👶 {log.headCircumferenceCm} cm</span>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

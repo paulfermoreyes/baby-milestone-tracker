@@ -21,10 +21,80 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/families/$(familyId)).data.members;
     }
 
+    // Validates baby profile document fields
+    function isValidBaby() {
+      return request.resource.data.keys().hasOnly([
+          'name', 'gender', 'birthDate', 'birthWeightGram', 'birthLengthCm',
+          'birthHeadCircumferenceCm', 'photoUrl', 'createdAt', 'updatedAt', 'id'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.gender in ['boy', 'girl', 'other'];
+    }
+
+    // Validates care log document fields
+    function isValidCareLog() {
+      return request.resource.data.keys().hasOnly([
+          'babyId', 'loggedBy', 'type', 'timestamp', 'createdAt',
+          'feedingMethod', 'leftBreastMinutes', 'rightBreastMinutes', 'amountMl',
+          'diaperType', 'stoolColor', 'durationMinutes', 'temperatureC',
+          'medicationName', 'dosage', 'notes'
+        ])
+        && request.resource.data.babyId is string
+        && request.resource.data.type in ['feeding', 'diaper', 'sleep', 'tummy_time', 'health'];
+    }
+
+    // Validates growth log document fields
+    function isValidGrowthLog() {
+      return request.resource.data.keys().hasOnly([
+          'babyId', 'loggedBy', 'date', 'weightKg', 'lengthCm',
+          'headCircumferenceCm', 'notes', 'timestamp', 'createdAt'
+        ])
+        && request.resource.data.babyId is string
+        && request.resource.data.date is string;
+    }
+
+    // Validates milestone achievement document fields
+    function isValidMilestone() {
+      return request.resource.data.keys().hasOnly([
+          'milestoneId', 'achievedDate', 'notes', 'loggedBy', 'timestamp', 'createdAt'
+        ])
+        && request.resource.data.milestoneId is string;
+    }
+
     // ── User profile documents ───────────────────────────────────────────────
     match /users/{userId} {
-      // Users can only read and write their own profile
-      allow read, write: if isAuthed() && request.auth.uid == userId;
+      // Users can only read their own profile
+      allow read: if isAuthed() && request.auth.uid == userId;
+
+      // Validate create: enforce identity, schema whitelist, family membership, and role enum
+      allow create: if isAuthed()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'photoURL', 'role',
+          'familyId', 'pregnancyWeek', 'expectedLaborDate', 'createdAt', 'lastLoginAt'
+        ])
+        && (!('familyId' in request.resource.data)
+          || request.resource.data.familyId == null
+          || request.auth.uid in get(/databases/$(database)/documents/families/$(request.resource.data.familyId)).data.members)
+        && (!('role' in request.resource.data)
+          || request.resource.data.role in ['husband', 'wife', 'caregiver']);
+
+      // Validate update: restrict mutable fields, verify family membership if familyId changes, and role enum
+      allow update: if isAuthed()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'role', 'familyId',
+          'pregnancyWeek', 'expectedLaborDate', 'lastLoginAt'
+        ])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['familyId'])
+          || request.resource.data.familyId == null
+          || request.auth.uid in get(/databases/$(database)/documents/families/$(request.resource.data.familyId)).data.members)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+          || request.resource.data.role in ['husband', 'wife', 'caregiver']);
+
+      allow delete: if false;
 
       // Birth Preparation Checklist (solo, cross-device)
       match /checklist/{checklistId} {
@@ -33,10 +103,27 @@ service cloud.firestore {
 
       // Newborn Baby subcollections for solo users
       match /babies/{babyId} {
-        allow read, write: if isAuthed() && request.auth.uid == userId;
+        allow read, delete: if isAuthed() && request.auth.uid == userId;
+        allow create, update: if isAuthed() && request.auth.uid == userId
+          && isValidBaby();
 
-        match /{allSubcollections=**} {
-          allow read, write, delete: if isAuthed() && request.auth.uid == userId;
+        match /careLogs/{logId} {
+          allow read, delete: if isAuthed() && request.auth.uid == userId;
+          allow create, update: if isAuthed() && request.auth.uid == userId
+            && request.resource.data.loggedBy == request.auth.uid
+            && isValidCareLog();
+        }
+
+        match /growthLogs/{logId} {
+          allow read, delete: if isAuthed() && request.auth.uid == userId;
+          allow create, update: if isAuthed() && request.auth.uid == userId
+            && isValidGrowthLog();
+        }
+
+        match /milestones/{milestoneId} {
+          allow read, delete: if isAuthed() && request.auth.uid == userId;
+          allow create, update: if isAuthed() && request.auth.uid == userId
+            && isValidMilestone();
         }
       }
     }
@@ -104,42 +191,54 @@ service cloud.firestore {
       // Kicks
       match /kicks/{kickId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'timestamp', 'createdAt']);
         allow update: if false;
       }
 
       // Contractions
       match /contractions/{contractionId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'startTime', 'durationSeconds', 'intervalMinutes', 'notes', 'timestamp', 'createdAt']);
         allow update: if false;
       }
 
       // Blood sugar
       match /bloodsugar/{bsId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'slot', 'value', 'notes', 'timestamp', 'date', 'createdAt']);
         allow update: if false;
       }
 
       // Milk counter
       match /milk/{milkId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'timestamp', 'createdAt']);
         allow update: if false;
       }
 
       // Symptoms
       match /symptoms/{symptomId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'symptom', 'severity', 'notes', 'timestamp', 'createdAt']);
         allow update: if false;
       }
 
       // Weight
       match /weight/{weightId} {
         allow read, delete: if isFamilyMember(familyId);
-        allow create: if isFamilyMember(familyId) && request.resource.data.loggedBy == request.auth.uid;
+        allow create: if isFamilyMember(familyId)
+          && request.resource.data.loggedBy == request.auth.uid
+          && request.resource.data.keys().hasOnly(['loggedBy', 'weight', 'date', 'notes', 'timestamp', 'createdAt']);
         allow update: if false;
       }
 
@@ -155,10 +254,27 @@ service cloud.firestore {
 
       // Newborn Baby Profiles & Tracking Subcollections
       match /babies/{babyId} {
-        allow read, write: if isFamilyMember(familyId);
+        allow read, delete: if isFamilyMember(familyId);
+        allow create, update: if isFamilyMember(familyId)
+          && isValidBaby();
 
-        match /{allSubcollections=**} {
-          allow read, write, delete: if isFamilyMember(familyId);
+        match /careLogs/{logId} {
+          allow read, delete: if isFamilyMember(familyId);
+          allow create, update: if isFamilyMember(familyId)
+            && request.resource.data.loggedBy == request.auth.uid
+            && isValidCareLog();
+        }
+
+        match /growthLogs/{logId} {
+          allow read, delete: if isFamilyMember(familyId);
+          allow create, update: if isFamilyMember(familyId)
+            && isValidGrowthLog();
+        }
+
+        match /milestones/{milestoneId} {
+          allow read, delete: if isFamilyMember(familyId);
+          allow create, update: if isFamilyMember(familyId)
+            && isValidMilestone();
         }
       }
     }

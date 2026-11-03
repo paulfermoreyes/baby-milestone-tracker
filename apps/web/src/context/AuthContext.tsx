@@ -103,6 +103,23 @@ async function joinFamilyWithCode(uid: string, rawCode: string): Promise<string>
   return invite.familyId as string;
 }
 
+/**
+ * Ensures a user belongs to a family document. If currentFamilyId is valid, returns it.
+ * Otherwise, provisions a new family where uid is the sole member and updates users/{uid}.
+ */
+async function ensureUserFamily(uid: string, currentFamilyId?: string | null): Promise<string> {
+  if (currentFamilyId) return currentFamilyId;
+
+  const newFamilyRef = doc(collection(db, "families"));
+  await setDoc(newFamilyRef, {
+    createdBy: uid,
+    members: [uid],
+    createdAt: serverTimestamp(),
+  });
+  await updateDoc(doc(db, "users", uid), { familyId: newFamilyRef.id });
+  return newFamilyRef.id;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -149,7 +166,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const profile = await fetchProfile(currentUser.uid);
+        let profile = await fetchProfile(currentUser.uid);
+        if (profile && !profile.familyId) {
+          try {
+            const fid = await ensureUserFamily(currentUser.uid);
+            profile = { ...profile, familyId: fid };
+          } catch (e) {
+            console.error("Failed to auto-provision family for user:", e);
+          }
+        }
         setUserProfile(profile);
       } else {
         setUserProfile(null);
@@ -203,6 +228,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      // If user did not join a partner family, provision their own family
+      if (!initialFamilyId) {
+        const newFamilyRef = doc(collection(db, "families"));
+        await setDoc(newFamilyRef, {
+          createdBy: createdUser.uid,
+          members: [createdUser.uid],
+          createdAt: serverTimestamp(),
+        });
+        initialFamilyId = newFamilyRef.id;
+      }
+
       // Create a user record in Firestore with role
       const userData: {
         uid: string;
@@ -223,6 +259,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (pregnancyWeek !== undefined) {
         userData.pregnancyWeek = pregnancyWeek;
+        const daysRemaining = (40 - pregnancyWeek) * 7;
+        const edd = new Date(Date.now() + daysRemaining * 86400000).toISOString().split("T")[0];
+        (userData as Record<string, unknown>).expectedLaborDate = edd;
       }
 
       await setDoc(doc(db, "users", createdUser.uid), userData);
@@ -253,6 +292,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check if profile already exists (to preserve role + familyId)
       const existing = await getDoc(doc(db, "users", loggedUser.uid));
+      let initialFamilyId: string | null = null;
+
+      if (!existing.exists() || !existing.data().familyId) {
+        const newFamilyRef = doc(collection(db, "families"));
+        await setDoc(newFamilyRef, {
+          createdBy: loggedUser.uid,
+          members: [loggedUser.uid],
+          createdAt: serverTimestamp(),
+        });
+        initialFamilyId = newFamilyRef.id;
+      }
 
       await setDoc(
         doc(db, "users", loggedUser.uid),
@@ -261,8 +311,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: loggedUser.email,
           displayName: loggedUser.displayName || "Google Caregiver",
           photoURL: loggedUser.photoURL,
-          // Only set role/familyId defaults if this is a brand-new user
-          ...(existing.exists() ? {} : { role: "wife", familyId: null }),
+          // Only set role/familyId defaults if this is a brand-new user or missing familyId
+          ...(existing.exists()
+            ? initialFamilyId
+              ? { familyId: initialFamilyId }
+              : {}
+            : { role: "wife", familyId: initialFamilyId }),
           lastLoginAt: serverTimestamp(),
         },
         { merge: true },

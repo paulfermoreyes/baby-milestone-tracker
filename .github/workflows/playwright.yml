@@ -8,6 +8,15 @@ on:
     # Every day at 20:00 GMT+8
     - cron: "0 12 * * *"
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   test:
     timeout-minutes: 60
@@ -33,3 +42,26 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report/
           retention-days: 30
+      - name: Generate Allure report
+        if: ${{ !cancelled() }}
+        working-directory: apps/web
+        run: |
+          npx allure generate allure-results --clean -o allure-report
+          mkdir -p ../../_site/playwright
+          cp -r allure-report ../../_site/playwright/report
+      - name: Upload Pages artifact
+        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: test
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.test.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}playwright/report/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

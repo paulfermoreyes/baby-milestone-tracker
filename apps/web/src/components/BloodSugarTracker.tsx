@@ -9,7 +9,6 @@ import {
   doc,
   serverTimestamp,
   query,
-  where,
   orderBy,
   limit,
   onSnapshot,
@@ -122,7 +121,7 @@ export default function BloodSugarTracker() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       // Local Storage Preview
       const localData = localStorage.getItem("lumina_guest_bloodsugar");
       if (localData) {
@@ -152,21 +151,11 @@ export default function BloodSugarTracker() {
     }
 
     // Query historical blood sugar logs (limit to 150 for rich history analysis)
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "bloodsugar"),
-        orderBy("createdAt", "desc"),
-        limit(150),
-      );
-    } else {
-      q = query(
-        collection(db, "bloodsugar"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(150),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "bloodsugar"),
+      orderBy("createdAt", "desc"),
+      limit(150),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -251,14 +240,10 @@ export default function BloodSugarTracker() {
       const duplicate = logs.find(
         (l) => l.date === todayStr && l.slot === activeSlot,
       );
-      if (duplicate) {
-        if (familyId) {
-          await deleteDoc(
-            doc(db, "families", familyId, "bloodsugar", duplicate.id),
-          );
-        } else {
-          await deleteDoc(doc(db, "bloodsugar", duplicate.id));
-        }
+      if (duplicate && familyId) {
+        await deleteDoc(
+          doc(db, "families", familyId, "bloodsugar", duplicate.id),
+        );
       }
 
       const payload = {
@@ -273,11 +258,6 @@ export default function BloodSugarTracker() {
           collection(db, "families", familyId, "bloodsugar"),
           payload,
         );
-      } else {
-        await addDoc(collection(db, "bloodsugar"), {
-          ...payload,
-          userId: user.uid,
-        });
       }
 
       setActiveSlot(null);
@@ -292,7 +272,7 @@ export default function BloodSugarTracker() {
 
   // Delete reading
   const handleDeleteReading = async (id: string) => {
-    if (!user) {
+    if (!user || !familyId) {
       const updated = logs.filter((l) => l.id !== id);
       setLogs(updated);
       localStorage.setItem(
@@ -311,11 +291,7 @@ export default function BloodSugarTracker() {
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "bloodsugar", id));
-      } else {
-        await deleteDoc(doc(db, "bloodsugar", id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "bloodsugar", id));
     } catch (err) {
       console.error("Error deleting entry:", err);
       alert("Failed to delete reading.");
@@ -342,7 +318,7 @@ export default function BloodSugarTracker() {
 
     setIsSubmitting(true);
 
-    if (!user) {
+    if (!user || !familyId) {
       // Guest mode: update locally
       const updated = logs.map((l) =>
         l.id === editingLog.id ? { ...l, value } : l,
@@ -367,20 +343,13 @@ export default function BloodSugarTracker() {
     }
 
     try {
-      if (familyId) {
-        await updateDoc(
-          doc(db, "families", familyId, "bloodsugar", editingLog.id),
-          {
-            value,
-            updatedAt: serverTimestamp(),
-          },
-        );
-      } else {
-        await updateDoc(doc(db, "bloodsugar", editingLog.id), {
+      await updateDoc(
+        doc(db, "families", familyId, "bloodsugar", editingLog.id),
+        {
           value,
           updatedAt: serverTimestamp(),
-        });
-      }
+        },
+      );
       setEditingLog(null);
       setInputValue("");
     } catch (err) {

@@ -8,7 +8,6 @@ import {
   doc,
   serverTimestamp,
   query,
-  where,
   orderBy,
   onSnapshot,
   Timestamp,
@@ -41,7 +40,7 @@ export default function WeightTracker() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       const localData = localStorage.getItem("lumina_guest_weight");
       if (localData) {
         try {
@@ -68,21 +67,11 @@ export default function WeightTracker() {
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "weight"),
-        orderBy("createdAt", "desc"),
-        limit(10),
-      );
-    } else {
-      q = query(
-        collection(db, "weight"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(10),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "weight"),
+      orderBy("createdAt", "desc"),
+      limit(10),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -129,7 +118,7 @@ export default function WeightTracker() {
       day: "numeric",
     });
 
-    if (!user) {
+    if (!user || !familyId) {
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: WeightLog = {
         id: simulatedId,
@@ -160,14 +149,7 @@ export default function WeightTracker() {
         loggedBy: user.uid,
         createdAt: serverTimestamp(),
       };
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "weight"), payload);
-      } else {
-        await addDoc(collection(db, "weight"), {
-          ...payload,
-          userId: user.uid,
-        });
-      }
+      await addDoc(collection(db, "families", familyId, "weight"), payload);
       setWeightInput("");
     } catch (err) {
       console.error("Failed to save weight log:", err);
@@ -178,7 +160,7 @@ export default function WeightTracker() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!user) {
+    if (!user || !familyId) {
       const updated = weightLogs.filter((log) => log.id !== id);
       setWeightLogs(updated);
       localStorage.setItem(
@@ -194,11 +176,7 @@ export default function WeightTracker() {
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "weight", id));
-      } else {
-        await deleteDoc(doc(db, "weight", id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "weight", id));
     } catch (err) {
       console.error("Failed to delete weight log:", err);
       alert("Failed to delete weight record.");

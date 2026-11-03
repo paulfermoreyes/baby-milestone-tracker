@@ -21,7 +21,8 @@ import BaptismSummaryCard from "@/components/dashboard/BaptismSummaryCard";
 import BirthChecklistSummaryCard from "@/components/dashboard/BirthChecklistSummaryCard";
 import NewbornDashboard from "@/components/dashboard/NewbornDashboard";
 import { useBaby } from "@/context/BabyContext";
-import { Baby, Heart } from "@phosphor-icons/react";
+import { Baby, Heart, Sparkle } from "@phosphor-icons/react";
+import { calculateGestationalAge } from "@/lib/gestationalAge";
 
 export default function Home() {
   const {
@@ -655,7 +656,12 @@ export default function Home() {
   }
 
   // REDESIGNED DASHBOARD HUB (LOGGED IN) - Wrapped inside AppShell
-  const week = userProfile?.pregnancyWeek || 0;
+  const gestationalProgress = calculateGestationalAge({
+    expectedLaborDate: userProfile?.expectedLaborDate,
+    pregnancyWeek: userProfile?.pregnancyWeek,
+  });
+
+  const week = gestationalProgress.currentWeek;
 
   // Dynamic priority ordering based on pregnancy week
   let order: string[] = [
@@ -763,26 +769,68 @@ export default function Home() {
         <NewbornDashboard />
       ) : (
         <>
-          {/* Welcome & Info Section */}
-          <div className="mb-10 text-center md:text-left">
-            <h2
-              className={`text-3xl md:text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}
-            >
-              Welcome to Your Dashboard
-              {userProfile?.pregnancyWeek ? (
-                <span
-                  className={`text-2xl md:text-3xl ml-3 ${isDark ? "text-rose-450" : "text-rose-600"}`}
+          {/* Dynamic Gestational Progression Hero Card */}
+          <div className="mb-8 glass-card p-6 md:p-8 rounded-3xl bg-slate-950/70 border border-slate-800 text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                    Trimester {gestationalProgress.trimester}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
+                    {gestationalProgress.daysRemaining} days to delivery
+                  </span>
+                </div>
+                <h2
+                  className={`text-2xl md:text-4xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
                 >
-                  - Week {userProfile.pregnancyWeek}
-                </span>
-              ) : null}
-            </h2>
-            <p
-              className={`text-sm leading-relaxed max-w-2xl ${isDark ? "text-slate-400" : "text-slate-500"}`}
-            >
-              Track daily progress, log vital signs, and stay connected with other
-              caregivers in real-time. Keep a close eye on key prenatal metrics.
-            </p>
+                  Week {gestationalProgress.currentWeek}
+                  <span className="text-base md:text-lg font-bold text-slate-400 ml-2">
+                    (Day {gestationalProgress.currentDay})
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Due date: <span className="font-bold text-slate-200">{gestationalProgress.dueDateString}</span>
+                </p>
+              </div>
+
+              {/* Baby Size Comparison Badge */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-amber-500/10 border border-rose-500/20 max-w-sm">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5 mb-1">
+                  <Sparkle size={14} weight="fill" />
+                  Baby Size Comparison
+                </div>
+                <div className="text-sm font-black text-white">
+                  Size of a {gestationalProgress.babySizeComparison.fruitOrObject}
+                </div>
+                <div className="text-[11px] text-slate-300 mt-0.5">
+                  Approx. {gestationalProgress.babySizeComparison.lengthCm} cm &bull; {gestationalProgress.babySizeComparison.weightGram} g
+                </div>
+              </div>
+            </div>
+
+            {/* Progression Bar & Clinical Tip */}
+            <div className="pt-4 space-y-3">
+              <div>
+                <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                  <span className="text-slate-400">Pregnancy Progression</span>
+                  <span className="text-rose-400 font-extrabold">
+                    {gestationalProgress.progressPercent}% Completed
+                  </span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-slate-900/80 overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 transition-all duration-500"
+                    style={{ width: `${gestationalProgress.progressPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-300 bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
+                <span className="font-bold text-slate-200">Clinical Focus: </span>
+                {gestationalProgress.clinicalHighlight}
+              </div>
+            </div>
           </div>
 
           {/* Dynamic Grid Layout */}

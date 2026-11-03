@@ -59,7 +59,7 @@ export default function SymptomTracker() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       const localData = localStorage.getItem("lumina_guest_symptoms");
       if (localData) {
         try {
@@ -90,21 +90,11 @@ export default function SymptomTracker() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "symptoms"),
-        where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc"),
-      );
-    } else {
-      q = query(
-        collection(db, "symptoms"),
-        where("userId", "==", user.uid),
-        where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc"),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "symptoms"),
+      where("createdAt", ">=", startOfDay),
+      orderBy("createdAt", "desc"),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -137,7 +127,7 @@ export default function SymptomTracker() {
     e.preventDefault();
     setLoading(true);
 
-    if (!user) {
+    if (!user || !familyId) {
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: SymptomLog = {
         id: simulatedId,
@@ -170,14 +160,7 @@ export default function SymptomTracker() {
         loggedBy: user.uid,
         createdAt: serverTimestamp(),
       };
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "symptoms"), payload);
-      } else {
-        await addDoc(collection(db, "symptoms"), {
-          ...payload,
-          userId: user.uid,
-        });
-      }
+      await addDoc(collection(db, "families", familyId, "symptoms"), payload);
       setNotes("");
     } catch (err) {
       console.error("Failed to save symptom log:", err);
@@ -188,7 +171,7 @@ export default function SymptomTracker() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!user) {
+    if (!user || !familyId) {
       const updated = symptomLogs.filter((log) => log.id !== id);
       setSymptomLogs(updated);
       localStorage.setItem(
@@ -204,11 +187,7 @@ export default function SymptomTracker() {
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "symptoms", id));
-      } else {
-        await deleteDoc(doc(db, "symptoms", id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "symptoms", id));
     } catch (err) {
       console.error("Failed to delete symptom log:", err);
       alert("Failed to delete symptom record.");

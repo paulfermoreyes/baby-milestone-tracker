@@ -109,13 +109,14 @@ describe("BirthChecklist Persistence & Sanitization Tests", () => {
     ];
 
     vi.mocked(onSnapshot).mockImplementationOnce(
-      (_ref, callback: (snap: unknown) => void) => {
+      ((...args: unknown[]) => {
+        const callback = args[1] as (snap: unknown) => void;
         callback({
           exists: () => true,
           data: () => ({ categories: mockFirestoreCategories }),
         });
         return vi.fn();
-      },
+      }) as never,
     );
 
     render(<BirthChecklist />);

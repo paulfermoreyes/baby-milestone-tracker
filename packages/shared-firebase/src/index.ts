@@ -21,10 +21,8 @@ import {
 
 // Helper path builder
 export function getBabyCollectionPath(familyId: string | null, userId: string): string {
-  if (familyId) {
-    return `families/${familyId}/babies`;
-  }
-  return `users/${userId}/babies`;
+  const fid = familyId || userId;
+  return `families/${fid}/babies`;
 }
 
 export async function fetchBabyProfile(

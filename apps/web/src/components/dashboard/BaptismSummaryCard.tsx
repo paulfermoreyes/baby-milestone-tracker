@@ -33,7 +33,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       // Guest local storage fallback
       const localData = localStorage.getItem("lumina_guest_baptism");
       if (localData) {
@@ -53,9 +53,7 @@ export default function BaptismSummaryCard({ mode }: BaptismSummaryCardProps) {
       return;
     }
 
-    const docRef = familyId
-      ? doc(db, "families", familyId, "baptism", "event")
-      : doc(db, "baptism", user.uid);
+    const docRef = doc(db, "families", familyId, "baptism", "event");
 
     const unsubscribe = onSnapshot(
       docRef,

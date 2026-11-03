@@ -8,7 +8,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -34,7 +33,7 @@ export default function ContractionSummaryCard({
   >([]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // simulated preview
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecentContractions([
@@ -54,21 +53,11 @@ export default function ContractionSummaryCard({
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "contractions"),
-        orderBy("createdAt", "desc"),
-        limit(5),
-      );
-    } else {
-      q = query(
-        collection(db, "contractions"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(5),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "contractions"),
+      orderBy("createdAt", "desc"),
+      limit(5),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const records: ContractionRecord[] = [];

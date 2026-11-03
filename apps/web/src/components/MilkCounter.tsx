@@ -36,7 +36,7 @@ export default function MilkCounter() {
   useEffect(() => {
     if (!isClient) return;
 
-    if (!user) {
+    if (!user || !familyId) {
       const localData = localStorage.getItem("lumina_guest_milk");
       if (localData) {
         try {
@@ -64,21 +64,11 @@ export default function MilkCounter() {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "milk"),
-        where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc"),
-      );
-    } else {
-      q = query(
-        collection(db, "milk"),
-        where("userId", "==", user.uid),
-        where("createdAt", ">=", startOfDay),
-        orderBy("createdAt", "desc"),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "milk"),
+      where("createdAt", ">=", startOfDay),
+      orderBy("createdAt", "desc"),
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -102,7 +92,7 @@ export default function MilkCounter() {
   }, [user, familyId, isClient]);
 
   const handleRecordMilk = async () => {
-    if (!user) {
+    if (!user || !familyId) {
       const simulatedId = Math.random().toString(36).substring(7);
       const newLog: MilkLog = { id: simulatedId, timestamp: new Date() };
       const updated = [...milkLogs, newLog];
@@ -120,17 +110,10 @@ export default function MilkCounter() {
     }
 
     try {
-      if (familyId) {
-        await addDoc(collection(db, "families", familyId, "milk"), {
-          loggedBy: user.uid,
-          createdAt: serverTimestamp(),
-        });
-      } else {
-        await addDoc(collection(db, "milk"), {
-          userId: user.uid,
-          createdAt: serverTimestamp(),
-        });
-      }
+      await addDoc(collection(db, "families", familyId, "milk"), {
+        loggedBy: user.uid,
+        createdAt: serverTimestamp(),
+      });
     } catch (err) {
       console.error(err);
       alert("Failed to save milk log to the cloud.");
@@ -141,7 +124,7 @@ export default function MilkCounter() {
     if (milkLogs.length === 0) return;
     const lastLog = milkLogs[milkLogs.length - 1];
 
-    if (!user) {
+    if (!user || !familyId) {
       const updated = milkLogs.slice(0, -1);
       setMilkLogs(updated);
       localStorage.setItem(
@@ -157,11 +140,7 @@ export default function MilkCounter() {
     }
 
     try {
-      if (familyId) {
-        await deleteDoc(doc(db, "families", familyId, "milk", lastLog.id));
-      } else {
-        await deleteDoc(doc(db, "milk", lastLog.id));
-      }
+      await deleteDoc(doc(db, "families", familyId, "milk", lastLog.id));
     } catch (err) {
       console.error(err);
       alert("Failed to delete last milk log.");

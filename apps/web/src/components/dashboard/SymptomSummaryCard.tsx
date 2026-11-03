@@ -8,7 +8,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -41,7 +40,7 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
   const todayStr = getLocalDateString();
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !familyId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTodayLogs([
         {
@@ -62,21 +61,11 @@ export default function SymptomSummaryCard({ mode }: SymptomSummaryCardProps) {
       return;
     }
 
-    let q;
-    if (familyId) {
-      q = query(
-        collection(db, "families", familyId, "symptoms"),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    } else {
-      q = query(
-        collection(db, "symptoms"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(20),
-      );
-    }
+    const q = query(
+      collection(db, "families", familyId, "symptoms"),
+      orderBy("createdAt", "desc"),
+      limit(20),
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const logsList: SymptomLog[] = [];
