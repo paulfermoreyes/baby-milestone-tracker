@@ -58,10 +58,17 @@ This project is a **Baby Milestone Tracker** application built with modern web t
   - Keep unit tests inside `apps/web/src/__tests__/`.
   - Ensure component tests wrap renders with necessary Context Providers (e.g., `AuthProvider`).
   - Keep E2E tests inside `apps/web/tests/`.
+- **Git Commit Conventions & Agent Co-Authorship**:
+  - Whenever the user instructs an agent to commit changes, the agent must include co-authorship credit in the commit message trailers:
+    ```
+    Co-authored-by: Antigravity <antigravity@google.com>
+    ```
+  - This rule applies exclusively when the agent creates commits upon request; the user's manual/direct commits are never altered or intercepted by git hooks.
 
 ---
 
 ## 5. Maintenance Checklist for Agents
 When making updates to this codebase, ensure you:
 1. Run `npm run test` and `npm run lint` before completing tasks to guarantee stability.
-2. Update this `AGENTS.md` file if introducing new tools, architectural layers, directory structures, or team conventions.
+2. Include `Co-authored-by: Antigravity <antigravity@google.com>` trailer whenever you (the agent) are asked to create a commit.
+3. Update this `AGENTS.md` file if introducing new tools, architectural layers, directory structures, or team conventions.
